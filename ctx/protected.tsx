@@ -2,8 +2,9 @@
 
 import { Button } from '@/components/ui/button'
 
-import { useTheme } from '@/components/theme/provider'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { SignOutButton } from '@/components/ui/signout'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useToggle } from '@/hooks/use-toggle'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon, IconName } from '@/lib/icons'
@@ -17,17 +18,16 @@ interface NavItem {
   icon: IconName
 }
 const navItems: NavItem[] = [
-  { path: '/', label: 'Tournaments', icon: 'flag-line' },
-  { path: '/my-registrations', label: 'My Registrations', icon: 'flag-line' },
-  { path: '/organizer', label: 'Organizer', icon: 'flag-line' },
-  { path: '/finance', label: 'Finance', icon: 'flag-line' },
-  { path: '/scanner', label: 'Scanner', icon: 'flag-line' }
+  { path: '/', label: 'Home', icon: 'home-line' },
+  { path: '/tournaments', label: 'Tournaments', icon: 'flag-line' },
+  // { path: '/leagues', label: 'Browse Leagues', icon: 'squircle' },
+  { path: '/entries', label: 'My Entries', icon: 'ticket' },
+  { path: '/records', label: 'Track Record', icon: 'golf-flag' }
 ]
 
 export default function ProtectedLayout({ children }: PropsWithChildren) {
   const { on: mobileOpen, setOn: setMobileOpen } = useToggle(false)
   const { user } = useFirebaseUser()
-  const { toggle } = useTheme()
   const pathname = usePathname()
 
   // const handleLogout = () => {
@@ -37,11 +37,11 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
   return (
     <div className='min-h-screen bg-background'>
       {/* Top Nav */}
-      <header className='sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b'>
+      <header className='sticky top-0 z-50 bg-primary/5 backdrop-blur-xl border-b'>
         <div className='max-w-7xl mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
           <Link href='/' className='flex items-center gap-2'>
-            <div className='w-9 h-9 rounded-lg bg-primary flex items-center justify-center'>
-              <Icon name='flag-fill' className='w-5 h-5 text-primary-foreground' />
+            <div className='w-9 h-9 rounded-xl bg-primary flex items-center justify-center'>
+              <Icon name='golf-tee' className='size-6 text-primary-foreground' />
             </div>
             <span className='font-heading text-xl font-bold tracking-tight hidden sm:inline'>GolfTour</span>
           </Link>
@@ -54,12 +54,12 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                 <Link
                   key={item.path}
                   href={item.path}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium ${
                     active
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      ? 'bg-accent dark:bg-accent text-primary-foreground'
+                      : 'text-foreground/70 hover:text-foreground hover:bg-muted'
                   }`}>
-                  <Icon name={item.icon} className='size-3' />
+                  <Icon name={item.icon} className='size-4 xl:size-5 opacity-20' />
                   {item.label}
                 </Link>
               )
@@ -71,7 +71,7 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
               <DropdownMenuTrigger
                 render={
                   <Button variant='ghost' size='sm' className='gap-2'>
-                    <div className='size-6 rounded-full bg-primary/10 flex items-center justify-center'>
+                    <div className='size-5 rounded-full bg-primary/10 flex items-center justify-center'>
                       <Icon name='flag-fill' className='size-3.5 text-primary' />
                     </div>
                     <span className='hidden sm:inline text-sm'>
@@ -84,11 +84,11 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                 <DropdownMenuItem className='text-xs text-muted-foreground rounded-sm rounded-t-xl'>
                   {user?.email}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={toggle} className=' rounded-sm'>
-                  <Icon name='theme' className='size-4 mr-2' /> Theme
+                <DropdownMenuItem onClick={undefined} className=' rounded-sm'>
+                  <ThemeToggle withLabel />
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={undefined} className=' rounded-sm rounded-b-xl'>
-                  <Icon name='arrow-right' className='w-4 h-4 mr-2' /> Logout
+                <DropdownMenuItem onClick={undefined} className='rounded-sm rounded-b-xl'>
+                  <SignOutButton withLabel />
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -111,10 +111,10 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? 'bg-primary text-primary-foreground'
+                      ? 'bg-accent/70 dark:bt-accent text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}>
-                  <Icon name={item.icon} className='size-3' />
+                  <Icon name={item.icon} className='size-3 opacity-20' />
                   {item.label}
                 </Link>
               )

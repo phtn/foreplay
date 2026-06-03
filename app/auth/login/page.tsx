@@ -70,7 +70,7 @@ export default function Login() {
 
   return (
     <AuthLayout
-      icon='flag-fill'
+      icon='golf-tee'
       title='Welcome back'
       subtitle='Log in to your account'
       footer={
@@ -144,7 +144,7 @@ export default function Login() {
             />
           </div>
         </div>
-        <Button type='submit' className='w-full h-12 font-medium bg-primary' disabled={loading}>
+        <Button type='submit' className='w-full h-12 font-medium bg-primary text-white' disabled={loading}>
           {loading ? (
             <>
               <Icon name='spinner-ring' className='size-4 mr-2' />

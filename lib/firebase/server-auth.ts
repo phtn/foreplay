@@ -2,10 +2,10 @@ import 'server-only'
 
 import { getFirebaseCustomClaimsFromDecodedToken } from '@/lib/firebase/custom-claims'
 import { stripAdminSubdomain } from '@/lib/routing/admin-subdomain'
-import { cache } from 'react'
 import type { DecodedIdToken } from 'firebase-admin/auth'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { cache } from 'react'
 import { getFirebaseAdminAuth } from './admin'
 import { firebaseSessionCookieName } from './session'
 
