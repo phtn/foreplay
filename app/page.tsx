@@ -25,22 +25,22 @@ export default function H() {
           </div>
           <UpcomingEvent {...props} />
         </div>
-        <div className='flex items-center justify-center space-x-4'>
-          <Card className='bg-accent/5'>
-            <CardContent>All Tournaments</CardContent>
+        <div className='flex items-center justify-between w-full space-x-4'>
+          <Card className='w-full'>
+            <CardContent className='whitespace-nowrap'>All Tournaments</CardContent>
           </Card>
-          <Card>
-            <CardContent>View My Tickets</CardContent>
+          <Card className='w-full'>
+            <CardContent className='whitespace-nowrap text-center'>My Tickets</CardContent>
           </Card>
-          <Card>
-            <CardContent>Leaderboard</CardContent>
+          <Card className='w-full'>
+            <CardContent className='whitespace-nowrap text-center'>Ranking</CardContent>
           </Card>
-          <Card>
+          {/*<Card>
             <CardContent>Competitive Ranking</CardContent>
           </Card>
           <Card>
             <CardContent>International Invitations</CardContent>
-          </Card>
+          </Card>*/}
         </div>
       </div>
     </ProtectedLayout>
