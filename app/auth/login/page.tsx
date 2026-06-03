@@ -1,17 +1,52 @@
 'use client'
-import { AuthLayout } from '@/components/layouts/auth-layout'
+import { AuthLayout } from '@/components/layouts/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { signInWithGoogle, useFirebaseUser } from '@/lib/firebase/auth'
+import { createFirebaseSession } from '@/lib/firebase/session'
 import { Icon } from '@/lib/icons'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, setError] = useState<Error | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  const { user } = useFirebaseUser()
+
+  const handleGoogle = async () => {
+    setError(null)
+    setLoading(true)
+
+    try {
+      if (user) {
+        await createFirebaseSession(await user.getIdToken(true))
+        router.push('/')
+        return
+      }
+
+      const credential = await signInWithGoogle()
+      await createFirebaseSession(await credential.user.getIdToken(true))
+      router.push('/')
+    } catch (error) {
+      setError(error as unknown as Error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signInLabel = loading
+    ? 'Checking session...'
+    : loading
+      ? 'Connecting...'
+      : user
+        ? 'Open Dashboard'
+        : 'Continue with Google'
 
   // const handleSubmit = async (e) => {
   //   e.preventDefault();
@@ -27,9 +62,11 @@ export default function Login() {
   //   }
   // };
 
-  // const handleGoogle = () => {
-  //   base44.auth.loginWithProvider("google", "/");
-  // };
+  useEffect(() => {
+    if (user) {
+      router.push('/')
+    }
+  }, [router, user])
 
   return (
     <AuthLayout
@@ -44,9 +81,9 @@ export default function Login() {
           </Link>
         </>
       }>
-      <Button variant='outline' className='w-full h-12 text-sm font-medium mb-5 xl:mb-6 gap-4' onClick={undefined}>
-        <Icon name='goog' className='size-3.5' />
-        <span>Continue with Google</span>
+      <Button variant='outline' className='w-full h-12 text-sm font-medium mb-5 xl:mb-6 gap-4' onClick={handleGoogle}>
+        <Icon name={loading ? 'spinner-ring' : 'goog'} className='size-3.5' />
+        <span>{signInLabel}</span>
       </Button>
 
       <div className='relative mb-3 xl:mb-6'>
@@ -58,7 +95,7 @@ export default function Login() {
         </div>
       </div>
 
-      {error && <div className='mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm'>{error}</div>}
+      {error && <div className='mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm'>{error.message}</div>}
 
       <form onSubmit={undefined} className='space-y-4'>
         <div className='space-y-2'>

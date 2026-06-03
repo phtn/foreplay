@@ -1,5 +1,5 @@
 'use client'
-import { AuthLayout } from '@/components/layouts/auth-layout'
+import { AuthLayout } from '@/components/layouts/auth'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp'
