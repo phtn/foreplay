@@ -1,0 +1,80 @@
+'use client'
+import { AuthLayout } from '@/components/layouts'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Icon } from '@/lib/icons'
+import Link from 'next/link'
+import { useState } from 'react'
+
+export default function Recovery() {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   try {
+  //     await base44.auth.resetPasswordRequest(email);
+  //   } catch {
+  //     // Always show success regardless
+  //   } finally {
+  //     setLoading(false);
+  //     setSent(true);
+  //   }
+  // };
+
+  return (
+    <AuthLayout
+      icon='re-up.ph'
+      title='Account Recovery'
+      subtitle='Password Reset'
+      footer={
+        <Link href='/auth/login' className='text-primary font-medium hover:underline'>
+          <Icon name='arrow-right' className='w-3 h-3 inline mr-1 -rotate-180' />
+          Back to log in
+        </Link>
+      }>
+      {sent ? (
+        <p className='text-sm text-foreground text-center'>
+          If an account exists with that email, you&apos;ll receive a password reset link shortly.
+        </p>
+      ) : (
+        <form onSubmit={undefined} className='space-y-4'>
+          <div className='space-y-2'>
+            <Label htmlFor='email'>Email address</Label>
+            <div className='relative'>
+              <Icon
+                name='mail'
+                className='absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground'
+                aria-hidden='true'
+              />
+              <Input
+                id='email'
+                type='email'
+                autoComplete='email'
+                autoFocus
+                placeholder='you@example.com'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className='pl-10 h-12'
+                required
+              />
+            </div>
+          </div>
+          <Button type='submit' className='w-full h-12 font-medium' disabled={loading}>
+            {loading ? (
+              <>
+                <Icon name='spinner-ring' className='size-4 mr-2' />
+                Sending...
+              </>
+            ) : (
+              'Send reset link'
+            )}
+          </Button>
+        </form>
+      )}
+    </AuthLayout>
+  )
+}
