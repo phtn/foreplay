@@ -81,10 +81,10 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                   </Button>
                 }></DropdownMenuTrigger>
               <DropdownMenuContent align='end'>
-                <DropdownMenuItem className='text-xs text-muted-foreground rounded-sm rounded-t-xl'>
+                {/*<DropdownMenuItem className='text-xs text-muted-foreground rounded-sm rounded-t-xl'>
                   {user?.email}
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={undefined} className=' rounded-sm'>
+                </DropdownMenuItem>*/}
+                <DropdownMenuItem onClick={undefined} className=' rounded-sm rounded-t-xl'>
                   <ThemeToggle withLabel />
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={undefined} className='rounded-sm rounded-b-xl'>
