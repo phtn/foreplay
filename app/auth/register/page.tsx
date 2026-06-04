@@ -12,7 +12,7 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
+  const [error, _setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [showOtp, setShowOtp] = useState(false)
   const [otpCode, setOtpCode] = useState('')
@@ -70,7 +70,7 @@ export default function Register() {
 
   if (showOtp) {
     return (
-      <AuthLayout icon={'re-up.ph'} title='Verify your email' subtitle={`We sent a code to ${email}`}>
+      <AuthLayout icon='golf-tee' title='Verify your email' subtitle={`We sent a code to ${email}`}>
         {error && <div className='mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm'>{error}</div>}
         <div className='flex justify-center mb-6'>
           <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode} autoFocus autoComplete='one-time-code'>
@@ -106,7 +106,7 @@ export default function Register() {
 
   return (
     <AuthLayout
-      icon={'flag-fill'}
+      icon={'golf-tee'}
       title='Create your account'
       subtitle='Sign up to get started'
       footer={
