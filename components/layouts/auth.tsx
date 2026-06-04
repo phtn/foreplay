@@ -17,7 +17,7 @@ export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayo
             <Icon name='squircle' className='w-14 h-14 text-primary absolute top-0' />
             <Icon name={icon} className='size-8 text-white relative' aria-hidden='true' />
           </div>
-          <div className='-space-y-2.5'>
+          <div className='-space-y-1'>
             <h1 className='text-2xl xl:text-3xl font-bold tracking-tight text-foreground'>{title}</h1>
             {subtitle && <p className='font-sans text-muted-foreground tracking-tight'>{subtitle}</p>}
           </div>
