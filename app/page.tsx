@@ -9,8 +9,8 @@ export default function H() {
   const props: EventItem = {
     id: 'id0',
     slots_limit: 400,
-    title: 'Viva Hot Babes',
-    venue: 'Wack2',
+    title: 'Viva GF Open',
+    venue: 'Mt Malarayat Golf & Country Club',
     event_date: 'Thu Jun 04 2026 05:01:10 GMT+0800 (Philippine Standard Time)',
     divisions: ['Championships'],
     registration_fee: 400

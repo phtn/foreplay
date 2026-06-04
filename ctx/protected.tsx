@@ -39,11 +39,12 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
       {/* Top Nav */}
       <header className='sticky top-0 z-50 bg-primary/5 backdrop-blur-xl border-b'>
         <div className='max-w-7xl mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
-          <Link href='/' className='flex items-center gap-2'>
-            <div className='w-9 h-9 rounded-xl bg-primary flex items-center justify-center'>
-              <Icon name='golf-tee' className='size-6 text-white' />
+          <Link href='/' className='flex items-center gap-4'>
+            <div className='inline-flex items-center justify-center w-12 h-12 rounded-2xl relative'>
+              <Icon name='squircle' className='w-10 h-10 text-primary absolute top-0' />
+              <Icon name='golf-tee' className='size-7.5 text-white relative' />
             </div>
-            <span className='font-heading text-xl font-bold tracking-tight hidden sm:inline'>GolfTour</span>
+            <span className='font-heading text-xl xl:text-2xl font-bold tracking-tight hidden sm:inline'>GolfTour</span>
           </Link>
 
           {/* Desktop Nav */}
