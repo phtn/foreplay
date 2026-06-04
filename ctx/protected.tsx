@@ -59,8 +59,8 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                       ? 'bg-accent text-primary-foreground'
                       : 'text-foreground/70 hover:text-foreground hover:bg-muted'
                   }`}>
-                  <Icon name={item.icon} className='size-4 xl:size-5 opacity-20' />
-                  {item.label}
+                  <Icon name={item.icon} className='size-4 xl:size-5' />
+                  <span>{item.label}</span>
                 </Link>
               )
             })}
@@ -111,11 +111,11 @@ export default function ProtectedLayout({ children }: PropsWithChildren) {
                   onClick={() => setMobileOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? 'bg-accent/70 dark:bt-accent text-primary-foreground'
+                      ? 'bg-accent/70 text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                   }`}>
-                  <Icon name={item.icon} className='size-3 opacity-20' />
-                  {item.label}
+                  <Icon name={item.icon} className='size-3' />
+                  <span>{item.label}</span>
                 </Link>
               )
             })}
