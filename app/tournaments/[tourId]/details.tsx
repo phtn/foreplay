@@ -1,13 +1,9 @@
 import Link from 'next/link'
 
+import { findTournament, SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  SectionTitle,
-  findTournament,
-  TournamentHero
-} from '@/components/protected/tournament-experience'
 import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
@@ -77,7 +73,7 @@ export default function TourDetail({ tourId }: TourDetailProps) {
             </CardContent>
           </Card>
 
-          <Card className='border-border/70 bg-gradient-to-br from-primary/8 via-background to-amber-500/5'>
+          <Card className='border-border/70 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
             <CardHeader>
               <CardTitle className='text-xl'>Why this entry feels premium</CardTitle>
             </CardHeader>

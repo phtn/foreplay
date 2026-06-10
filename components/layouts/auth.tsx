@@ -13,12 +13,12 @@ export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayo
     <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/15 via-30% via-primary/10 to-transparent pt-8 2xl:pt-24 px-4 relative'>
       <div className="absolute w-screen h-screen z-40 top-0 inset-0 bg-[url('/noise.svg')] opacity-80 scale-100 pointer-events-none" />
       <div className='w-full max-w-md relative z-50'>
-        <div className='flex items-center space-x-4 xl:space-x-5 mb-5 xl:mb-10'>
+        <div className='flex space-x-4 xl:space-x-5 mb-5 xl:mb-10'>
           <div className='inline-flex items-center justify-center w-16 h-16 rounded-2xl relative'>
-            <Icon name='squircle' className='w-14 h-14 text-primary absolute top-0' />
-            <Icon name={icon} className='size-8 text-white relative' aria-hidden='true' />
+            <Icon name='squircle' className='size-14 text-primary top-0 absolute' />
+            <Icon name={icon} className='size-8 relative text-white' aria-hidden='true' />
           </div>
-          <div className=' h-12'>
+          <div className='flex flex-col justify-center h-14'>
             <h1 className='text-2xl xl:text-2xl font-bold tracking-tight text-foreground leading-none'>{title}</h1>
             {subtitle && <p className='font-sans text-sm text-muted-foreground tracking-tight leading-4'>{subtitle}</p>}
           </div>
