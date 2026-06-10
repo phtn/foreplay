@@ -1,16 +1,16 @@
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
-import { Badge } from '@/components/reui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  SectionTitle,
   featuredTournament,
+  SectionTitle,
   TournamentCard,
   TournamentHero,
   tournamentList
 } from '@/components/protected/tournament-experience'
+import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
@@ -36,7 +36,6 @@ export default function TournamentsPage() {
           metrics={[
             { label: 'Fields live', value: '3', icon: 'flag-line' },
             { label: 'Entry window', value: '48h', icon: 'lock' },
-            { label: 'Average fee', value: '₱2.6K', icon: 'trophy' },
             { label: 'Players queued', value: '132', icon: 'golf-flag' }
           ]}
         />
@@ -69,10 +68,7 @@ export default function TournamentsPage() {
           </div>
 
           <div className='space-y-4'>
-            <SectionTitle
-              eyebrow='Why the field buys'
-              title='Package the experience, not just the bracket'
-            />
+            <SectionTitle eyebrow='Why the field buys' title='Package the experience, not just the bracket' />
             <Card className='border-border/70 bg-muted/20'>
               <CardHeader>
                 <CardTitle className='text-xl'>Included with entry</CardTitle>

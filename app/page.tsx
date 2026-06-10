@@ -78,9 +78,12 @@ const sellingPoints = [
 export default function HomePage() {
   return (
     <ProtectedLayout>
-      <div className='space-y-20'>
+      <div className='space-y-16'>
         {/*V2 Hero here*/}
-        <div className='2xl:h-6'></div>
+        <div className='h-6 flex items-center space-x-2 px-3'>
+          <Icon name='chevrons-right' />
+          <span className='font-display text-foreground/70'>Upcoming Tournaments</span>
+        </div>
         <TournamentHero
           eyebrow='TOURNAMENT'
           title='Batangas Open'
