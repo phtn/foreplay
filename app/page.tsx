@@ -2,16 +2,60 @@ import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
 import {
-  featuredTournament,
   homeMetrics,
   SectionTitle,
   TournamentCard,
-  TournamentHero
+  TournamentHero,
+  TournamentSpotlight
 } from '@/components/protected/tournament-experience'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+
+const featuredTournament: TournamentSpotlight = {
+  id: 'featured-01',
+  title: 'Featured Tournament',
+  venue: 'Foreplay Park',
+  dateLabel: 'July 4, 2026',
+  feeLabel: '$500',
+  slotsLabel: '100 slots',
+  formatLabel: 'Standard',
+  statusLabel: 'Open',
+  description: '',
+  divisions: ['Open', 'Amateur', 'Net'],
+  teeTimeAt: '2026-07-04T06:45:00+08:00',
+  teeTimeLabel: 'July 4, 2026 at 6:45 AM',
+  prizes: ['Title sponsor trophy', 'Skill contest awards', 'Sponsor gift packs'],
+  events: [
+    { label: 'Registration opens', detail: '5:15 AM' },
+    { label: 'Round one tee off', detail: '6:45 AM shotgun' },
+    { label: 'Winner photo', detail: 'Immediately after scoring' }
+  ],
+  specialGuests: ['Guest judge: Liza Cruz', 'Sponsor rep: Niko Tan', 'Club captain: Jose Mercado']
+}
+const galleryCards = [
+  {
+    icon: 'golf-flag' as const,
+    title: 'Course view',
+    description: 'Show the fairways, the green, and the setup golfers will actually play.'
+  },
+  {
+    icon: 'trophy' as const,
+    title: 'Prize wall',
+    description: 'Make the purse and sponsor awards visible before the first click.'
+  },
+  {
+    icon: 'flag-fill' as const,
+    title: 'Event flow',
+    description: 'Check-in, shotgun start, and awards stage in one clean sequence.'
+  },
+  {
+    icon: 'book-open' as const,
+    title: 'Special guests',
+    description: 'Surface hosts, starters, and featured guests as part of the event story.'
+  }
+]
 
 const sellingPoints = [
   {
@@ -34,15 +78,23 @@ const sellingPoints = [
 export default function HomePage() {
   return (
     <ProtectedLayout>
-      <div className='space-y-8'>
+      <div className='space-y-20'>
+        {/*V2 Hero here*/}
+        <div className='2xl:h-6'></div>
         <TournamentHero
-          eyebrow='SEASON'
-          title='Sell the tee time before the first swing.'
+          eyebrow='TOURNAMENT'
+          title='Batangas Open'
           description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
           primaryHref='/tournaments'
           secondaryHref='/entries'
-          primaryLabel='Browse open entries'
+          primaryLabel='Book Now'
           secondaryLabel='View my tickets'
+          galleryHref='#gallery'
+          teeTimeAt={featuredTournament.teeTimeAt}
+          teeTimeLabel={featuredTournament.teeTimeLabel}
+          prizes={featuredTournament.prizes}
+          events={featuredTournament.events}
+          specialGuests={featuredTournament.specialGuests}
           metrics={homeMetrics}
         />
 
@@ -133,6 +185,29 @@ export default function HomePage() {
             </Card>
           ))}
         </div>
+
+        <section id='gallery' aria-labelledby='gallery-title' className='scroll-mt-28 space-y-4'>
+          <SectionTitle
+            eyebrow='Accessible gallery'
+            title='View the event before you register'
+            description='Use the gallery to show the course, the prize table, and the people around the event without making golfers hunt for context.'
+          />
+          <div className='grid gap-4 md:grid-cols-2 xl:grid-cols-4'>
+            {galleryCards.map((item) => (
+              <Card key={item.title} className='border-border/70 bg-card'>
+                <CardContent className='space-y-4 p-5'>
+                  <div className='flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
+                    <Icon name={item.icon} className='size-6' />
+                  </div>
+                  <div className='space-y-1'>
+                    <h3 className='font-heading text-xl font-bold'>{item.title}</h3>
+                    <p className='text-sm text-muted-foreground'>{item.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
       </div>
     </ProtectedLayout>
   )

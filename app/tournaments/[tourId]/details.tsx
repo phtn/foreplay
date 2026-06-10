@@ -28,6 +28,11 @@ export default function TourDetail({ tourId }: TourDetailProps) {
         secondaryHref='/tournaments'
         primaryLabel='Reserve this entry'
         secondaryLabel='Back to tournaments'
+        teeTimeAt={tournament.teeTimeAt}
+        teeTimeLabel={tournament.teeTimeLabel}
+        prizes={tournament.prizes}
+        events={tournament.events}
+        specialGuests={tournament.specialGuests}
         metrics={[
           { label: 'Venue', value: tournament.venue, icon: 'golf-flag' },
           { label: 'Date', value: tournament.dateLabel, icon: 'flag-line' },

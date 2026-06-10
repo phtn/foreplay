@@ -5,6 +5,7 @@ import { Badge } from '@/components/reui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   SectionTitle,
+  featuredTournament,
   TournamentCard,
   TournamentHero,
   tournamentList
@@ -27,6 +28,11 @@ export default function TournamentsPage() {
           secondaryHref='/'
           primaryLabel='Review my entries'
           secondaryLabel='Back to dashboard'
+          teeTimeAt={featuredTournament.teeTimeAt}
+          teeTimeLabel={featuredTournament.teeTimeLabel}
+          prizes={featuredTournament.prizes}
+          events={featuredTournament.events}
+          specialGuests={featuredTournament.specialGuests}
           metrics={[
             { label: 'Fields live', value: '3', icon: 'flag-line' },
             { label: 'Entry window', value: '48h', icon: 'lock' },

@@ -17,6 +17,11 @@ export type TournamentSpotlight = {
   statusLabel: string
   description: string
   divisions: string[]
+  teeTimeAt?: string
+  teeTimeLabel?: string
+  prizes?: Array<string>
+  events?: Array<{ label: string; detail: string }>
+  specialGuests?: Array<string>
 }
 
 export type ProtectedEntry = {
@@ -123,7 +128,7 @@ export const leaderboardRows: LeaderboardRow[] = [
 
 export const homeMetrics = [
   { label: 'Players ready to tee off', value: '132', icon: 'golf-flag' as const },
-  { label: 'Average fill rate', value: '86%', icon: 'trophy' as const },
+  // { label: 'Average fill rate', value: '86%', icon: 'trophy' as const },
   { label: 'Live registrations today', value: '24', icon: 'golf-tee' as IconName },
   { label: 'Prize purse secured', value: '₱120K', icon: 'coins' as IconName }
 ]
@@ -159,6 +164,23 @@ export function SectionTitle({
   )
 }
 
+interface TournamentHeroProps {
+  eyebrow: string
+  title: string
+  description: string
+  primaryHref: string
+  secondaryHref: string
+  primaryLabel: string
+  secondaryLabel: string
+  metrics: Array<{ label: string; value: string; icon?: IconName }>
+  galleryHref?: string
+  teeTimeAt?: string
+  teeTimeLabel?: string
+  prizes?: Array<string>
+  events?: Array<{ label: string; detail: string }>
+  specialGuests?: Array<string>
+}
+
 export function TournamentHero({
   eyebrow,
   title,
@@ -168,43 +190,49 @@ export function TournamentHero({
   primaryLabel,
   secondaryLabel,
   metrics
-}: {
-  eyebrow: string
-  title: string
-  description: string
-  primaryHref: string
-  secondaryHref: string
-  primaryLabel: string
-  secondaryLabel: string
-  metrics: Array<{ label: string; value: string; icon?: IconName }>
-}) {
+}: TournamentHeroProps) {
   return (
     <Card className='relative overflow-hidden border-border bg-card shadow-[0_24px_80px_-1px_rgba(15,23,42,0.45)]'>
       <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
       <div className='absolute inset-0 bg-[url("/noise.svg")] size-full' />
-      <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.4fr_0.9fr] lg:p-10'>
+      <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.8fr_0.9fr] lg:p-10'>
         <div className='space-y-6'>
-          <div className='flex flex-wrap items-center gap-1'>
-            <Badge variant='secondary' radius='full' className='bg-primary/10 text-primary rounded-md'>
+          <div className='flex flex-wrap items-center gap-4'>
+            <Badge variant='secondary' radius='full' className='bg-primary/5 text-primary rounded-md'>
               {eyebrow}
             </Badge>
-            <span className='text-xs uppercase tracking-wider text-muted-foreground'>entry</span>
+            <span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>
           </div>
           <div className='space-y-4'>
-            <h1 className='max-w-2xl font-heading text-4xl font-black tracking-tight text-balance sm:text-5xl lg:text-6xl'>
+            <h1 className='max-w-2xl font-poly font-semibold text-3xl tracking-tight text-balance sm:text-4xl lg:text-5xl'>
               {title}
             </h1>
             <p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>{description}</p>
           </div>
+          <div className='bg-background/80 px-3 max-w-xl rounded-lg border border-dashed'>
+            <div className='flex items-center h-10 space-x-4 border-b border-dashed'>
+              <Icon name='flag-line' className='size-4' />
+              <span>Mt Malarayat Golf & Country Club</span>
+              <span className='px-3 opacity-60'>Batangas</span>
+            </div>
+            <div className='flex items-center h-10 space-x-4'>
+              <Icon name='flag-line' className='size-4' />
+              <span>530 AM June 24, 2026</span>
+              <span className='px-3 opacity-60'>Batangas</span>
+            </div>
+          </div>
           <div className='flex flex-wrap gap-3'>
-            <Link className={buttonVariants({ size: 'sm' })} href={primaryHref}>
+            <Link
+              className={cn(buttonVariants({ size: 'lg' }), 'px-8 text-sm font-poly font-medium')}
+              href={primaryHref}>
               {primaryLabel}
             </Link>
-            <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={secondaryHref}>
+            <Link className={buttonVariants({ variant: 'outline', size: 'lg' })} href={secondaryHref}>
               {secondaryLabel}
             </Link>
           </div>
         </div>
+
         <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-1'>
           {metrics.map((metric) => (
             <Card key={metric.label} size='sm' className='border-border/60 bg-background relative z-50 px-4'>
@@ -228,7 +256,7 @@ export function TournamentHero({
 export function TournamentCard({ tournament }: { tournament: TournamentSpotlight }) {
   return (
     <Card className='group overflow-hidden border-border/70 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_30px_60px_-35px_rgba(15,23,42,0.55)]'>
-      <CardHeader className='border-b border-border/60 bg-gradient-to-br from-primary/8 via-background to-amber-500/5'>
+      <CardHeader className='border-b border-border/60 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
         <div className='flex items-start justify-between gap-4'>
           <div className='space-y-3'>
             <Badge variant='secondary' size='sm' radius='full' className='bg-primary/10 text-primary'>
@@ -349,7 +377,7 @@ export function LeaderboardCard({ rows }: { rows: LeaderboardRow[] }) {
 
 export function MetricGrid({ metrics }: { metrics: Array<{ label: string; value: string; note: string }> }) {
   return (
-    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4 bg-primary'>
       {metrics.map((metric) => (
         <Card key={metric.label} size='sm' className='border-border/70'>
           <CardContent className='space-y-2 p-4'>
