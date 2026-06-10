@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { PropsWithChildren } from 'react'
 
 import { NAV_ITEMS, Navbar, isNavItemActive } from '@/components/layouts/navbar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { SignOutButton } from '@/components/ui/signout'
@@ -57,20 +58,22 @@ export default function ProtectedClient({ children }: PropsWithChildren) {
 
           <Navbar pathname={pathname} />
 
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 relative z-60'>
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={
-                  <Button variant='ghost' size='sm' className='gap-2'>
+                  <Button variant='ghost' size='default' className='gap-2'>
                     <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
-                      <Icon name='flag-fill' className='size-3.5 text-primary' />
+                      <Avatar size='sm'>
+                        <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
+                        <AvatarFallback>{firstName.substring(0, 1)}</AvatarFallback>
+                      </Avatar>
                     </div>
-                    <span className='hidden text-sm sm:inline'>{firstName}</span>
                     <Icon name='chevron-down' className='size-2 opacity-60' />
                   </Button>
                 }
               />
-              <DropdownMenuContent align='end'>
+              <DropdownMenuContent align='end' className=''>
                 <DropdownMenuItem className='rounded-sm rounded-t-xl'>
                   <ThemeToggle withLabel />
                 </DropdownMenuItem>

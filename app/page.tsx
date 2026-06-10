@@ -1,6 +1,7 @@
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
+import { BookNowForm } from '@/components/protected/book-now-form'
 import {
   homeMetrics,
   SectionTitle,
@@ -8,6 +9,7 @@ import {
   TournamentHero,
   TournamentSpotlight
 } from '@/components/protected/tournament-experience'
+import { AnimateOnView } from '@/components/ui/animate-on-view'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
@@ -78,20 +80,33 @@ const sellingPoints = [
 export default function HomePage() {
   return (
     <ProtectedLayout>
-      <div className='space-y-16'>
-        {/*V2 Hero here*/}
-        <div className='h-6 flex items-center space-x-2 px-3'>
-          <Icon name='chevrons-right' />
-          <span className='font-display text-foreground/70'>Upcoming Tournaments</span>
+      {/*Animating Header*/}
+      <AnimateOnView>
+        <div className='mb-8 flex h-12 items-center space-x-2 px-3'>
+          <Icon name='chevrons-right-fill' />
+          <span className='font-display text-lg tracking-wide text-foreground/70'>Upcoming Tournaments</span>
         </div>
+      </AnimateOnView>
+
+      <div className='space-y-12'>
         <TournamentHero
           eyebrow='TOURNAMENT'
-          title='Batangas Open'
+          title='Golden Ticket'
           description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
           primaryHref='/tournaments'
           secondaryHref='/entries'
           primaryLabel='Book Now'
           secondaryLabel='View my tickets'
+          primaryAction={
+            <BookNowForm
+              tournamentTitle={featuredTournament.title}
+              venue={featuredTournament.venue}
+              dateLabel={featuredTournament.dateLabel}
+              feeLabel={featuredTournament.feeLabel}
+              teeTimeLabel={featuredTournament.teeTimeLabel}
+              divisionOptions={featuredTournament.divisions}
+            />
+          }
           galleryHref='#gallery'
           teeTimeAt={featuredTournament.teeTimeAt}
           teeTimeLabel={featuredTournament.teeTimeLabel}
@@ -101,18 +116,27 @@ export default function HomePage() {
           metrics={homeMetrics}
         />
 
-        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4 py-8'>
           {[
+            { label: 'Leader', value: 'Tom Ford', note: '15th hole' },
             { label: 'Open fields', value: '3', note: 'Currently selling this month' },
-            { label: 'Average entry', value: '₱2.5K', note: 'Entry price positioning' },
             { label: 'Players waiting', value: '132', note: 'Confirmed and pending' },
             { label: 'Sponsor value', value: 'Premium', note: 'Made to feel exclusive' }
           ].map((metric) => (
-            <Card key={metric.label} size='sm' className='border-border/70'>
-              <CardContent className='space-y-2 p-4'>
-                <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{metric.label}</p>
-                <p className='font-heading text-3xl font-bold tracking-tight'>{metric.value}</p>
-                <p className='text-sm text-muted-foreground'>{metric.note}</p>
+            <Card
+              key={metric.label}
+              size='sm'
+              className='relative overflow-hidden border-border/70 bg-primary/80 px-2 py-0'>
+              <div
+                aria-hidden='true'
+                className="pointer-events-none absolute inset-0 rounded-2xl bg-[url('/noise.svg')] bg-repeat opacity-40"
+              />
+              <CardContent className='relative z-10 h-full py-0'>
+                <div className='space-y-2'>
+                  <p className='text-xs uppercase tracking-[0.24em] text-foreground'>{metric.label}</p>
+                  <p className='font-heading text-white text-3xl font-bold tracking-tight py-3'>{metric.value}</p>
+                </div>
+                <p className='text-base text-white/90 tracking-wide'>{metric.note}</p>
               </CardContent>
             </Card>
           ))}
@@ -164,7 +188,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className='grid gap-4 lg:grid-cols-3'>
+        {/*<div className='grid gap-4 lg:grid-cols-3'>
           {[
             {
               title: 'Premium course positioning',
@@ -210,7 +234,7 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
-        </section>
+        </section>*/}
       </div>
     </ProtectedLayout>
   )

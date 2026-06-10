@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
@@ -127,10 +128,10 @@ export const leaderboardRows: LeaderboardRow[] = [
 ]
 
 export const homeMetrics = [
-  { label: 'Players ready to tee off', value: '132', icon: 'golf-flag' as const },
+  { label: 'Ready', value: '132', icon: 'golf-flag' as const },
   // { label: 'Average fill rate', value: '86%', icon: 'trophy' as const },
-  { label: 'Live registrations today', value: '24', icon: 'golf-tee' as IconName },
-  { label: 'Prize purse secured', value: '₱120K', icon: 'coins' as IconName }
+  { label: 'Registrations', value: '24', icon: 'golf-tee' as IconName },
+  { label: 'Purse', value: '₱120K', icon: 'coins' as IconName }
 ]
 
 export const recordMetrics = [
@@ -173,6 +174,7 @@ interface TournamentHeroProps {
   primaryLabel: string
   secondaryLabel: string
   metrics: Array<{ label: string; value: string; icon?: IconName }>
+  primaryAction?: ReactNode
   galleryHref?: string
   teeTimeAt?: string
   teeTimeLabel?: string
@@ -189,14 +191,15 @@ export function TournamentHero({
   secondaryHref,
   primaryLabel,
   secondaryLabel,
-  metrics
+  metrics,
+  primaryAction
 }: TournamentHeroProps) {
   return (
     <Card className='relative overflow-hidden border-border bg-card shadow-[0_24px_80px_-1px_rgba(15,23,42,0.45)]'>
       <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
-      <div className='absolute inset-0 bg-[url("/noise.svg")] size-full' />
+      <div className='absolute inset-0 bg-[url("/noise.svg")] size-screen opacity-30' />
       <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.8fr_0.9fr] lg:p-10'>
-        <div className='space-y-6'>
+        <div className='space-y-8'>
           <div className='flex flex-wrap items-center gap-4'>
             <Badge variant='secondary' radius='full' className='bg-primary/5 text-primary rounded-md'>
               {eyebrow}
@@ -212,33 +215,35 @@ export function TournamentHero({
           <div className='bg-background/80 px-3 max-w-xl rounded-lg border border-dashed'>
             <div className='flex items-center h-10 space-x-4 border-b border-dashed'>
               <Icon name='flag-line' className='size-4' />
-              <span>Mt Malarayat Golf & Country Club</span>
+              <span className='font-ios'>Mt Malarayat Golf & Country Club</span>
               <span className='px-3 opacity-60'>Batangas</span>
             </div>
             <div className='flex items-center h-10 space-x-4'>
               <Icon name='flag-line' className='size-4' />
-              <span>530 AM June 24, 2026</span>
-              <span className='px-3 opacity-60'>Batangas</span>
+              <span className='font-ios'>530 AM June 24, 2026</span>
+              <span className='px-3 opacity-60'>Wenesday</span>
             </div>
           </div>
-          <div className='flex flex-wrap gap-3'>
-            <Link
-              className={cn(buttonVariants({ size: 'lg' }), 'px-8 text-sm font-poly font-medium')}
-              href={primaryHref}>
-              {primaryLabel}
-            </Link>
-            <Link className={buttonVariants({ variant: 'outline', size: 'lg' })} href={secondaryHref}>
+          <div className='flex items-end flex-wrap h-16 gap-3'>
+            {primaryAction ?? (
+              <Link
+                className={cn(buttonVariants({ size: 'xl' }), 'bg-foreground px-8 text-sm font-poly font-medium')}
+                href={primaryHref}>
+                {primaryLabel}
+              </Link>
+            )}
+            <Link className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'font-poly')} href={secondaryHref}>
               {secondaryLabel}
             </Link>
           </div>
         </div>
 
-        <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-1'>
+        <div className='grid gap-3 sm:grid-cols-3 lg:grid-cols-1'>
           {metrics.map((metric) => (
-            <Card key={metric.label} size='sm' className='border-border/60 bg-background relative z-50 px-4'>
-              <CardContent className='flex items-center gap-6 py-4'>
-                <div className='flex size-10 items-center justify-center text-accent'>
-                  <Icon name={metric.icon ?? 'trophy'} className='size-10' />
+            <Card key={metric.label} size='sm' className='border-border/60 bg-background relative z-40 lg:px-4'>
+              <CardContent className='flex items-center gap-4 lg:gap-6 lg:py-4'>
+                <div className='flex size-6 lg:size-10 items-center justify-center text-accent'>
+                  <Icon name={metric.icon ?? 'trophy'} className='size-6 lg:size-10' />
                 </div>
                 <div>
                   <p className='text-2xl font-bold tracking-tight'>{metric.value}</p>
@@ -255,8 +260,8 @@ export function TournamentHero({
 
 export function TournamentCard({ tournament }: { tournament: TournamentSpotlight }) {
   return (
-    <Card className='group overflow-hidden border-border/70 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_30px_60px_-35px_rgba(15,23,42,0.55)]'>
-      <CardHeader className='border-b border-border/60 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
+    <Card className='group my-4 py-0 overflow-hidden border-border/70 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_30px_60px_-35px_rgba(15,23,42,0.55)]'>
+      <CardHeader className='border-b py-4 border-border/60 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
         <div className='flex items-start justify-between gap-4'>
           <div className='space-y-3'>
             <Badge variant='secondary' size='sm' radius='full' className='bg-primary/10 text-primary'>
@@ -377,9 +382,9 @@ export function LeaderboardCard({ rows }: { rows: LeaderboardRow[] }) {
 
 export function MetricGrid({ metrics }: { metrics: Array<{ label: string; value: string; note: string }> }) {
   return (
-    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4 bg-primary'>
+    <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
       {metrics.map((metric) => (
-        <Card key={metric.label} size='sm' className='border-border/70'>
+        <Card key={metric.label} size='sm' className='border-border/70 bg-primary'>
           <CardContent className='space-y-2 p-4'>
             <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{metric.label}</p>
             <p className='font-heading text-3xl font-bold tracking-tight'>{metric.value}</p>
