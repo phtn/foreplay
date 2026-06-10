@@ -1,8 +1,5 @@
-'use client'
-import { useRouter } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 export default function Default() {
-  const router = useRouter()
-  router.replace('/auth/login')
-  return null
+  redirect('/auth/login')
 }

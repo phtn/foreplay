@@ -1,9 +1,9 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, type Dispatch, type SetStateAction } from 'react'
 
 interface UseToggleReturn {
   on: boolean
   toggle: VoidFunction
-  setOn: (value: boolean) => void
+  setOn: Dispatch<SetStateAction<boolean>>
 }
 export const useToggle = (initialState?: boolean): UseToggleReturn => {
   const [on, setOn] = useState<boolean>(() => initialState ?? false)

@@ -9,7 +9,7 @@ import { cache } from 'react'
 import { getFirebaseAdminAuth } from './admin'
 import { firebaseSessionCookieName } from './session'
 
-type VerifiedAdminSession = {
+type VerifiedFirebaseSession = {
   customClaims: ReturnType<typeof getFirebaseCustomClaimsFromDecodedToken>
   decodedToken: DecodedIdToken
 }
@@ -31,7 +31,7 @@ async function buildAppHomeUrl() {
   return appUrl.toString()
 }
 
-export const getVerifiedAdminSession = cache(async (): Promise<VerifiedAdminSession | null> => {
+export const getVerifiedFirebaseSession = cache(async (): Promise<VerifiedFirebaseSession | null> => {
   const auth = getFirebaseAdminAuth()
 
   if (!auth) {
@@ -47,19 +47,24 @@ export const getVerifiedAdminSession = cache(async (): Promise<VerifiedAdminSess
 
   try {
     const decodedToken = await auth.verifySessionCookie(sessionCookie, true)
-    const customClaims = getFirebaseCustomClaimsFromDecodedToken(decodedToken)
-
-    if (customClaims.admin !== true) {
-      return null
-    }
 
     return {
-      customClaims,
+      customClaims: getFirebaseCustomClaimsFromDecodedToken(decodedToken),
       decodedToken
     }
   } catch {
     return null
   }
+})
+
+export const getVerifiedAdminSession = cache(async (): Promise<VerifiedFirebaseSession | null> => {
+  const session = await getVerifiedFirebaseSession()
+
+  if (!session || session.customClaims.admin !== true) {
+    return null
+  }
+
+  return session
 })
 
 export async function requireAdminSession() {

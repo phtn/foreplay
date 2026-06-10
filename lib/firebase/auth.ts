@@ -1,9 +1,13 @@
 'use client'
 
+import { FirebaseError } from 'firebase/app'
 import { getFirebaseCustomClaimsFromIdTokenResult, type FirebaseCustomClaims } from '@/lib/firebase/custom-claims'
 import {
+  createUserWithEmailAndPassword,
   GoogleAuthProvider,
   onIdTokenChanged,
+  sendPasswordResetEmail,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   type User,
@@ -19,12 +23,62 @@ googleProvider.setCustomParameters({
   prompt: 'select_account'
 })
 
-export async function signInWithGoogle(): Promise<UserCredential> {
+function getConfiguredAuth() {
   if (!isFirebaseConfigured || !auth) {
     throw new Error('Firebase auth is not configured.')
   }
 
-  return signInWithPopup(auth, googleProvider)
+  return auth
+}
+
+const firebaseAuthErrorMessages: Record<string, string> = {
+  'auth/email-already-in-use': 'That email address is already in use.',
+  'auth/invalid-credential': 'The email or password you entered is incorrect.',
+  'auth/invalid-email': 'Enter a valid email address.',
+  'auth/missing-password': 'Enter your password to continue.',
+  'auth/network-request-failed': 'A network error interrupted the request. Try again.',
+  'auth/popup-blocked': 'Your browser blocked the sign-in popup. Allow popups and try again.',
+  'auth/popup-closed-by-user': 'The sign-in popup was closed before the login finished.',
+  'auth/too-many-requests': 'Too many attempts. Wait a moment and try again.',
+  'auth/user-not-found': 'If an account exists for that email, a reset email will be sent.',
+  'auth/weak-password': 'Use at least 6 characters for your password.',
+  'auth/wrong-password': 'The email or password you entered is incorrect.'
+}
+
+export async function signInWithGoogle(): Promise<UserCredential> {
+  return signInWithPopup(getConfiguredAuth(), googleProvider)
+}
+
+export async function signInWithEmailPassword(email: string, password: string): Promise<UserCredential> {
+  return signInWithEmailAndPassword(getConfiguredAuth(), email, password)
+}
+
+export async function registerWithEmailPassword(email: string, password: string): Promise<UserCredential> {
+  return createUserWithEmailAndPassword(getConfiguredAuth(), email, password)
+}
+
+export async function sendPasswordReset(email: string): Promise<void> {
+  await sendPasswordResetEmail(getConfiguredAuth(), email)
+}
+
+export function isFirebaseAuthError(error: unknown, code?: string): error is FirebaseError {
+  if (!(error instanceof FirebaseError)) {
+    return false
+  }
+
+  return code ? error.code === code : true
+}
+
+export function getFirebaseAuthErrorMessage(error: unknown): string {
+  if (error instanceof FirebaseError) {
+    return firebaseAuthErrorMessages[error.code] ?? error.message
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  return 'Something went wrong. Please try again.'
 }
 
 export function useFirebaseUser() {
@@ -90,9 +144,5 @@ export function useFirebaseUser() {
 }
 
 export async function signOutUser(): Promise<void> {
-  if (!isFirebaseConfigured || !auth) {
-    throw new Error('Firebase auth is not configured.')
-  }
-
-  await signOut(auth)
+  await signOut(getConfiguredAuth())
 }

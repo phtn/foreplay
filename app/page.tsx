@@ -1,115 +1,139 @@
-import { Badge } from '@/components/reui/badge'
-import { Card, CardContent } from '@/components/ui/card'
 import ProtectedLayout from '@/ctx/protected'
-import { formatDateTime } from '@/lib/formatters/dt'
-import { Icon } from '@/lib/icons'
 import Link from 'next/link'
 
-export default function H() {
-  const props: EventItem = {
-    id: 'id0',
-    slots_limit: 400,
-    title: 'Viva GF Open',
-    venue: 'Mt Malarayat Golf & Country Club',
-    event_date: 'Thu Jun 04 2026 05:01:10 GMT+0800 (Philippine Standard Time)',
-    divisions: ['Championships'],
-    registration_fee: 400
+import {
+  featuredTournament,
+  homeMetrics,
+  SectionTitle,
+  TournamentCard,
+  TournamentHero
+} from '@/components/protected/tournament-experience'
+import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+
+const sellingPoints = [
+  {
+    icon: 'golf-flag' as const,
+    title: 'Built to fill the field',
+    description: 'Clear pricing, polished registration flow, and premium positioning that gets players to commit.'
+  },
+  {
+    icon: 'trophy' as const,
+    title: 'Competition that feels serious',
+    description: 'Championship framing, division structure, and leaderboard visibility give the event real weight.'
+  },
+  {
+    icon: 'lock' as const,
+    title: 'Registration with no friction',
+    description: 'Entry, payment, and verification live in one place so golfers can reserve a slot without confusion.'
   }
+]
+
+export default function HomePage() {
   return (
     <ProtectedLayout>
-      <div className='space-y-4'>
-        <div className='flex flex-col w-full space-y-2'>
-          <div className='flex items-center space-x-1'>
-            <Icon name='chevrons-right' className='opacity-60 size-5' />
-            <span className='font-medium xl:text-base py-2 opacity-80'>Upcoming Events</span>
-          </div>
-          <UpcomingEvent {...props} />
+      <div className='space-y-8'>
+        <TournamentHero
+          eyebrow='SEASON'
+          title='Sell the tee time before the first swing.'
+          description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
+          primaryHref='/tournaments'
+          secondaryHref='/entries'
+          primaryLabel='Browse open entries'
+          secondaryLabel='View my tickets'
+          metrics={homeMetrics}
+        />
+
+        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+          {[
+            { label: 'Open fields', value: '3', note: 'Currently selling this month' },
+            { label: 'Average entry', value: '₱2.5K', note: 'Entry price positioning' },
+            { label: 'Players waiting', value: '132', note: 'Confirmed and pending' },
+            { label: 'Sponsor value', value: 'Premium', note: 'Made to feel exclusive' }
+          ].map((metric) => (
+            <Card key={metric.label} size='sm' className='border-border/70'>
+              <CardContent className='space-y-2 p-4'>
+                <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{metric.label}</p>
+                <p className='font-heading text-3xl font-bold tracking-tight'>{metric.value}</p>
+                <p className='text-sm text-muted-foreground'>{metric.note}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        <div className='flex items-center justify-between w-full space-x-4'>
-          <Card className='w-full'>
-            <CardContent className='whitespace-nowrap'>All Tournaments</CardContent>
-          </Card>
-          <Card className='w-full'>
-            <CardContent className='whitespace-nowrap text-center'>My Tickets</CardContent>
-          </Card>
-          <Card className='w-full'>
-            <CardContent className='whitespace-nowrap text-center'>Ranking</CardContent>
-          </Card>
-          {/*<Card>
-            <CardContent>Competitive Ranking</CardContent>
-          </Card>
-          <Card>
-            <CardContent>International Invitations</CardContent>
-          </Card>*/}
+
+        <div className='grid gap-6 lg:grid-cols-[1.15fr_0.85fr]'>
+          <div className='space-y-4'>
+            <SectionTitle
+              eyebrow='Featured event'
+              title='The one you should be pushing right now'
+              description='Lead with the event that has the cleanest story, strongest purse, and the tightest registration window.'
+            />
+            <TournamentCard tournament={featuredTournament} />
+          </div>
+
+          <div className='space-y-4'>
+            <SectionTitle
+              eyebrow='Conversion path'
+              title='How the entry sells itself'
+              description='Give golfers a premium reason to register now, not later.'
+            />
+            <Card className='border-border/70 bg-muted/20'>
+              <CardHeader>
+                <CardTitle className='text-xl'>What the player sees</CardTitle>
+              </CardHeader>
+              <CardContent className='space-y-4'>
+                {sellingPoints.map((point) => (
+                  <div key={point.title} className='flex gap-3 rounded-2xl border border-border/60 bg-card p-4'>
+                    <div className='flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
+                      <Icon name={point.icon} className='size-5' />
+                    </div>
+                    <div>
+                      <h3 className='font-medium'>{point.title}</h3>
+                      <p className='text-sm text-muted-foreground'>{point.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+            <div className='flex flex-wrap gap-3'>
+              <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2')} href='/tournaments'>
+                Explore tournaments
+                <Icon name='arrow-right' className='size-4' />
+              </Link>
+              <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href='/records'>
+                View leaderboard
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className='grid gap-4 lg:grid-cols-3'>
+          {[
+            {
+              title: 'Premium course positioning',
+              body: 'Lead with venue, field size, and format so the event feels like a real tournament, not a generic signup.'
+            },
+            {
+              title: 'Payment confidence',
+              body: 'Surface the fee, verification step, and tee time expectations up front to reduce drop-off.'
+            },
+            {
+              title: 'Progressive disclosure',
+              body: 'Show just enough detail to sell the entry, then let golfers drill into the full tournament page.'
+            }
+          ].map((item) => (
+            <Card key={item.title} className='border-border/70'>
+              <CardContent className='space-y-2 p-5'>
+                <p className='text-xs uppercase tracking-[0.24em] text-primary/80'>Design note</p>
+                <h3 className='font-heading text-xl font-bold'>{item.title}</h3>
+                <p className='text-sm text-muted-foreground'>{item.body}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </ProtectedLayout>
   )
-}
-
-export interface EventItem {
-  id: string
-  slots_limit?: number
-  title: string
-  venue: string
-  event_date: string
-  divisions: string[]
-  registration_fee: number
-  description?: string
-  gcash_qr_url?: string
-  bank_details_text?: string
-  commission_type?: string
-  commission_value?: number
-}
-
-const UpcomingEvent = (t: EventItem) => (
-  <Link href={`/tournaments/${t.id}`}>
-    <Card className='group hover:shadow-lg hover:border-primary/30 transition-all duration-300 cursor-pointer h-full p-1'>
-      <CardContent className='p-2 xl:p-6 flex flex-col h-full relative font-sans'>
-        <Badge variant='secondary' className='text-xs absolute right-2 top-2'>
-          {t.slots_limit ? (
-            <span className='font-semibold'>
-              {t.slots_limit} <span className='font-light'> slots</span>
-            </span>
-          ) : (
-            'Open'
-          )}
-        </Badge>
-        <h3 className='font-heading text-lg md:text-xl font-semibold mb-3'>{t.title}</h3>
-        <div className='space-y-2 text-sm text-muted-foreground flex-1'>
-          <div className='flex items-center gap-2 text-xs'>
-            <Icon name='tag-chevron' className='size-3.5' />
-            <span>{t.venue}</span>
-          </div>
-          <div className='flex items-center gap-2 text-xs'>
-            <Icon name='squircle' className='size-3' />
-            <span>{t.event_date ? formatDateTime(t.event_date) : ''}</span>
-          </div>
-          {t.divisions?.length > 0 && (
-            <div className='flex items-center gap-2 text-xs'>
-              <Icon name='trophy' className='w-3.5 h-3.5' />
-              <span>{t.divisions.join(', ')}</span>
-            </div>
-          )}
-        </div>
-        <div className='mt-4 pt-4 border-t flex items-center justify-between'>
-          <span className='font-semibold text-primary text-lg'>₱{t.registration_fee?.toLocaleString()}</span>
-          <div className='flex items-center space-x-1 transition-colors'>
-            <span className='text-xs text-muted-foreground'>View Details</span>
-            <Icon
-              name='arrow-right'
-              className='size-4 opacity-80 text-foreground group-hover:text-accent group-hover:opacity-100'
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-)
-
-export interface Affiliate {
-  clicks_count?: number
-  conversions_count?: number
-  total_conversions?: number
-  total_earnings?: number
 }

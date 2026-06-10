@@ -1,0 +1,95 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { PropsWithChildren } from 'react'
+
+import { NAV_ITEMS, Navbar, isNavItemActive } from '@/components/layouts/navbar'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { SignOutButton } from '@/components/ui/signout'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
+import { useToggle } from '@/hooks/use-toggle'
+import { useFirebaseUser } from '@/lib/firebase/auth'
+import { Icon } from '@/lib/icons'
+
+function MobileNav({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) {
+  return (
+    <div className='md:hidden border-t bg-card px-4 py-3 space-y-1'>
+      {NAV_ITEMS.map((item) => {
+        const active = isNavItemActive(pathname, item.value)
+        return (
+          <Link
+            key={item.value}
+            href={item.value}
+            onClick={onNavigate}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              active
+                ? 'bg-accent/70 text-primary-foreground'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+            }`}>
+            <Icon name={item.icon} className='size-3' />
+            <span>{item.label}</span>
+          </Link>
+        )
+      })}
+    </div>
+  )
+}
+
+export default function ProtectedClient({ children }: PropsWithChildren) {
+  const { on: mobileOpen, setOn: setMobileOpen } = useToggle(false)
+  const { user } = useFirebaseUser()
+  const pathname = usePathname()
+  const firstName = user?.displayName?.split(' ').at(0) ?? user?.email ?? 'Account'
+
+  return (
+    <div className='min-h-screen bg-background'>
+      <header className='sticky top-0 z-50 bg-background/1 backdrop-blur-lg'>
+        <div className='mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6'>
+          <Link href='/' className='flex items-center gap-4'>
+            <div className='relative inline-flex h-12 w-12 items-center justify-center rounded-2xl'>
+              <Icon name='squircle' className='absolute top-0 h-10 w-10 text-primary' />
+              <Icon name='golf-tee' className='relative size-7.5 text-white' />
+            </div>
+            <span className='hidden font-heading text-xl font-bold tracking-tight sm:inline xl:text-2xl'>GolfTour</span>
+          </Link>
+
+          <Navbar pathname={pathname} />
+
+          <div className='flex items-center gap-2'>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant='ghost' size='sm' className='gap-2'>
+                    <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
+                      <Icon name='flag-fill' className='size-3.5 text-primary' />
+                    </div>
+                    <span className='hidden text-sm sm:inline'>{firstName}</span>
+                    <Icon name='chevron-down' className='size-2 opacity-60' />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align='end'>
+                <DropdownMenuItem className='rounded-sm rounded-t-xl'>
+                  <ThemeToggle withLabel />
+                </DropdownMenuItem>
+                <DropdownMenuItem className='rounded-sm rounded-b-xl'>
+                  <SignOutButton withLabel />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant='ghost' size='icon' className='md:hidden' onClick={() => setMobileOpen((prev) => !prev)}>
+              <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
+            </Button>
+          </div>
+        </div>
+
+        {mobileOpen ? <MobileNav pathname={pathname} onNavigate={() => setMobileOpen(false)} /> : null}
+      </header>
+
+      <main className='mx-auto max-w-7xl px-4 py-6 md:px-6'>{children}</main>
+    </div>
+  )
+}
