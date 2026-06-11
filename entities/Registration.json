@@ -1,0 +1,67 @@
+{
+  "name": "Registration",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament"
+    },
+    "player_id": {
+      "type": "string",
+      "description": "FK to User"
+    },
+    "player_name": {
+      "type": "string",
+      "description": "Player full name"
+    },
+    "player_email": {
+      "type": "string",
+      "description": "Player email"
+    },
+    "affiliate_id": {
+      "type": "string",
+      "description": "FK to Affiliate (nullable)"
+    },
+    "handicap_index": {
+      "type": "string",
+      "description": "UNHS handicap index"
+    },
+    "division": {
+      "type": "string",
+      "description": "Selected division"
+    },
+    "shirt_size": {
+      "type": "string",
+      "enum": ["XS", "S", "M", "L", "XL", "XXL", "XXXL"],
+      "description": "Shirt size"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": ["pending_upload", "pending_verification", "paid", "rejected"],
+      "default": "pending_upload",
+      "description": "Payment verification status"
+    },
+    "receipt_image_url": {
+      "type": "string",
+      "description": "Uploaded receipt image URL"
+    },
+    "transaction_reference_no": {
+      "type": "string",
+      "description": "Typed transaction reference"
+    },
+    "checked_in": {
+      "type": "boolean",
+      "default": false,
+      "description": "Game-day check-in status"
+    },
+    "ticket_token": {
+      "type": "string",
+      "description": "Unique cryptographic ticket token for QR"
+    },
+    "affiliate_payout_amount": {
+      "type": "number",
+      "description": "Frozen commission amount credited to affiliate at time of approval"
+    }
+  },
+  "required": ["tournament_id", "player_id", "player_name"]
+}

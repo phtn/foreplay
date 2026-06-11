@@ -1,0 +1,73 @@
+{
+  "name": "Tournament",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Tournament name"
+    },
+    "venue": {
+      "type": "string",
+      "description": "Venue/location"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of the event"
+    },
+    "registration_fee": {
+      "type": "number",
+      "description": "Fee in PHP"
+    },
+    "slots_limit": {
+      "type": "number",
+      "description": "Max number of players"
+    },
+    "divisions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of divisions"
+    },
+    "bank_details_text": {
+      "type": "string",
+      "description": "Bank deposit info text"
+    },
+    "gcash_qr_url": {
+      "type": "string",
+      "description": "GCash/Maya QR code image URL"
+    },
+    "published": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether visible to public"
+    },
+    "description": {
+      "type": "string",
+      "description": "Tournament description"
+    },
+    "commission_type": {
+      "type": "string",
+      "enum": ["percentage", "fixed_amount"],
+      "description": "How affiliate commission is calculated"
+    },
+    "commission_value": {
+      "type": "number",
+      "description": "Commission rate: percentage (e.g. 10 for 10%) or fixed PHP amount"
+    },
+    "ticket_logo_url": {
+      "type": "string",
+      "description": "Custom logo/banner image URL for ticket branding"
+    },
+    "ticket_primary_color": {
+      "type": "string",
+      "description": "Primary brand color hex for ticket styling (e.g. #1a3c5e)"
+    },
+    "ticket_secondary_color": {
+      "type": "string",
+      "description": "Secondary accent color hex for ticket design elements (e.g. #f5a623)"
+    }
+  },
+  "required": ["title", "venue", "event_date", "registration_fee"]
+}

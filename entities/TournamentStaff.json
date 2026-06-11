@@ -1,0 +1,33 @@
+{
+  "name": "TournamentStaff",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "FK to User"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the invited staff"
+    },
+    "role": {
+      "type": "string",
+      "enum": ["co_admin", "finance_manager", "ticket_manager"],
+      "description": "Staff role"
+    },
+    "invite_token": {
+      "type": "string",
+      "description": "Single-use invite token"
+    },
+    "accepted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the invite was accepted"
+    }
+  },
+  "required": ["tournament_id", "role"]
+}

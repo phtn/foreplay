@@ -1,0 +1,19 @@
+{
+  "name": "ItemsInventory",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Name of the item e.g. Tournament Shirt, Sleeve of Balls, Golf Cap"
+    },
+    "total_stock": {
+      "type": "number",
+      "description": "Total number of units available"
+    }
+  },
+  "required": ["tournament_id", "item_name"]
+}

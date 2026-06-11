@@ -1,0 +1,39 @@
+{
+  "name": "Affiliate",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "FK to User"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Unique referral code"
+    },
+    "clicks_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of referral link clicks"
+    },
+    "conversions_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of successful paid registrations"
+    },
+    "total_conversions": {
+      "type": "number",
+      "default": 0,
+      "description": "Paid registration count (ledger)"
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0,
+      "description": "Total accumulated commission earned (PHP)"
+    }
+  },
+  "required": ["tournament_id", "user_id", "referral_code"]
+}

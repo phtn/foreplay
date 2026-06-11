@@ -49,7 +49,6 @@ export function BookNowForm({
   dateLabel,
   feeLabel,
   divisionOptions,
-  teeTimeLabel,
   triggerClassName
 }: BookNowFormProps) {
   const router = useRouter()

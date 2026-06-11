@@ -1,0 +1,46 @@
+{
+  "name": "PlayerPerks",
+  "type": "object",
+  "properties": {
+    "registration_id": {
+      "type": "string",
+      "description": "FK to Registration"
+    },
+    "item_id": {
+      "type": "string",
+      "description": "FK to ItemsInventory"
+    },
+    "item_name": {
+      "type": "string",
+      "description": "Denormalized item name for fast display"
+    },
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament (denormalized for easy filtering)"
+    },
+    "player_name": {
+      "type": "string",
+      "description": "Denormalized player name for fast display"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["unclaimed", "claimed"],
+      "default": "unclaimed",
+      "description": "Claim status of the perk"
+    },
+    "claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the perk was claimed"
+    },
+    "claimed_by_staff_id": {
+      "type": "string",
+      "description": "FK to User \u2014 staff member who marked it claimed"
+    },
+    "claimed_by_staff_name": {
+      "type": "string",
+      "description": "Denormalized staff name for audit display"
+    }
+  },
+  "required": ["registration_id", "item_id", "item_name", "tournament_id"]
+}

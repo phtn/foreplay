@@ -36,28 +36,6 @@ const featuredTournament: TournamentSpotlight = {
   ],
   specialGuests: ['Guest judge: Liza Cruz', 'Sponsor rep: Niko Tan', 'Club captain: Jose Mercado']
 }
-const galleryCards = [
-  {
-    icon: 'golf-flag' as const,
-    title: 'Course view',
-    description: 'Show the fairways, the green, and the setup golfers will actually play.'
-  },
-  {
-    icon: 'trophy' as const,
-    title: 'Prize wall',
-    description: 'Make the purse and sponsor awards visible before the first click.'
-  },
-  {
-    icon: 'flag-fill' as const,
-    title: 'Event flow',
-    description: 'Check-in, shotgun start, and awards stage in one clean sequence.'
-  },
-  {
-    icon: 'book-open' as const,
-    title: 'Special guests',
-    description: 'Surface hosts, starters, and featured guests as part of the event story.'
-  }
-]
 
 const sellingPoints = [
   {
