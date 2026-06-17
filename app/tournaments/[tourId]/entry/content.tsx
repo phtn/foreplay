@@ -67,7 +67,7 @@ export const Content = () => {
 
   return (
     <main>
-      <div className='text-xl relative font-poly h-16 flex items-center gap-2'>
+      <div className='text-xl relative font-poly h-20 flex items-center gap-2'>
         <div className='size-6 aspect-square flex items-center justify-center rounded-full -rotate-45'>
           <Loader />
           <div className='size-5 bg-linear-to-tl from-white/30 via-background via-62% to-background rounded-full aspect-square absolute'></div>
@@ -175,6 +175,13 @@ export const Content = () => {
           )}
         </CardContent>
       </Card>
+      <div className='h-16 flex items-center justify-center'>
+        <div className='bg-slate-200 w-20 rounded-md h-3'></div>
+      </div>
+      <div className='h-64 grid grid-cols-3'>
+        <div className='w-full'></div>
+        <div className='w-full'></div>
+      </div>
     </main>
   )
 }

@@ -40,7 +40,7 @@ export const NewEntryForm = ({
   return (
     <form.AppForm>
       <form
-        className='grid grid-cols-3 gap-8 bg-white/5 px-4 py-8'
+        className='grid grid-cols-3 gap-8 bg-white/5 px-4 pt-8'
         onSubmit={(event) => {
           event.preventDefault()
           void form.handleSubmit()
@@ -151,7 +151,7 @@ export const NewEntryForm = ({
             follows payment review.
           </p>
           <div className='flex flex-wrap gap-3 w-full'>
-            <Button size='xl' type='submit' disabled={form.state.isSubmitting}>
+            <Button size='xl' type='submit' variant='default' className='bg-sky-500' disabled={form.state.isSubmitting}>
               <span className='px-2 font-medium uppercase'>{formId}</span>
             </Button>
           </div>

@@ -52,7 +52,7 @@ export const Tabs = ({ tabs, defaultValue, onValueChange, className }: TabsProps
 
         <Root.Indicator
           renderBeforeHydration
-          className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-lg bg-accent/25 transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]'
+          className='absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-lg bg-accent/30 dark:bg-orange-50/25 transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]'
         />
       </Root.List>
       {/*<section className='min-h-64 mt-4'>

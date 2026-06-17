@@ -224,7 +224,7 @@ export function TournamentHero({
               <span className='px-3 opacity-60'>Wednesday</span>
             </div>
           </div>
-          <div className='flex items-end flex-wrap h-16 gap-3'>
+          <div className='flex items-end h-16 gap-3 w-1/5'>
             {primaryAction ?? (
               <Link
                 className={cn(buttonVariants({ size: 'xl' }), 'bg-foreground px-8 text-sm font-poly font-medium')}
