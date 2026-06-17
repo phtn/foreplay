@@ -295,6 +295,30 @@ export const icons = {
       '<g fill="none"><path stroke="currentColor" stroke-linejoin="round" stroke-width="1.387" d="M14.775 2.75a6.475 6.475 0 1 1-3.38 11.998c-.137-.085-.32.011-.32.173v1.129a1.5 1.5 0 0 1-1.5 1.5h-1.2a1 1 0 0 0-1 1v1.2a1.5 1.5 0 0 1-1.5 1.5H4.25a1.5 1.5 0 0 1-1.5-1.5v-2.297a2 2 0 0 1 .586-1.414l4.566-4.566c.376-.376.511-.923.446-1.452a6.475 6.475 0 0 1 6.427-7.271Z"/><circle cx="15.5" cy="8.5" r="1.75" fill="currentColor"/></g>',
     viewBox: '0 0 24 24',
     set: 'proicons'
+  },
+  clock: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path d="M21.25 12a9.25 9.25 0 1 1-18.5 0a9.25 9.25 0 0 1 18.5 0"/><path d="M11.25 6.75v6h4"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  location: {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.5"><path d="M6.4 4.76a7.92 7.92 0 0 1 11.2 11.2l-4.186 4.186a2 2 0 0 1-2.828 0L6.4 15.96a7.92 7.92 0 0 1 0-11.2Z"/><circle cx="12" cy="10.36" r="3" stroke-linecap="round"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  'bar-chart': {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.75 10.25a2 2 0 0 1 2-2h4.167v13H4.75a2 2 0 0 1-2-2zm12.333 2h4.167a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-4.167zm-6.166-7.5a2 2 0 0 1 2-2h2.166a2 2 0 0 1 2 2v16.5H8.917z"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  'trophy-line': {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.473 11.75c.493-.8.777-1.742.777-2.75V4.75m-.777 7A5.25 5.25 0 0 1 12 14.25c-1.891 0-3.549-1-4.473-2.5m8.946 0h.777a4 4 0 0 0 4-4v-1.5a1.5 1.5 0 0 0-1.5-1.5h-2.5m-9.723 7H6.75a4 4 0 0 1-4-4v-1.5a1.5 1.5 0 0 1 1.5-1.5h2.5m.777 7A5.23 5.23 0 0 1 6.75 9V4.75m0 0a2 2 0 0 1 2-2h6.5a2 2 0 0 1 2 2m-10 15a2 2 0 0 1 2-2h5.5a2 2 0 0 1 2 2v.5a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1zm4.75-5.5v3.5"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
   }
 }
 /*

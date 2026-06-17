@@ -21,6 +21,8 @@ import type * as leagues_q from "../leagues/q.js";
 import type * as orders_d from "../orders/d.js";
 import type * as orders_m from "../orders/m.js";
 import type * as orders_q from "../orders/q.js";
+import type * as registrations_d from "../registrations/d.js";
+import type * as subscriptions_d from "../subscriptions/d.js";
 import type * as txns_d from "../txns/d.js";
 import type * as txns_m from "../txns/m.js";
 import type * as txns_q from "../txns/q.js";
@@ -49,6 +51,8 @@ declare const fullApi: ApiFromModules<{
   "orders/d": typeof orders_d;
   "orders/m": typeof orders_m;
   "orders/q": typeof orders_q;
+  "registrations/d": typeof registrations_d;
+  "subscriptions/d": typeof subscriptions_d;
   "txns/d": typeof txns_d;
   "txns/m": typeof txns_m;
   "txns/q": typeof txns_q;

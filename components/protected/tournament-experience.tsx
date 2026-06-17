@@ -214,14 +214,14 @@ export function TournamentHero({
           </div>
           <div className='bg-background/80 px-3 max-w-xl rounded-lg border border-dashed'>
             <div className='flex items-center h-10 space-x-4 border-b border-dashed'>
-              <Icon name='flag-line' className='size-4' />
-              <span className='font-ios'>Mt Malarayat Golf & Country Club</span>
+              <Icon name='location' className='size-4' />
+              <span className='font-ios'>Mt. Malarayat Golf & Country Club</span>
               <span className='px-3 opacity-60'>Batangas</span>
             </div>
             <div className='flex items-center h-10 space-x-4'>
-              <Icon name='flag-line' className='size-4' />
-              <span className='font-ios'>530 AM June 24, 2026</span>
-              <span className='px-3 opacity-60'>Wenesday</span>
+              <Icon name='clock' className='size-4' />
+              <span className='font-ios'>5:30 AM June 24, 2026</span>
+              <span className='px-3 opacity-60'>Wednesday</span>
             </div>
           </div>
           <div className='flex items-end flex-wrap h-16 gap-3'>

@@ -34,16 +34,18 @@ export const Tabs = ({ tabs, defaultValue, onValueChange, className }: TabsProps
         setInternalValue(next)
         onValueChange?.(next ?? firstValue ?? '')
       }}>
-      <Root.List className='relative z-0 flex gap-4'>
+      <Root.List className='relative z-0 flex gap-6'>
         {tabs.map((tab) => (
           <Root.Tab
             key={tab.value}
             className={`flex items-center gap-2 px-3 py-1 text-sm font-medium ${
-              activeValue === tab.value ? 'text-foreground' : 'text-foreground/70 hover:text-foreground'
+              activeValue === tab.value
+                ? 'text-foreground'
+                : 'text-foreground/70 hover:text-foreground hover:bg-foreground/4 rounded-lg'
             }`}
             // className={`flex h-7 items-center justify-center border-0 px-2 text-sm font-normal break-keep whitespace-nowrap text-foreground/60 outline-hidden select-none before:inset-x-0 before:inset-y-1 before:rounded-xs before:-outline-offset-1 before:outline-blue-800 hover:text-foreground hover:data-active:text-orange-100 dark:hover:data-active:text-background focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-2 data-active:text-background ${index === 0 ? 'first:ml-1' : ''}`}
             value={tab.value}>
-            <Icon name={tab.icon} className='size-4 opacity-80' />
+            <Icon name={tab.icon} className='size-4.5 opacity-80' />
             <span>{tab.label}</span>
           </Root.Tab>
         ))}

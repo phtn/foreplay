@@ -1,7 +1,6 @@
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
-import { BookNowForm } from '@/components/protected/book-now-form'
 import {
   homeMetrics,
   SectionTitle,
@@ -71,20 +70,20 @@ export default function HomePage() {
           eyebrow='TOURNAMENT'
           title='Golden Ticket'
           description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
-          primaryHref='/tournaments'
+          primaryHref='/tournaments/tour-01/register'
           secondaryHref='/entries'
           primaryLabel='Book Now'
           secondaryLabel='View my tickets'
-          primaryAction={
-            <BookNowForm
-              tournamentTitle={featuredTournament.title}
-              venue={featuredTournament.venue}
-              dateLabel={featuredTournament.dateLabel}
-              feeLabel={featuredTournament.feeLabel}
-              teeTimeLabel={featuredTournament.teeTimeLabel}
-              divisionOptions={featuredTournament.divisions}
-            />
-          }
+          // primaryAction={
+          //   <BookNowForm
+          //     tournamentTitle={featuredTournament.title}
+          //     venue={featuredTournament.venue}
+          //     dateLabel={featuredTournament.dateLabel}
+          //     feeLabel={featuredTournament.feeLabel}
+          //     teeTimeLabel={featuredTournament.teeTimeLabel}
+          //     divisionOptions={featuredTournament.divisions}
+          //   />
+          // }
           galleryHref='#gallery'
           teeTimeAt={featuredTournament.teeTimeAt}
           teeTimeLabel={featuredTournament.teeTimeLabel}

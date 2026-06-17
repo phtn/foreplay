@@ -14,9 +14,9 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { value: '/', label: 'Home', icon: 'home-line' },
-  { value: '/tournaments', label: 'Tournaments', icon: 'flag-line' },
+  { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
   { value: '/entries', label: 'My Entries', icon: 'ticket' },
-  { value: '/records', label: 'Track Record', icon: 'golf-flag' }
+  { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
 ]
 
 export function getActiveNavPath(pathname: string) {
