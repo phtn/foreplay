@@ -80,7 +80,7 @@ export const Content = () => {
         <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500' />
         {/*<span>New Entry</span>*/}
       </div>
-      <Card className='relative my-auto w-full max-w-7xl border-border bg-slate-200/20 rounded-lg shadow-md py-6'>
+      <Card className='relative my-auto w-full max-w-7xl border-slate-400 bg-slate-200/20 rounded-lg shadow-md shadow-slate-100 py-6'>
         <CardContent className='px-5'>
           {tourId ? (
             <>

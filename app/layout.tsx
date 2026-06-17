@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Fairway',
-  description: 'Web App'
+  title: 'Foreplay PRO',
+  description: 'Pro Web App'
 }
 
 export default function RootLayout({

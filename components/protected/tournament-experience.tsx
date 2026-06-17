@@ -261,9 +261,9 @@ export function TournamentHero({
 }: TournamentHeroProps) {
   return (
     <Card className='relative overflow-hidden border-border bg-card shadow-[0_24px_80px_-1px_rgba(15,23,42,0.45)]'>
-      <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
-      <div className='absolute inset-0 bg-[url("/noise.svg")] size-screen opacity-30' />
-      <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.8fr_0.9fr] lg:p-10'>
+      <div className='absolute inset-0 dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.20),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.36),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
+      <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
+      <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.8fr_0.9fr] lg:p-8'>
         <div className='space-y-8'>
           <div className='flex flex-wrap items-center gap-4'>
             <Badge variant='secondary' radius='full' className='bg-primary/5 text-primary rounded-md'>
