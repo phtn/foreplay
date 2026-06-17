@@ -1,5 +1,6 @@
 import { Icon, IconName } from '@/lib/icons'
 import { type ReactNode } from 'react'
+import { ThemeToggle } from '../ui/theme-toggle'
 
 interface AuthLayoutProps {
   icon: IconName
@@ -10,8 +11,7 @@ interface AuthLayoutProps {
 }
 export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayoutProps) => {
   return (
-    <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/15 via-30% via-primary/10 to-transparent pt-8 2xl:pt-24 px-4 relative'>
-      <div className="absolute w-screen h-screen z-40 top-0 inset-0 bg-[url('/noise.svg')] opacity-80 scale-100 pointer-events-none" />
+    <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/15 via-30% via-primary/10 to-primary/10 pt-8 2xl:pt-24 px-4 relative'>
       <div className='w-full max-w-md relative z-50'>
         <div className='flex space-x-4 xl:space-x-5 mb-5 xl:mb-10'>
           <div className='inline-flex items-center justify-center w-16 h-16 rounded-2xl relative'>
@@ -23,8 +23,16 @@ export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayo
             {subtitle && <p className='font-sans text-sm text-muted-foreground tracking-tight leading-4'>{subtitle}</p>}
           </div>
         </div>
-        <div className='bg-background rounded-2xl shadow-xs border border-border p-7 xl:px-8 xl:py-10'>{children}</div>
-        {footer && <p className='text-center text-sm text-muted-foreground mt-5 xl:mt-6'>{footer}</p>}
+        <div className='bg-white dark:bg-white/30 rounded-4xl border border-primary/60 shadow-xs overflow-hidden'>
+          <div className='dark:bg-primary/10 bg-primary/15 p-7 xl:px-8 xl:py-10 relative'>
+            <div className="absolute w-full h-full z-40 top-0 inset-0 bg-[url('/noise.svg')] opacity-10 pointer-events-none" />
+            {children}
+          </div>
+        </div>
+        <div className='flex items-center justify-between mt-5 xl:mt-6 h-12 w-full'>
+          {footer && <div className='text-center text-sm text-muted-foreground'>{footer}</div>}
+          <ThemeToggle />
+        </div>
       </div>
     </div>
   )

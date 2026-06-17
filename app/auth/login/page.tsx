@@ -10,9 +10,11 @@ export default function Login() {
       subtitle='User Account'
       footer={
         <>
-          Don&apos;t have an account?{' '}
-          <Link href='/auth/register' className='text-primary font-medium hover:underline underline-offset-2'>
-            Create one
+          <span className='mr-2'>New user account?</span>
+          <Link
+            href='/auth/register'
+            className='text-sm text-emerald-800 dark:text-primary font-medium underline hover:text-foreground hover:decoration-primary underline-offset-4 focus-visible:text-foreground/80 outline-primary'>
+            Create
           </Link>
         </>
       }>

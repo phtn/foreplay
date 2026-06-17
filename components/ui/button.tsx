@@ -8,9 +8,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground hover:bg-primary/80',
+        default:
+          'bg-primary text-primary-foreground hover:bg-primary/80 focus-visible:ring-primary focus-visible:border-primary',
         outline:
-          'border-border bg-input/30 hover:bg-input/50 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground',
+          'border-border bg-input/30 hover:bg-input/50 hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground focus-visible:ring-primary/10 focus-visible:border-primary',
         secondary:
           'bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:
@@ -25,7 +26,9 @@ const buttonVariants = cva(
         sm: 'h-8 gap-1 px-3 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
         lg: 'h-10 gap-1.5 px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3',
         xl: 'h-12 gap-2 px-6 has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5',
-        '2xl': 'h-16 gap-4 min-w-48 px-12 has-data-[icon=inline-end]:pr-12 has-data-[icon=inline-start]:pl-12 text-lg',
+        '2xl':
+          'h-14 gap-4 min-w-48 px-12 has-data-[icon=inline-end]:pr-12 has-data-[icon=inline-start]:pl-12 text-base',
+        '3xl': 'h-16 gap-4 min-w-48 px-12 has-data-[icon=inline-end]:pr-12 has-data-[icon=inline-start]:pl-12 text-lg',
         icon: 'size-9',
         'icon-xs': "size-6 [&_svg:not([class*='size-'])]:size-3",
         'icon-sm': 'size-8',

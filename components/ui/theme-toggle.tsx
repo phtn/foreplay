@@ -121,13 +121,13 @@ export const ThemeToggle = ({ label, withLabel = false }: ThemeToggleProps) => {
       onClick={handleThemeChange}>
       <Icon
         name='theme'
-        className={cn('size-5 group-active:scale-80 transition-all duration-250 ease-in', {
-          'rotate-25': themeShortLabels[theme] === 'Sy',
+        className={cn('size-4 opacity-60 group-active:scale-80 transition-all duration-250 ease-in', {
+          // 'rotate-25': themeShortLabels[theme] === 'Sy',
           'rotate-90': themeShortLabels[theme] === 'Da',
           '-rotate-90': themeShortLabels[theme] === 'Li'
         })}
       />
-      <p className='capitalize'>{label ?? themeLabels[theme]}</p>
+      {withLabel && <p className='capitalize'>{label ?? themeLabels[theme]}</p>}
     </button>
   )
 }
