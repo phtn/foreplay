@@ -13,6 +13,7 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useToggle } from '@/hooks/use-toggle'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
+import { User } from 'firebase/auth'
 
 function MobileNav({ pathname, onNavigate }: { pathname: string; onNavigate: () => void }) {
   return (
@@ -42,60 +43,72 @@ export default function ProtectedClient({ children }: PropsWithChildren) {
   const { on: mobileOpen, setOn: setMobileOpen } = useToggle(false)
   const { user } = useFirebaseUser()
   const pathname = usePathname()
-  const firstName = user?.displayName?.split(' ').at(0) ?? user?.email ?? 'Account'
 
   return (
     <div className='min-h-screen bg-background'>
-      <header className='sticky top-0 z-50 bg-background/6 backdrop-blur-2xl'>
-        <div className='mx-auto flex h-16 max-w-7xl items-center justify-between pt-3 px-4 md:px-6'>
-          <Link href='/' className='flex items-center gap-2'>
-            <div className='relative inline-flex h-12 w-12 items-center justify-center rounded-2xl'>
-              <Icon name='squircle' className='absolute top-0 h-10 w-10 text-primary' />
-              <Icon name='golf-tee' className='relative size-7.5 text-white' />
-            </div>
-            <span className='hidden font-poly font-bold text-xl tracking-tight sm:inline xl:text-2xl'>Foreplay</span>
-          </Link>
-
-          <Navbar pathname={pathname} />
-
-          <div className='flex items-center space-x-2'>
-            <ThemeToggle />
-            <div className='flex items-center gap-2 relative z-60'>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button variant='ghost' size='default' className='gap-2'>
-                      <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
-                        <Avatar size='sm'>
-                          <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
-                          <AvatarFallback>{firstName.substring(0, 1)}</AvatarFallback>
-                        </Avatar>
-                      </div>
-                      <Icon name='chevron-down' className='size-2 opacity-60' />
-                    </Button>
-                  }
-                />
-                <DropdownMenuContent align='end' className=''>
-                  <DropdownMenuItem className='rounded-sm rounded-t-xl'>
-                    <ThemeToggle withLabel />
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className='rounded-sm rounded-b-xl'>
-                    <SignOutButton withLabel />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button variant='ghost' size='icon' className='md:hidden' onClick={() => setMobileOpen((prev) => !prev)}>
-                <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {mobileOpen ? <MobileNav pathname={pathname} onNavigate={() => setMobileOpen(false)} /> : null}
-      </header>
+      <Header pathname={pathname} user={user} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       <main className='mx-auto max-w-7xl px-4 py-6 md:px-6'>{children}</main>
     </div>
+  )
+}
+
+interface HeaderProps {
+  pathname: string
+  user: User | null
+  mobileOpen: boolean
+  setMobileOpen: (value: boolean) => void
+}
+
+const Header = ({ pathname, user, mobileOpen, setMobileOpen }: HeaderProps) => {
+  return (
+    <header className='sticky top-0 z-50 bg-background/6 backdrop-blur-2xl'>
+      <div className='mx-auto flex h-16 max-w-7xl items-center justify-between pt-3 px-4 md:px-6'>
+        <Link href='/' className='flex items-center gap-2'>
+          <div className='relative inline-flex h-12 w-12 items-center justify-center rounded-2xl'>
+            <Icon name='squircle' className='absolute top-0 h-10 w-10 text-primary' />
+            <Icon name='golf-tee' className='relative size-7.5 text-white' />
+          </div>
+          <span className='hidden font-poly font-bold text-xl tracking-tight sm:inline xl:text-2xl'>Foreplay</span>
+        </Link>
+
+        <Navbar pathname={pathname} />
+
+        <div className='flex items-center space-x-2'>
+          <ThemeToggle />
+          <div className='flex items-center gap-2 relative z-60'>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant='ghost' size='default' className='gap-2'>
+                    <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
+                      <Avatar size='sm'>
+                        <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
+                        <AvatarFallback>{user?.displayName?.split(' ').shift()?.substring(0, 1)}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <Icon name='chevron-down' className='size-2 opacity-60' />
+                  </Button>
+                }
+              />
+              <DropdownMenuContent align='end' className=''>
+                <DropdownMenuItem className='rounded-sm rounded-t-xl'>
+                  <ThemeToggle withLabel />
+                </DropdownMenuItem>
+                <DropdownMenuItem className='rounded-sm rounded-b-xl'>
+                  <SignOutButton withLabel />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button variant='ghost' size='icon' className='md:hidden' onClick={undefined}>
+              <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {mobileOpen ? <MobileNav pathname={pathname} onNavigate={() => setMobileOpen(false)} /> : null}
+    </header>
   )
 }

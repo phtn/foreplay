@@ -70,7 +70,7 @@ export default function HomePage() {
           eyebrow='TOURNAMENT'
           title='Golden Ticket'
           description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
-          primaryHref='/tournaments/tour-01/register'
+          primaryHref='/tournaments/tour-01/entry'
           secondaryHref='/entries'
           primaryLabel='Book Now'
           secondaryLabel='View my tickets'

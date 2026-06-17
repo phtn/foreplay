@@ -1,3 +1,5 @@
+'use client'
+
 import { createFormHookContexts } from '@tanstack/react-form'
 
 // export useFieldContext for use in your custom components

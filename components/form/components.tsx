@@ -1,3 +1,5 @@
+'use client'
+
 import { Icon } from '@/lib/icons'
 import { Button } from '../ui/button'
 import { useFormContext } from './ctx'

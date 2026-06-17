@@ -123,6 +123,7 @@ export function LoginForm() {
                 type='email'
                 autoComplete='email'
                 placeholder='user@website.com'
+                autoFocus
                 required
               />
             )}

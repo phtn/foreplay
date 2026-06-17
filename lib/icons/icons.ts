@@ -319,6 +319,30 @@ export const icons = {
       '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16.473 11.75c.493-.8.777-1.742.777-2.75V4.75m-.777 7A5.25 5.25 0 0 1 12 14.25c-1.891 0-3.549-1-4.473-2.5m8.946 0h.777a4 4 0 0 0 4-4v-1.5a1.5 1.5 0 0 0-1.5-1.5h-2.5m-9.723 7H6.75a4 4 0 0 1-4-4v-1.5a1.5 1.5 0 0 1 1.5-1.5h2.5m.777 7A5.23 5.23 0 0 1 6.75 9V4.75m0 0a2 2 0 0 1 2-2h6.5a2 2 0 0 1 2 2m-10 15a2 2 0 0 1 2-2h5.5a2 2 0 0 1 2 2v.5a1 1 0 0 1-1 1h-7.5a1 1 0 0 1-1-1zm4.75-5.5v3.5"/>',
     viewBox: '0 0 24 24',
     set: 'proicons'
+  },
+  'add-circle': {
+    symbol:
+      '<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><circle cx="12" cy="12" r="9.25"/><path d="M12 8.5v7M8.5 12h7"/></g>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  'phone-accept': {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-width="1.5" d="M8.14 15.733c2.158 2.158 4.278 3.28 5.89 3.864c1.768.64 3.606-.117 4.935-1.446l.459-.458a1.5 1.5 0 0 0 0-2.122l-1.149-1.149a1.5 1.5 0 0 0-2.121 0l-.387.387a2 2 0 0 1-2.828 0l-3.713-3.712a2 2 0 0 1 0-2.829l.387-.387a1.5 1.5 0 0 0 0-2.12l-1.15-1.15a1.5 1.5 0 0 0-2.12 0l-.572.572c-1.262 1.262-2.013 2.99-1.438 4.68c.538 1.58 1.622 3.685 3.806 5.87Z"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  'person-multiple': {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.322 7.209c0 .749-.237 1.442-.64 2.009a3.42 3.42 0 0 1-2.796 1.45c-1.898 0-3.436-1.55-3.436-3.46S7.988 3.75 9.886 3.75a3.445 3.445 0 0 1 3.436 3.459M2.75 18.107c0-2.677 3.545-4.774 7.136-4.774c1.432 0 2.857.333 4.053.904c1.803.86 3.084 2.26 3.082 3.87v1.143a1 1 0 0 1-1 1H3.75a1 1 0 0 1-1-1zM15.172 3.75a3.445 3.445 0 0 1 3.435 3.459c0 .749-.236 1.442-.639 2.009a3.42 3.42 0 0 1-2.796 1.45m3.452 2.569c1.536.86 2.628 2.763 2.626 4.373v2.64"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
+  },
+  pentagon: {
+    symbol:
+      '<path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.13 3.655a3.18 3.18 0 0 1 3.74 0l6.069 4.409a3.18 3.18 0 0 1 1.155 3.557l-2.318 7.134a3.18 3.18 0 0 1-3.025 2.198H8.249a3.18 3.18 0 0 1-3.025-2.198L2.906 11.62A3.18 3.18 0 0 1 4.06 8.063z"/>',
+    viewBox: '0 0 24 24',
+    set: 'proicons'
   }
 }
 /*

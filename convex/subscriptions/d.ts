@@ -13,7 +13,8 @@ export const subscriptionSchema = v.object({
   payment_status: paymentStatus,
   receipt_image_url: v.optional(v.string()),
   txn_ref_no: v.optional(v.string()),
-  payment_qrcode: v.optional(v.string())
+  payment_qrcode: v.optional(v.string()),
+  status: v.optional(v.string())
 })
 
 export type Subscription = typeof subscriptionSchema
