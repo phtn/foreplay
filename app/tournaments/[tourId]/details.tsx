@@ -15,7 +15,7 @@ export default function TourDetail({ tourId }: TourDetailProps) {
   const tournament = findTournament(tourId)
 
   return (
-    <div className='space-y-8'>
+    <div className='space-y-4 md:space-y-8'>
       <TournamentHero
         eyebrow={tournament.statusLabel}
         title={tournament.title}

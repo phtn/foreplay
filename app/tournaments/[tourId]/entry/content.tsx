@@ -67,7 +67,7 @@ export const Content = () => {
 
   return (
     <main>
-      <div className='text-xl relative font-poly h-20 flex items-center gap-2'>
+      <div className='text-xl relative font-poly h-12 md:h-20 flex items-center gap-2'>
         <div className='size-6 aspect-square flex items-center justify-center rounded-full -rotate-45'>
           <Loader />
           <div className='size-5 bg-linear-to-tl from-white/30 via-background via-62% to-background rounded-full aspect-square absolute'></div>
@@ -84,7 +84,7 @@ export const Content = () => {
         <CardContent className='px-5'>
           {tourId ? (
             <>
-              <div className='flex items-start justify-between gap-4'>
+              <div className='flex md:flex-row flex-col md:items-start md:justify-between gap-4'>
                 <div className='space-y-1'>
                   <p className='text-xs font-medium uppercase tracking-widest text-sky-600'>
                     MT MALArayat Golf & Country Club
@@ -110,7 +110,8 @@ export const Content = () => {
                     <p className='font-ios text-muted-foreground text-xs tracking-wide'>Tee time: 5:00AM</p>
                   </div>
                 </div>
-                <div className='grid gap-8 sm:grid-cols-3'>
+
+                <div className='grid md:gap-8 grid-cols-3'>
                   <div className='p-0 space-y-1.5'>
                     <p className='text-xs uppercase tracking-wide text-muted-foreground'>Price</p>
                     <p className='mt-1 text-base font-semibold'>{5000}</p>

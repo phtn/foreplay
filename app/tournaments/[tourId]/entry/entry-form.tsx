@@ -41,7 +41,7 @@ export const NewEntryForm = ({
   return (
     <form.AppForm>
       <form
-        className='grid grid-cols-3 gap-8 bg-white/5 px-4 pt-8'
+        className='grid md:grid-cols-3 gap-8 bg-white/5 px-4 pt-8'
         onSubmit={(event) => {
           event.preventDefault()
           void form.handleSubmit()

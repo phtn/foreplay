@@ -124,7 +124,8 @@ export const tournamentList: TournamentSpotlight[] = [
     slotsLabel: '84 players',
     formatLabel: '18-hole match play',
     statusLabel: 'New listing',
-    description: 'A compact invitational built around match play brackets, tighter fields, and a premium twilight finish.',
+    description:
+      'A compact invitational built around match play brackets, tighter fields, and a premium twilight finish.',
     divisions: ['Open', 'Senior'],
     teeTimeAt: '2026-09-18T13:30:00+08:00',
     teeTimeLabel: 'September 18, 2026 at 1:30 PM',
@@ -276,19 +277,19 @@ export function TournamentHero({
             </h1>
             <p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>{description}</p>
           </div>
-          <div className='bg-background/80 px-3 max-w-xl rounded-lg border border-dashed'>
-            <div className='flex items-center h-10 space-x-4 border-b border-dashed'>
+          <div className='bg-background/80 px-2 max-w-xl rounded-lg border border-dashed'>
+            <div className='flex items-center h-10 space-x-2 border-b border-dashed tracking-tight'>
               <Icon name='location' className='size-4' />
-              <span className='font-ios'>Mt. Malarayat Golf & Country Club</span>
-              <span className='px-3 opacity-60'>Batangas</span>
+              <p className='font-ios max-w-[34ch] whitespace-nowrap'>Mt. Malarayat Golf & Country Club</p>
+              <p className='opacity-60'>Batangas</p>
             </div>
-            <div className='flex items-center h-10 space-x-4'>
+            <div className='flex items-center h-10 space-x-2 tracking-tight'>
               <Icon name='clock' className='size-4' />
-              <span className='font-ios'>5:30 AM June 24, 2026</span>
-              <span className='px-3 opacity-60'>Wednesday</span>
+              <span className='font-ios text-sm'>5:30 AM June 24, 2026</span>
+              <span className='px-3 text-xs opacity-60'>WED</span>
             </div>
           </div>
-          <div className='flex items-end h-16 gap-3 w-1/5'>
+          <div className='flex items-end h-16 gap-3 w-1/2 md:w-1/5'>
             {primaryAction ?? (
               <Link
                 className={cn(buttonVariants({ size: 'xl' }), 'bg-foreground px-8 text-sm font-poly font-medium')}
