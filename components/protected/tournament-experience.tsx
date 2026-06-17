@@ -45,23 +45,34 @@ export type LeaderboardRow = {
 }
 
 export const featuredTournament: TournamentSpotlight = {
-  id: 'green-jacket-invitational',
-  title: 'Green Jacket Invitational',
+  id: 'tour-01',
+  title: 'Batangas Spring Classic',
   venue: 'Mt Malarayat Golf & Country Club',
-  dateLabel: 'June 12, 2026',
+  dateLabel: 'June 24, 2026',
   feeLabel: '₱2,500 entry',
   slotsLabel: '120 players',
   formatLabel: '36-hole stroke play',
   statusLabel: 'Entry open',
   description:
     'A polished tournament experience for serious amateurs and club players who want a premium field, well-run logistics, and a clean path to pay, confirm, and play.',
-  divisions: ['Championship', 'Amateur', 'Ladies', 'Senior']
+  divisions: ['Championship', 'Amateur', 'Ladies', 'Senior'],
+  teeTimeAt: '2026-06-24T05:30:00+08:00',
+  teeTimeLabel: 'June 24, 2026 at 5:30 AM',
+  prizes: ['Champion trophy', 'Best net prize', 'Closest-to-the-pin awards'],
+  events: [
+    { label: 'Registration opens', detail: '5:00 AM' },
+    { label: 'Breakfast and bag drop', detail: '5:15 AM' },
+    { label: 'Shotgun start', detail: '5:30 AM' },
+    { label: 'Scoring closes', detail: '11:15 AM' },
+    { label: 'Awards brunch', detail: '12:00 PM' }
+  ],
+  specialGuests: ['Guest starter: Liza Cruz', 'Sponsor rep: Niko Tan', 'Rules officer: Jose Mercado']
 }
 
 export const tournamentList: TournamentSpotlight[] = [
   featuredTournament,
   {
-    id: 'coastal-classic-open',
+    id: 'tour-02',
     title: 'Coastal Classic Open',
     venue: 'Southlinks Golf Club',
     dateLabel: 'July 4, 2026',
@@ -70,10 +81,20 @@ export const tournamentList: TournamentSpotlight[] = [
     formatLabel: 'Stableford qualifier',
     statusLabel: 'Selling fast',
     description: 'Fast-moving weekend field with a lighter format and a strong sponsor prize table.',
-    divisions: ['Open', 'Amateur', 'Net']
+    divisions: ['Open', 'Amateur', 'Net'],
+    teeTimeAt: '2026-07-04T06:00:00+08:00',
+    teeTimeLabel: 'July 4, 2026 at 6:00 AM',
+    prizes: ['Top gross prize', 'Net podium', 'Sponsor raffle pack'],
+    events: [
+      { label: 'Check-in', detail: '4:45 AM' },
+      { label: 'First tee', detail: '6:00 AM' },
+      { label: 'Live scoring update', detail: 'Every 3 holes' },
+      { label: 'Award ceremony', detail: 'After final card' }
+    ],
+    specialGuests: ['Host: Clara Delos Santos', 'Sponsor lead: Miguel Tan']
   },
   {
-    id: 'mid-summer-championship',
+    id: 'tour-03',
     title: 'Mid-Summer Championship',
     venue: 'The Orchard Golf & Country Club',
     dateLabel: 'August 9, 2026',
@@ -82,16 +103,48 @@ export const tournamentList: TournamentSpotlight[] = [
     formatLabel: 'Two-day championship',
     statusLabel: 'Premium field',
     description: 'Built for players chasing a bigger purse, tighter tee sheets, and a more competitive bracket.',
-    divisions: ['Championship', 'Ladies', 'Senior']
+    divisions: ['Championship', 'Ladies', 'Senior'],
+    teeTimeAt: '2026-08-09T05:45:00+08:00',
+    teeTimeLabel: 'August 9, 2026 at 5:45 AM',
+    prizes: ['Overall champion', 'Low amateur', 'Division podium'],
+    events: [
+      { label: 'Pro-am mixer', detail: 'Night before' },
+      { label: 'Round one tee off', detail: '5:45 AM shotgun' },
+      { label: 'Cut line posted', detail: 'After round one' },
+      { label: 'Final round', detail: 'Next day' }
+    ],
+    specialGuests: ['Tournament chair: Paolo Reyes', 'Sponsor rep: Anne Lim']
+  },
+  {
+    id: 'tour-04',
+    title: 'Sunset Links Invitational',
+    venue: 'Splendido Taal Country Club',
+    dateLabel: 'September 18, 2026',
+    feeLabel: '₱2,000 entry',
+    slotsLabel: '84 players',
+    formatLabel: '18-hole match play',
+    statusLabel: 'New listing',
+    description: 'A compact invitational built around match play brackets, tighter fields, and a premium twilight finish.',
+    divisions: ['Open', 'Senior'],
+    teeTimeAt: '2026-09-18T13:30:00+08:00',
+    teeTimeLabel: 'September 18, 2026 at 1:30 PM',
+    prizes: ['Bracket champion', 'Runner-up prize', 'Putting contest award'],
+    events: [
+      { label: 'Lobby check-in', detail: '12:30 PM' },
+      { label: 'Bracket reveal', detail: '1:00 PM' },
+      { label: 'Match play start', detail: '1:30 PM' },
+      { label: 'Sunset awards', detail: '5:45 PM' }
+    ],
+    specialGuests: ['Starter: Nina Bautista', 'Sponsor host: Carlo Dizon']
   }
 ]
 
 export const protectedEntries: ProtectedEntry[] = [
   {
     id: 'entry-001',
-    tournament: 'Green Jacket Invitational',
+    tournament: 'Batangas Spring Classic',
     venue: 'Mt Malarayat Golf & Country Club',
-    dateLabel: 'June 12, 2026',
+    dateLabel: 'June 24, 2026',
     status: 'Pending payment',
     step: 'Upload receipt to lock your tee time.',
     feeLabel: '₱2,500',
@@ -116,6 +169,16 @@ export const protectedEntries: ProtectedEntry[] = [
     step: 'Your receipt is waiting for manual review.',
     feeLabel: '₱3,500',
     division: 'Championship'
+  },
+  {
+    id: 'entry-004',
+    tournament: 'Sunset Links Invitational',
+    venue: 'Splendido Taal Country Club',
+    dateLabel: 'September 18, 2026',
+    status: 'Confirmed',
+    step: 'Pairings and cart assignments arrive the day before.',
+    feeLabel: '₱2,000',
+    division: 'Open'
   }
 ]
 
@@ -124,7 +187,8 @@ export const leaderboardRows: LeaderboardRow[] = [
   { rank: 2, name: 'A. Santos', club: 'The Orchard', score: '-4', note: 'Best driving accuracy in field' },
   { rank: 3, name: 'J. Lim', club: 'Southlinks', score: '-3', note: 'Clean weekend with zero doubles' },
   { rank: 4, name: 'P. Dela Cruz', club: 'Mt Malarayat', score: '-2', note: 'Best short-game save rate' },
-  { rank: 5, name: 'R. Navarro', club: 'Manila Southwoods', score: '-1', note: 'Steady scoring under pressure' }
+  { rank: 5, name: 'R. Navarro', club: 'Manila Southwoods', score: '-1', note: 'Steady scoring under pressure' },
+  { rank: 6, name: 'K. Dizon', club: 'Splendido Taal', score: 'E', note: 'Late surge on the closing stretch' }
 ]
 
 export const homeMetrics = [

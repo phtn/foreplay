@@ -11,7 +11,7 @@ interface AuthLayoutProps {
 }
 export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayoutProps) => {
   return (
-    <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/15 via-30% via-primary/10 to-primary/10 pt-8 2xl:pt-24 px-4 relative'>
+    <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/5 via-30% via-primary/3 to-primary/2 pt-8 2xl:pt-24 px-4 relative'>
       <div className='w-full max-w-md relative z-50'>
         <div className='flex space-x-4 xl:space-x-5 mb-5 xl:mb-10'>
           <div className='inline-flex items-center justify-center w-16 h-16 rounded-2xl relative'>

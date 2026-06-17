@@ -2,39 +2,17 @@ import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
 import {
+  featuredTournament,
   homeMetrics,
   SectionTitle,
   TournamentCard,
-  TournamentHero,
-  TournamentSpotlight
+  TournamentHero
 } from '@/components/protected/tournament-experience'
 import { AnimateOnView } from '@/components/ui/animate-on-view'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-
-const featuredTournament: TournamentSpotlight = {
-  id: 'featured-01',
-  title: 'Featured Tournament',
-  venue: 'Foreplay Park',
-  dateLabel: 'July 4, 2026',
-  feeLabel: '$500',
-  slotsLabel: '100 slots',
-  formatLabel: 'Standard',
-  statusLabel: 'Open',
-  description: '',
-  divisions: ['Open', 'Amateur', 'Net'],
-  teeTimeAt: '2026-07-04T06:45:00+08:00',
-  teeTimeLabel: 'July 4, 2026 at 6:45 AM',
-  prizes: ['Title sponsor trophy', 'Skill contest awards', 'Sponsor gift packs'],
-  events: [
-    { label: 'Registration opens', detail: '5:15 AM' },
-    { label: 'Round one tee off', detail: '6:45 AM shotgun' },
-    { label: 'Winner photo', detail: 'Immediately after scoring' }
-  ],
-  specialGuests: ['Guest judge: Liza Cruz', 'Sponsor rep: Niko Tan', 'Club captain: Jose Mercado']
-}
 
 const sellingPoints = [
   {
@@ -68,8 +46,8 @@ export default function HomePage() {
       <div className='space-y-12'>
         <TournamentHero
           eyebrow='TOURNAMENT'
-          title='Golden Ticket'
-          description='A premium tournament landing experience for golfers who want to buy in fast, see the purse, and trust the event is being run like a proper championship.'
+          title={featuredTournament.title}
+          description={featuredTournament.description}
           primaryHref='/tournaments/tour-01/entry'
           secondaryHref='/entries'
           primaryLabel='Book Now'

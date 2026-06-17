@@ -1,11 +1,13 @@
 import { defineSchema, defineTable } from 'convex/server'
 import { accountSchema } from './accounts/d'
 import { adminSchema } from './admin/d'
+import { eventSchema } from './events/d'
 import { historySchema } from './history/d'
 import { leagueSchema } from './leagues/d'
 import { orderSchema } from './orders/d'
 import { registrationSchema } from './registrations/d'
 import { subscriptionSchema } from './subscriptions/d'
+import { tournamentSchema } from './tournaments/d'
 import { txnSchema } from './txns/d'
 import { userSchema } from './users/d'
 
@@ -25,5 +27,7 @@ export default defineSchema({
     .index('by_tournamentId', ['tournament_id']),
   subscriptions: defineTable(subscriptionSchema)
     .index('by_user_id', ['user_id'])
-    .index('by_tournamentId', ['tournament_id'])
+    .index('by_tournamentId', ['tournament_id']),
+  tournaments: defineTable(tournamentSchema),
+  events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id'])
 })

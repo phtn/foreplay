@@ -126,7 +126,7 @@ export const Content = () => {
                 </div>
               </div>
 
-              <div className='h-3 bg-slate-400/40 rounded-xs mt-4'></div>
+              <div className='h-2 bg-slate-200 border-y border-slate-300 rounded-xs mt-6 -mx-6'></div>
               <NewEntryForm
                 key={formId}
                 tourId={tourId}
@@ -179,8 +179,15 @@ export const Content = () => {
         <div className='bg-slate-200 w-20 rounded-md h-3'></div>
       </div>
       <div className='h-64 grid grid-cols-3'>
-        <div className='w-full'></div>
-        <div className='w-full'></div>
+        <div className='w-full p-5'>
+          <div className='rounded-3xl bg-slate-100/70 size-full'></div>
+        </div>
+        <div className='w-full'>
+          <div className='rounded-3xl bg-slate-100 size-full'></div>
+        </div>
+        <div className='w-full p-5'>
+          <div className='rounded-3xl bg-slate-100/70 size-full'></div>
+        </div>
       </div>
     </main>
   )

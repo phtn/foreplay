@@ -3,6 +3,7 @@
 import { useAppForm } from '@/components/form'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 
 const divisionOptions = [{ label: 'Pro', value: 'Pro' }]
 const entryControlClassName =
@@ -103,7 +104,7 @@ export const NewEntryForm = ({
                 max='4'
                 required
                 containerClassName='mb-4'
-                className={entryControlClassName}
+                className={cn(entryControlClassName, 'text-right')}
                 onChange={(event) => {
                   const nextPlayers = Number.parseInt(event.currentTarget.value, 10)
                   onPlayersChange(Number.isNaN(nextPlayers) ? players : nextPlayers)
@@ -114,8 +115,8 @@ export const NewEntryForm = ({
               </TextField>
             )}
           </form.AppField>
-          <div className='h-28 bg-slate-100 rounded-md'></div>
-          <div className='hidden _flex items-center space-x-4 mt-6'>
+          {/*<div className='h-28 bg-slate-100 rounded-md'></div>*/}
+          <div className='flex items-center space-x-4 mt-6'>
             <form.AppField name='division'>
               {({ SelectField }) => (
                 <SelectField
@@ -138,7 +139,7 @@ export const NewEntryForm = ({
                   label='Handicap'
                   placeholder='Optional'
                   containerClassName='mb-0'
-                  className={entryControlClassName}
+                  className={cn(entryControlClassName, 'text-right')}
                 />
               )}
             </form.AppField>
