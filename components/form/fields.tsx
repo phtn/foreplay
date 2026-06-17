@@ -52,7 +52,7 @@ export function TextField({
           autoComplete={autoComplete}
           placeholder={placeholder}
           onChange={(e) => field.handleChange(e.target.value)}
-          className='h-12 pl-12 bg-foreground/4 hover:bg-white dark:bg-background/20 border-white/80 dark:focus-visible:bg-background/30 focus-visible:bg-white dark:focus-visible:ring-primary focus-visible:ring-primary/15 focus-visible:border-primary dark:placeholder:text-white/60 shadow-xs'
+          className='h-12 pl-12 bg-foreground/4 hover:bg-white dark:bg-background/20 border-white/80 dark:border-white/40 dark:focus-visible:bg-background/30 focus-visible:bg-white dark:focus-visible:ring-primary focus-visible:ring-primary/15 focus-visible:border-primary dark:placeholder:text-white/60 shadow-xs'
           disabled={field.state.meta.isValidating}
           required={required}
         />

@@ -86,19 +86,19 @@ export function LoginForm() {
         </Button>
         <Button
           type='button'
-          className='h-12 gap-2 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:border-white/55 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 transition-colors disabled:pointer-events-none disabled:opacity-50'
+          className='h-12 gap-2 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:disabled:border-white/30 dark:border-white/55 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 disabled:pointer-events-none disabled:opacity-60 dark:disabled:bg-transparent'
           disabled>
           <Icon name={'x'} className='size-4.5 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='h-12 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:border-white/55 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 transition-colors disabled:pointer-events-none disabled:opacity-50'
+          className='h-12 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:disabled:border-white/30 dark:border-white/55 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 disabled:pointer-events-none disabled:opacity-60 dark:disabled:bg-transparent'
           disabled>
           <Icon name={'github'} className='size-8 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='h-12 gap-3 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:border-white/55 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 transition-colors disabled:pointer-events-none disabled:opacity-50'
+          className='h-12 gap-3 text-sm font-medium xl:mb-6 hover:border-primary dark:hover:border-white dark:border-white/55 dark:disabled:border-white/30 bg-white/80 hover:bg-white dark:bg-white/30 dark:hover:bg-white/25 inline-flex items-center justify-center rounded-md border px-4 disabled:pointer-events-none disabled:opacity-60 dark:disabled:bg-transparent'
           disabled>
           <Icon name={'msft'} className='size-4.5 text-foreground' />
         </Button>
