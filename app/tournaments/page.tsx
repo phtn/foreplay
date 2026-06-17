@@ -19,7 +19,7 @@ const tournamentFilters = ['All events', 'Open fields', 'Championships', 'This m
 export default function TournamentsPage() {
   return (
     <ProtectedLayout>
-      <div className='space-y-8'>
+      <div className='space-y-4 md:space-y-8'>
         <TournamentHero
           eyebrow='Tournament board'
           title='A clean place to browse every entry worth selling.'

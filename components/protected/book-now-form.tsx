@@ -100,15 +100,15 @@ export function BookNowForm({
           forceRender
         />
         <Dialog.Popup
-          className='fixed inset-0 z-80 flex items-start justify-center overflow-y-auto px-4 py-8 outline-none sm:px-6 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95'
+          className='fixed inset-0 z-80 flex items-start justify-center overflow-y-auto px-3 py-4 outline-none sm:px-6 sm:py-8 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95'
           initialFocus={true}
           finalFocus={true}
           aria-labelledby='book-now-title'>
           <Card className='relative my-auto w-full max-w-3xl border-border/70 bg-card shadow-[0_30px_90px_-30px_rgba(15,23,42,0.7)]'>
-            <CardContent className='space-y-6 p-5 sm:p-6 lg:p-8'>
+            <CardContent className='space-y-6 p-4 sm:p-6 lg:p-8'>
               {!submitted ? (
                 <>
-                  <div className='flex items-start justify-between gap-4'>
+                  <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='space-y-1'>
                       <p className='text-xs font-semibold uppercase tracking-[0.24em] text-primary/80'>Reserve entry</p>
                       <h2 id='book-now-title' className='font-heading text-2xl font-bold tracking-tight sm:text-3xl'>
@@ -127,7 +127,7 @@ export function BookNowForm({
                     />
                   </div>
 
-                  <div className='grid gap-3 sm:grid-cols-4'>
+                  <div className='grid gap-3 sm:grid-cols-2 lg:grid-cols-4'>
                     <div className='rounded-2xl border border-border/60 bg-muted/20 p-4'>
                       <p className='text-xs uppercase tracking-[0.2em] text-muted-foreground'>Entry fee</p>
                       <p className='mt-1 text-lg font-semibold'>{feeLabel}</p>
@@ -241,19 +241,19 @@ export function BookNowForm({
                       </div>
                     </div>
 
-                    <div className='flex flex-wrap items-center justify-between gap-3 pt-2'>
+                    <div className='flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between'>
                       <p className='text-sm text-muted-foreground'>
                         By continuing, you reserve a request for {tournamentTitle}. Confirmation follows payment review.
                       </p>
-                      <div className='flex flex-wrap gap-3'>
+                      <div className='flex flex-col gap-3 sm:flex-row'>
                         <Dialog.Close
                           render={
-                            <Button size='xl' type='button' variant='outline'>
+                            <Button size='xl' type='button' variant='outline' className='w-full sm:w-auto'>
                               Cancel
                             </Button>
                           }
                         />
-                        <Button size='xl' type='submit'>
+                        <Button size='xl' type='submit' className='w-full sm:w-auto'>
                           Continue registration
                         </Button>
                       </div>
@@ -262,7 +262,7 @@ export function BookNowForm({
                 </>
               ) : (
                 <div className='space-y-4'>
-                  <div className='flex items-start justify-between gap-4'>
+                  <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                     <div className='space-y-1'>
                       <p className='text-xs font-semibold uppercase tracking-[0.24em] text-primary/80'>
                         Request received
@@ -294,16 +294,17 @@ export function BookNowForm({
                     </div>
                   </div>
 
-                  <div className='flex flex-wrap justify-end gap-3'>
+                  <div className='flex flex-col justify-end gap-3 sm:flex-row'>
                     <Dialog.Close
                       render={
-                        <Button type='button' variant='outline'>
+                        <Button type='button' variant='outline' className='w-full sm:w-auto'>
                           Close
                         </Button>
                       }
                     />
                     <Button
                       type='button'
+                      className='w-full sm:w-auto'
                       onClick={() => {
                         router.push('/entries')
                       }}>

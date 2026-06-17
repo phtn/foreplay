@@ -11,26 +11,26 @@ interface AuthLayoutProps {
 }
 export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayoutProps) => {
   return (
-    <div className='min-h-screen flex items-start justify-center bg-linear-to-t from-primary/5 via-30% via-primary/3 to-primary/2 pt-8 2xl:pt-24 px-4 relative'>
-      <div className='w-full max-w-md relative z-50'>
-        <div className='flex space-x-4 xl:space-x-5 mb-5 xl:mb-10'>
-          <div className='inline-flex items-center justify-center w-16 h-16 rounded-2xl relative'>
-            <Icon name='squircle' className='size-14 text-primary top-0 absolute' />
-            <Icon name={icon} className='size-8 relative text-white' aria-hidden='true' />
+    <div className='relative flex min-h-dvh items-center justify-center bg-linear-to-t from-primary/5 via-30% via-primary/3 to-primary/2 px-4 py-6 sm:py-10 2xl:py-16'>
+      <div className='relative z-50 w-full max-w-md'>
+        <div className='mb-5 flex space-x-4 xl:mb-8 xl:space-x-5'>
+          <div className='relative inline-flex size-14 items-center justify-center rounded-2xl sm:size-16'>
+            <Icon name='squircle' className='absolute top-0 size-12 text-primary sm:size-14' />
+            <Icon name={icon} className='relative size-7 text-white sm:size-8' aria-hidden='true' />
           </div>
-          <div className='flex flex-col justify-center h-14'>
-            <h1 className='text-2xl xl:text-2xl font-bold tracking-tight text-foreground leading-none'>{title}</h1>
+          <div className='flex h-14 flex-col justify-center'>
+            <h1 className='text-2xl font-bold leading-none tracking-tight text-foreground xl:text-2xl'>{title}</h1>
             {subtitle && <p className='font-sans text-sm text-muted-foreground tracking-tight leading-4'>{subtitle}</p>}
           </div>
         </div>
-        <div className='bg-white dark:bg-white/30 rounded-4xl border border-primary/60 shadow-xs overflow-hidden'>
-          <div className='dark:bg-primary/10 bg-primary/15 p-7 xl:px-8 xl:py-10 relative'>
-            <div className="absolute w-full h-full z-40 top-0 inset-0 bg-[url('/noise.svg')] opacity-10 pointer-events-none" />
+        <div className='overflow-hidden rounded-4xl border border-primary/60 bg-white shadow-xs dark:bg-white/30'>
+          <div className='relative bg-primary/15 p-5 sm:p-6 xl:px-8 xl:py-10 dark:bg-primary/10'>
+            <div className="pointer-events-none absolute inset-0 z-40 h-full w-full bg-[url('/noise.svg')] opacity-10" />
             {children}
           </div>
         </div>
-        <div className='flex items-center justify-between mt-5 xl:mt-6 h-12 w-full'>
-          {footer && <div className='text-center text-sm text-muted-foreground'>{footer}</div>}
+        <div className='mt-5 flex h-auto w-full flex-col-reverse items-start justify-between gap-4 sm:flex-row sm:items-center xl:mt-6'>
+          {footer && <div className='text-sm text-muted-foreground'>{footer}</div>}
           <ThemeToggle />
         </div>
       </div>

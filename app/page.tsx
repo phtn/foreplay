@@ -1,6 +1,9 @@
+'use client'
+
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
+import { Loader } from '@/components/loaders/px-grid'
 import {
   featuredTournament,
   homeMetrics,
@@ -8,7 +11,7 @@ import {
   TournamentCard,
   TournamentHero
 } from '@/components/protected/tournament-experience'
-import { AnimateOnView } from '@/components/ui/animate-on-view'
+import { Typewrite } from '@/components/text/typewriter'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
@@ -36,12 +39,13 @@ export default function HomePage() {
   return (
     <ProtectedLayout>
       {/*Animating Header*/}
-      <AnimateOnView>
-        <div className='mb-8 flex h-12 items-center space-x-2 px-3'>
-          <Icon name='chevrons-right-fill' />
-          <span className='font-display text-lg tracking-wide text-foreground/70'>Upcoming Tournaments</span>
+      <div className='relative flex items-center gap-2 text-xl font-poly pb-4'>
+        <div className='relative flex size-6 aspect-square items-center justify-center rounded-full -rotate-45'>
+          <Loader />
+          <div className='absolute size-5 aspect-square rounded-full bg-linear-to-tl from-white/30 via-background via-62% to-background' />
         </div>
-      </AnimateOnView>
+        <Typewrite text='Upcoming Events' speed={20} showCursor={false} className='text-primary' />
+      </div>
 
       <div className='space-y-12'>
         <TournamentHero

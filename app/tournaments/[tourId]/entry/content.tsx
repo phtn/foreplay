@@ -32,6 +32,8 @@ export const Content = () => {
   const formId = query.formId ?? generatedFormId
   const players = query.players ?? defaultPlayers
   const division = query.division ?? defaultDivision
+  const entryFee = 5000
+  const total = players * entryFee
 
   useEffect(() => {
     void setQuery((current) => {
@@ -66,25 +68,19 @@ export const Content = () => {
   }
 
   return (
-    <main>
-      <div className='text-xl relative font-poly h-12 md:h-20 flex items-center gap-2'>
-        <div className='size-6 aspect-square flex items-center justify-center rounded-full -rotate-45'>
+    <main className='space-y-6 pb-6 sm:space-y-8'>
+      <div className='relative flex items-center gap-2 text-xl font-poly'>
+        <div className='relative flex size-6 aspect-square items-center justify-center rounded-full -rotate-45'>
           <Loader />
-          <div className='size-5 bg-linear-to-tl from-white/30 via-background via-62% to-background rounded-full aspect-square absolute'></div>
+          <div className='absolute size-5 aspect-square rounded-full bg-linear-to-tl from-white/30 via-background via-62% to-background' />
         </div>
-
-        {/*<div className='h-16 flex items-center -space-x-2.25'>
-          <span className='text-xl 5 -mb-0.5'>|</span>
-          <Icon name='chevron-down' className='size-6 opacity-100 -rotate-45 text-sky-500' />
-        </div>*/}
         <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500' />
-        {/*<span>New Entry</span>*/}
       </div>
-      <Card className='relative my-auto w-full max-w-7xl border-slate-400 bg-slate-200/20 rounded-lg shadow-md shadow-slate-100 py-6'>
-        <CardContent className='px-5'>
+      <Card className='relative w-full max-w-7xl rounded-lg border-slate-400 bg-slate-200/20 py-6 shadow-md shadow-slate-100'>
+        <CardContent className='px-4 sm:px-5'>
           {tourId ? (
             <>
-              <div className='flex md:flex-row flex-col md:items-start md:justify-between gap-4'>
+              <div className='flex flex-col gap-4 md:flex-row md:items-start md:justify-between'>
                 <div className='space-y-1'>
                   <p className='text-xs font-medium uppercase tracking-widest text-sky-600'>
                     MT MALArayat Golf & Country Club
@@ -97,28 +93,28 @@ export const Content = () => {
                     {id} · {id} · {id}
                   </p>*/}
                 </div>
-                <div className='flex items-center space-x-8 bg-white border border-sky-700/8 rounded-md px-1.25 shadow-inner shadow-foreground/5'>
-                  <div className='px-1.5 py-0.5 space-y-1.5'>
+                <div className='flex flex-wrap items-center gap-3 rounded-md border border-sky-700/8 bg-white px-3 py-2 shadow-inner shadow-foreground/5'>
+                  <div className='space-y-1.5'>
                     <p className='font-ios text-xs text-muted-foreground tracking-wide'>
                       Max: <strong>{200}</strong>
                     </p>
                   </div>
-                  <div className='bg-lime-300/15 min-w-24  px-2.5 py-0.5 border border-lime-500/50 space-y-1.5 rounded-sm'>
+                  <div className='min-w-24 rounded-sm border border-lime-500/50 bg-lime-300/15 px-2.5 py-0.5'>
                     <p className='font-ios text-muted-foreground text-xs tracking-wide'>T-5:00</p>
                   </div>
-                  <div className='px-1.5 py-0.5 border border-foreground/0 space-y-1.5 rounded-lg'>
+                  <div className='space-y-1.5 rounded-lg border border-foreground/0 px-1.5 py-0.5'>
                     <p className='font-ios text-muted-foreground text-xs tracking-wide'>Tee time: 5:00AM</p>
                   </div>
                 </div>
 
-                <div className='grid md:gap-8 grid-cols-3'>
+                <div className='grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8'>
                   <div className='p-0 space-y-1.5'>
                     <p className='text-xs uppercase tracking-wide text-muted-foreground'>Price</p>
-                    <p className='mt-1 text-base font-semibold'>{5000}</p>
+                    <p className='mt-1 text-base font-semibold'>{entryFee}</p>
                   </div>
                   <div className='p-0 space-y-1.5'>
                     <p className='text-xs uppercase tracking-wide text-muted-foreground'>Total</p>
-                    <p className='mt-1 text-base font-semibold'>{}</p>
+                    <p className='mt-1 text-base font-semibold'>{total}</p>
                   </div>
                   <div className='p-0 space-y-1.5'>
                     <p className='text-xs uppercase tracking-wide text-muted-foreground'>Players</p>
@@ -127,7 +123,7 @@ export const Content = () => {
                 </div>
               </div>
 
-              <div className='h-2 bg-slate-200 border-y border-slate-300 rounded-xs mt-6 -mx-6'></div>
+              <div className='mt-6 h-2 rounded-xs border-y border-slate-300 bg-slate-200 -mx-4 sm:-mx-5' />
               <NewEntryForm
                 key={formId}
                 tourId={tourId}
@@ -140,7 +136,7 @@ export const Content = () => {
             </>
           ) : (
             <div className='space-y-4'>
-              <div className='flex items-start justify-between gap-4'>
+              <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
                 <div className='space-y-1'>
                   <p className='text-xs font-semibold uppercase tracking-[0.24em] text-primary/80'>Request received</p>
                   <h2 className='font-heading text-2xl font-bold tracking-tight sm:text-3xl'>You’re on the list</h2>
@@ -166,6 +162,7 @@ export const Content = () => {
               <div className='flex flex-wrap justify-end gap-3'>
                 <Button
                   type='button'
+                  className='w-full sm:w-auto'
                   onClick={() => {
                     router.push('/entries')
                   }}>
@@ -176,18 +173,18 @@ export const Content = () => {
           )}
         </CardContent>
       </Card>
-      <div className='h-16 flex items-center justify-center'>
-        <div className='bg-slate-200 w-20 rounded-md h-3'></div>
+      <div className='flex h-16 items-center justify-center'>
+        <div className='h-3 w-20 rounded-md bg-slate-200' />
       </div>
-      <div className='h-64 grid grid-cols-3'>
+      <div className='hidden h-64 grid-cols-3 md:grid'>
         <div className='w-full p-5'>
-          <div className='rounded-3xl bg-slate-100/70 size-full'></div>
+          <div className='size-full rounded-3xl bg-slate-100/70' />
         </div>
         <div className='w-full'>
-          <div className='rounded-3xl bg-slate-100 size-full'></div>
+          <div className='size-full rounded-3xl bg-slate-100' />
         </div>
         <div className='w-full p-5'>
-          <div className='rounded-3xl bg-slate-100/70 size-full'></div>
+          <div className='size-full rounded-3xl bg-slate-100/70' />
         </div>
       </div>
     </main>

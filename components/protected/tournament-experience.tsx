@@ -195,7 +195,7 @@ export const leaderboardRows: LeaderboardRow[] = [
 export const homeMetrics = [
   { label: 'Ready', value: '132', icon: 'golf-flag' as const },
   // { label: 'Average fill rate', value: '86%', icon: 'trophy' as const },
-  { label: 'Registrations', value: '24', icon: 'golf-tee' as IconName },
+  { label: 'Max', value: '200', icon: 'golf-tee' as IconName },
   { label: 'Purse', value: '₱120K', icon: 'coins' as IconName }
 ]
 
@@ -222,7 +222,7 @@ export function SectionTitle({
   return (
     <div className='space-y-2'>
       <p className='text-xs font-semibold uppercase tracking-[0.28em] text-primary/80'>{eyebrow}</p>
-      <div className='flex items-end justify-between gap-4'>
+      <div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4'>
         <h2 className='font-heading text-2xl font-bold tracking-tight sm:text-3xl'>{title}</h2>
       </div>
       {description ? <p className='max-w-2xl text-sm text-muted-foreground sm:text-base'>{description}</p> : null}
@@ -263,8 +263,8 @@ export function TournamentHero({
     <Card className='relative overflow-hidden border-border bg-card shadow-[0_24px_80px_-1px_rgba(15,23,42,0.45)]'>
       <div className='absolute inset-0 dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.20),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.36),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
       <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
-      <CardContent className='relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.8fr_0.9fr] lg:p-8'>
-        <div className='space-y-8'>
+      <CardContent className='relative grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
+        <div className='space-y-6 sm:space-y-8'>
           <div className='flex flex-wrap items-center gap-4'>
             <Badge variant='secondary' radius='full' className='bg-primary/5 text-primary rounded-md'>
               {eyebrow}
@@ -272,46 +272,51 @@ export function TournamentHero({
             <span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>
           </div>
           <div className='space-y-4'>
-            <h1 className='max-w-2xl font-poly font-semibold text-3xl tracking-tight text-balance sm:text-4xl lg:text-5xl'>
+            <h1 className='max-w-2xl text-balance font-poly text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
               {title}
             </h1>
             <p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>{description}</p>
           </div>
-          <div className='bg-background/80 px-2 max-w-xl rounded-lg border border-dashed'>
-            <div className='flex items-center h-10 space-x-2 border-b border-dashed tracking-tight'>
+          <div className='max-w-xl rounded-lg border border-dashed bg-background/80 px-3 sm:px-4'>
+            <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
               <Icon name='location' className='size-4' />
-              <p className='font-ios max-w-[34ch] whitespace-nowrap'>Mt. Malarayat Golf & Country Club</p>
-              <p className='opacity-60'>Batangas</p>
+              <p className='min-w-0 flex-1 font-ios'>Mt. Malarayat Golf & Country Club</p>
+              <p className='shrink-0 opacity-60'>Batangas</p>
             </div>
-            <div className='flex items-center h-10 space-x-2 tracking-tight'>
+            <div className='flex items-center gap-2 py-2 tracking-tight'>
               <Icon name='clock' className='size-4' />
               <span className='font-ios text-sm'>5:30 AM June 24, 2026</span>
-              <span className='px-3 text-xs opacity-60'>WED</span>
+              <span className='px-2 text-xs opacity-60'>WED</span>
             </div>
           </div>
-          <div className='flex items-end h-16 gap-3 w-1/2 md:w-1/5'>
+          <div className='flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
             {primaryAction ?? (
               <Link
-                className={cn(buttonVariants({ size: 'xl' }), 'bg-foreground px-8 text-sm font-poly font-medium')}
+                className={cn(
+                  buttonVariants({ size: 'xl' }),
+                  'w-full bg-foreground px-8 text-sm font-poly font-medium sm:w-auto'
+                )}
                 href={primaryHref}>
                 {primaryLabel}
               </Link>
             )}
-            <Link className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'font-poly')} href={secondaryHref}>
+            <Link
+              className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'w-full font-poly sm:w-auto')}
+              href={secondaryHref}>
               {secondaryLabel}
             </Link>
           </div>
         </div>
 
-        <div className='grid gap-3 sm:grid-cols-3 lg:grid-cols-1'>
+        <div className='grid gap-3 grid-cols-3 md:grid-cols-1'>
           {metrics.map((metric) => (
-            <Card key={metric.label} size='sm' className='border-border/60 bg-background relative z-40 lg:px-4'>
-              <CardContent className='flex items-center gap-4 lg:gap-6 lg:py-4'>
+            <Card key={metric.label} size='sm' className='border-border/60 bg-background relative z-40 lg:px-4 p-0'>
+              <CardContent className='flex items-center gap-2 lg:gap-6 lg:py-4 p-0'>
                 <div className='flex size-6 lg:size-10 items-center justify-center text-accent'>
                   <Icon name={metric.icon ?? 'trophy'} className='size-6 lg:size-10' />
                 </div>
                 <div>
-                  <p className='text-2xl font-bold tracking-tight'>{metric.value}</p>
+                  <p className='font-poly font-semibold text-lg tracking-tight'>{metric.value}</p>
                   <p className='text-xs text-muted-foreground'>{metric.label}</p>
                 </div>
               </CardContent>
@@ -327,7 +332,7 @@ export function TournamentCard({ tournament }: { tournament: TournamentSpotlight
   return (
     <Card className='group my-4 py-0 overflow-hidden border-border/70 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-[0_30px_60px_-35px_rgba(15,23,42,0.55)]'>
       <CardHeader className='border-b py-4 border-border/60 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
-        <div className='flex items-start justify-between gap-4'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4'>
           <div className='space-y-3'>
             <Badge variant='secondary' size='sm' radius='full' className='bg-primary/10 text-primary'>
               {tournament.statusLabel}
@@ -335,12 +340,16 @@ export function TournamentCard({ tournament }: { tournament: TournamentSpotlight
             <CardTitle className='text-2xl'>{tournament.title}</CardTitle>
             <CardDescription className='max-w-xl'>{tournament.description}</CardDescription>
           </div>
-          <Badge variant='outline' size='sm' radius='full' className='border-primary/20 bg-primary/5 text-primary'>
+          <Badge
+            variant='outline'
+            size='sm'
+            radius='full'
+            className='w-fit border-primary/20 bg-primary/5 text-primary'>
             {tournament.slotsLabel}
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className='grid gap-5 p-6 sm:grid-cols-[1.1fr_0.9fr]'>
+      <CardContent className='grid gap-5 p-4 sm:grid-cols-[1.1fr_0.9fr] sm:p-6'>
         <div className='space-y-3 text-sm text-muted-foreground'>
           <div className='flex items-center gap-2'>
             <Icon name='tag-chevron' className='size-4 text-primary' />
@@ -363,12 +372,14 @@ export function TournamentCard({ tournament }: { tournament: TournamentSpotlight
           ))}
         </div>
       </CardContent>
-      <CardFooter className='flex items-center justify-between border-t border-border/60 bg-muted/20 py-4'>
+      <CardFooter className='flex flex-col gap-3 border-t border-border/60 bg-muted/20 py-4 sm:flex-row sm:items-center sm:justify-between'>
         <div>
           <p className='text-sm text-muted-foreground'>Entry fee</p>
           <p className='text-lg font-semibold text-primary'>{tournament.feeLabel}</p>
         </div>
-        <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2')} href={`/tournaments/${tournament.id}`}>
+        <Link
+          className={cn(buttonVariants({ size: 'sm' }), 'w-full gap-2 sm:w-auto')}
+          href={`/tournaments/${tournament.id}`}>
           View entry
           <Icon name='arrow-right' className='size-4' />
         </Link>
@@ -384,13 +395,13 @@ export function EntryCard({ entry }: { entry: ProtectedEntry }) {
   return (
     <Card className='border-border/70'>
       <CardContent className='space-y-4 p-6'>
-        <div className='flex items-start justify-between gap-4'>
+        <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4'>
           <div className='space-y-1'>
             <p className='text-sm text-muted-foreground'>{entry.dateLabel}</p>
             <h3 className='font-heading text-xl font-bold'>{entry.tournament}</h3>
             <p className='text-sm text-muted-foreground'>{entry.venue}</p>
           </div>
-          <Badge variant={statusVariant} size='sm' radius='full'>
+          <Badge variant={statusVariant} size='sm' radius='full' className='w-fit'>
             {entry.status}
           </Badge>
         </div>
@@ -420,11 +431,11 @@ export function LeaderboardCard({ rows }: { rows: LeaderboardRow[] }) {
         <CardTitle className='text-xl'>Live leaderboard</CardTitle>
         <CardDescription>Current field shape and the players setting the pace.</CardDescription>
       </CardHeader>
-      <CardContent className='space-y-3 pb-6'>
+      <CardContent className='space-y-3 px-4 pb-4 sm:px-6 sm:pb-6'>
         {rows.map((row) => (
           <div
             key={row.rank}
-            className='flex items-center gap-4 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3'>
+            className='flex flex-col gap-3 rounded-2xl border border-border/60 bg-muted/20 px-4 py-3 sm:flex-row sm:items-center'>
             <div className='flex size-10 items-center justify-center rounded-2xl bg-primary/10 font-semibold text-primary'>
               {row.rank}
             </div>
@@ -435,7 +446,7 @@ export function LeaderboardCard({ rows }: { rows: LeaderboardRow[] }) {
               </div>
               <p className='text-sm text-muted-foreground'>{row.note}</p>
             </div>
-            <Badge variant='secondary' size='sm' radius='full' className='bg-foreground text-background'>
+            <Badge variant='secondary' size='sm' radius='full' className='w-fit bg-foreground text-background'>
               {row.score}
             </Badge>
           </div>
@@ -451,7 +462,7 @@ export function MetricGrid({ metrics }: { metrics: Array<{ label: string; value:
       {metrics.map((metric) => (
         <Card key={metric.label} size='sm' className='border-border/70 bg-primary'>
           <CardContent className='space-y-2 p-4'>
-            <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{metric.label}</p>
+            <p className='text-xs uppercase tracking-[0.24em] text-white'>{metric.label}</p>
             <p className='font-heading text-3xl font-bold tracking-tight'>{metric.value}</p>
             <p className='text-sm text-muted-foreground'>{metric.note}</p>
           </CardContent>

@@ -96,7 +96,7 @@ export default function TourDetail({ tourId }: TourDetailProps) {
         </div>
 
         <div className='space-y-4'>
-          <Card className='sticky top-24 border-border/70'>
+          <Card className='border-border/70 md:sticky md:top-24'>
             <CardHeader>
               <CardTitle className='text-xl'>Entry summary</CardTitle>
             </CardHeader>

@@ -41,7 +41,7 @@ export const NewEntryForm = ({
   return (
     <form.AppForm>
       <form
-        className='grid md:grid-cols-3 gap-8 bg-white/5 px-4 pt-8'
+        className='grid gap-6 bg-white/5 px-4 pt-8 md:grid-cols-3 md:gap-8'
         onSubmit={(event) => {
           event.preventDefault()
           void form.handleSubmit()
@@ -116,7 +116,7 @@ export const NewEntryForm = ({
             )}
           </form.AppField>
           {/*<div className='h-28 bg-slate-100 rounded-md'></div>*/}
-          <div className='flex items-center space-x-4 mt-6'>
+          <div className='mt-6 flex flex-col gap-4 sm:flex-row sm:items-start'>
             <form.AppField name='division'>
               {({ SelectField }) => (
                 <SelectField
@@ -146,13 +146,13 @@ export const NewEntryForm = ({
           </div>
         </div>
 
-        <div className='flex flex-wrap items-center justify-end gap-6 pt-4'>
-          <p className='text-sm text-muted-foreground text-center'>
+        <div className='flex flex-col gap-4 pt-4 text-center md:items-end md:text-right'>
+          <p className='text-sm text-muted-foreground'>
             By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
             follows payment review.
           </p>
-          <div className='flex flex-wrap gap-3 w-full'>
-            <Button size='xl' type='submit' variant='default' className='bg-sky-500' disabled={form.state.isSubmitting}>
+          <div className='flex w-full flex-wrap gap-3 md:w-auto'>
+            <Button size='xl' type='submit' variant='default' className='w-full bg-sky-500 md:w-auto' disabled={form.state.isSubmitting}>
               <span className='px-2 font-medium uppercase'>{formId}</span>
             </Button>
           </div>
