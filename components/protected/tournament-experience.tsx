@@ -277,7 +277,7 @@ export function TournamentHero({
             </h1>
             <p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>{description}</p>
           </div>
-          <div className='max-w-xl rounded-lg border border-dashed bg-background/80 px-3 sm:px-4'>
+          <div className='max-w-xl rounded-lg border border-dashed bg-background/80 dark:bg-foreground/10 px-3 sm:px-4'>
             <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
               <Icon name='location' className='size-4' />
               <p className='min-w-0 flex-1 font-ios'>Mt. Malarayat Golf & Country Club</p>
@@ -294,14 +294,14 @@ export function TournamentHero({
               <Link
                 className={cn(
                   buttonVariants({ size: 'xl' }),
-                  'w-full bg-foreground px-8 text-sm font-poly font-medium sm:w-auto'
+                  'w-full bg-primary text-white px-8 text-sm font-poly font-medium sm:w-auto'
                 )}
                 href={primaryHref}>
                 {primaryLabel}
               </Link>
             )}
             <Link
-              className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'w-full font-poly sm:w-auto')}
+              className={cn(buttonVariants({ variant: 'ghost', size: 'xl' }), 'w-full font-poly sm:w-auto')}
               href={secondaryHref}>
               {secondaryLabel}
             </Link>

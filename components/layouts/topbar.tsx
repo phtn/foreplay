@@ -8,6 +8,7 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { User } from 'firebase/auth'
 import Link from 'next/link'
+import { Brand } from './brand'
 
 interface HeaderProps {
   pathname: string
@@ -27,14 +28,7 @@ export const Topbar = ({ pathname, user, mobileOpen, toggleMobileOpen, setMobile
         }
       )}>
       <div className='mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
-        <Link href='/' className='flex min-w-0 items-center gap-2'>
-          <div className='relative inline-flex size-11 items-center justify-center rounded-2xl sm:size-12'>
-            <Icon name='squircle' className='absolute top-0 h-9 w-9 text-primary sm:h-10 sm:w-10' />
-            <Icon name='golf-tee' className='relative size-6.5 text-white sm:size-7.5' />
-          </div>
-          <span className='hidden font-poly font-bold text-xl tracking-tight sm:inline xl:text-2xl'>Foreplay</span>
-        </Link>
-
+        <Brand />
         <Navbar pathname={pathname} />
 
         <div className='flex items-center gap-2'>
@@ -64,7 +58,7 @@ export const Topbar = ({ pathname, user, mobileOpen, toggleMobileOpen, setMobile
                   <SignOutButton withLabel />
                 </DropdownMenuItem>
               </DropdownMenuContent>
-              </DropdownMenu>
+            </DropdownMenu>
 
             <Button variant='ghost' size='icon' className='shrink-0 md:hidden' onClick={toggleMobileOpen}>
               <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
