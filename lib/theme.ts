@@ -42,9 +42,9 @@ export const THEME_SCRIPT = `
 
   try {
     const storedTheme = window.localStorage.getItem(storageKey);
-    applyTheme(isTheme(storedTheme) ? storedTheme : 'system');
+    applyTheme(isTheme(storedTheme) ? storedTheme : 'light');
   } catch {
-    applyTheme('system');
+    applyTheme('light');
   }
 })();
 `.trim()

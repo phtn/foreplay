@@ -1,14 +1,125 @@
 [
   {
+    "title": "Seoul of Manila Golf Tournament 2026",
+    "venue": "Pradera Verde Golf & Country Club, Pampanga",
+    "event_date": "July 18, 2026",
+    "gate_open_at": 1784329200000,
+    "gate_open": 1784329200000,
+    "registration_fee": 0,
+    "registered_slots": 0,
+    "slots_limit": 120,
+    "divisions": [
+      "Corporate",
+      "System 36",
+      "Sponsor flights",
+      "VIP banquet"
+    ],
+    "bank_details_text": "Sponsor package reservations are coordinated through the tournament secretariat.",
+    "published": true,
+    "description": "A corporate golf and networking tournament built around executive access, premium brand placement, a major hole-in-one prize, and a high-value sponsor package ladder.",
+    "commission_type": "flat",
+    "commission_value": 0,
+    "ticket_primary_color": "#1e3a8a",
+    "ticket_secondary_color": "#111827",
+    "overview_facts": [
+      {
+        "label": "Date & Time",
+        "value": "July 18, 2026 | 7:00 AM Shotgun Start"
+      },
+      {
+        "label": "Official Venue",
+        "value": "Pradera Verde Golf & Country Club, Pampanga (Pinatubo Course)"
+      },
+      {
+        "label": "Format",
+        "value": "System 36 handicapping format"
+      },
+      {
+        "label": "Hole-in-One Grand Prize",
+        "value": "2026 Ford Everest 4x2 Sport on Hole 15 Island Green"
+      },
+      {
+        "label": "Cash Prize Purse",
+        "value": "₱450,000 total cash rewards"
+      }
+    ],
+    "partner_pitch": "Position your brand directly in front of business owners, key executives, and industry leaders through a premium golf tournament environment designed for face-to-face corporate engagement.",
+    "partner_reasons": [
+      {
+        "title": "High-value networking",
+        "description": "Secure over five hours of uninterrupted casual interaction with high-net-worth individuals, enterprise owners, and corporate executives."
+      },
+      {
+        "title": "Premium brand association",
+        "description": "Align with prestige, athletic excellence, and a world-class championship golf facility."
+      },
+      {
+        "title": "Organic brand visibility",
+        "description": "A luxury SUV grand prize and major cash purse create photography, social media, and sponsor placement moments."
+      }
+    ],
+    "sponsorship_tiers": [
+      {
+        "name": "Platinum",
+        "investment_label": "₱200,000",
+        "playing_access": "4 Tickets",
+        "access_note": "1 Full Flight",
+        "benefits": [
+          "\"Presented by [Your Brand]\" co-branding on the main welcome arch.",
+          "Co-naming rights on the official Ford Everest Hole-in-One field signage.",
+          "Exclusive corporate logo placement across all player golf carts.",
+          "Dedicated physical activation tent at high-traffic Hole 1 or Hole 18.",
+          "Reserved VIP banquet table and 3-minute executive speaking slot."
+        ]
+      },
+      {
+        "name": "Gold",
+        "investment_label": "₱100,000",
+        "playing_access": "2 Tickets",
+        "benefits": [
+          "Dedicated branding and booth setup space at a high-visibility Par 3 hole.",
+          "Prominent logo on the main sponsor board, backdrops, and giveaway bags.",
+          "Exclusive sponsor spotlight feature post across social media channels."
+        ]
+      },
+      {
+        "name": "Silver",
+        "investment_label": "₱50,000",
+        "playing_access": "1 Ticket",
+        "benefits": [
+          "Shared banner signage displayed at a designated tee box or putting green.",
+          "Opportunity to insert one corporate promotional item or voucher inside giveaway bags.",
+          "Digital logo inclusion across all pre-event email newsletters."
+        ]
+      },
+      {
+        "name": "Bronze",
+        "investment_label": "₱20,000",
+        "playing_access": "None",
+        "benefits": [
+          "Official logo placement on the collective sponsor board at the clubhouse.",
+          "Formal corporate acknowledgment and verbal thank-you during the awards ceremony."
+        ]
+      }
+    ],
+    "sponsor_contact_phone": "Secretariat contact to be assigned",
+    "sponsor_contact_email": "sponsors@seoulofmanila.example"
+  },
+  {
     "title": "Batangas Spring Classic",
     "venue": "Mt Malarayat Golf & Country Club",
-    "event_date": "June 24, 2026",
-    "gate_open_at": 1782248400000,
-    "gate_open": 1782248400000,
+    "event_date": "August 8, 2026",
+    "gate_open_at": 1786138200000,
+    "gate_open": 1786138200000,
     "registration_fee": 2500,
     "registered_slots": 48,
     "slots_limit": 120,
-    "divisions": ["Championship", "Amateur", "Ladies", "Senior"],
+    "divisions": [
+      "Championship",
+      "Amateur",
+      "Ladies",
+      "Senior"
+    ],
     "bank_details_text": "Pay via bank transfer or GCash before tee time confirmation.",
     "published": true,
     "description": "A polished tournament experience for serious amateurs and club players who want a premium field, well-run logistics, and a clean path to pay, confirm, and play.",
@@ -20,13 +131,17 @@
   {
     "title": "Coastal Classic Open",
     "venue": "Southlinks Golf Club",
-    "event_date": "July 4, 2026",
-    "gate_open_at": 1783111500000,
-    "gate_open": 1783111500000,
+    "event_date": "September 5, 2026",
+    "gate_open_at": 1788559200000,
+    "gate_open": 1788559200000,
     "registration_fee": 1800,
     "registered_slots": 63,
     "slots_limit": 96,
-    "divisions": ["Open", "Amateur", "Net"],
+    "divisions": [
+      "Open",
+      "Amateur",
+      "Net"
+    ],
     "bank_details_text": "GCash and bank payment accepted for slot reservation.",
     "published": true,
     "description": "Fast-moving weekend field with a lighter format and a strong sponsor prize table.",
@@ -38,13 +153,17 @@
   {
     "title": "Mid-Summer Championship",
     "venue": "The Orchard Golf & Country Club",
-    "event_date": "August 9, 2026",
-    "gate_open_at": 1786224600000,
-    "gate_open": 1786224600000,
+    "event_date": "October 10, 2026",
+    "gate_open_at": 1791582300000,
+    "gate_open": 1791582300000,
     "registration_fee": 3500,
     "registered_slots": 112,
     "slots_limit": 144,
-    "divisions": ["Championship", "Ladies", "Senior"],
+    "divisions": [
+      "Championship",
+      "Ladies",
+      "Senior"
+    ],
     "bank_details_text": "Payment verification required before final pairing release.",
     "published": true,
     "description": "Built for players chasing a bigger purse, tighter tee sheets, and a more competitive bracket.",
@@ -56,13 +175,16 @@
   {
     "title": "Sunset Links Invitational",
     "venue": "Splendido Taal Country Club",
-    "event_date": "September 18, 2026",
-    "gate_open_at": 1789705800000,
-    "gate_open": 1789705800000,
+    "event_date": "November 14, 2026",
+    "gate_open_at": 1794634200000,
+    "gate_open": 1794634200000,
     "registration_fee": 2000,
     "registered_slots": 37,
     "slots_limit": 84,
-    "divisions": ["Open", "Senior"],
+    "divisions": [
+      "Open",
+      "Senior"
+    ],
     "bank_details_text": "Compact invitational with short payment turnaround.",
     "published": true,
     "description": "A compact invitational built around match play brackets, tighter fields, and a premium twilight finish.",

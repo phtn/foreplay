@@ -1,0 +1,41 @@
+{
+  "name": "SponsorLead",
+  "type": "object",
+  "properties": {
+    "tournament_id": {
+      "type": "string",
+      "description": "FK to Tournament"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Interested sponsor company"
+    },
+    "authorized_signatory": {
+      "type": "string",
+      "description": "Person authorized to confirm sponsorship"
+    },
+    "contact_number": {
+      "type": "string",
+      "description": "Sponsor contact number"
+    },
+    "contact_email": {
+      "type": "string",
+      "description": "Sponsor contact email"
+    },
+    "preferred_tier": {
+      "type": "string",
+      "description": "Requested sponsorship tier"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["new", "contacted", "won", "lost"],
+      "default": "new",
+      "description": "Sponsor lead pipeline status"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Internal notes"
+    }
+  },
+  "required": ["tournament_id", "company_name"]
+}

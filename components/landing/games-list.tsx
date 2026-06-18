@@ -91,7 +91,7 @@ const GameRow = (row: BookedGames) => {
                       buttonVariants({ size: 'sm' }),
                       'rounded-full bg-hermes px-4 text-white shadow-sm hover:bg-[#d63f19]'
                     )}
-                    href='/auth'>
+                    href={row.actionHref ?? '/auth'}>
                     {row.action}
                   </Link>
                 ) : (

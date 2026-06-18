@@ -6,6 +6,7 @@ import { historySchema } from './history/d'
 import { leagueSchema } from './leagues/d'
 import { orderSchema } from './orders/d'
 import { registrationSchema } from './registrations/d'
+import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema } from './subscriptions/d'
 import { tournamentSchema } from './tournaments/d'
 import { txnSchema } from './txns/d'
@@ -25,6 +26,7 @@ export default defineSchema({
   registrations: defineTable(registrationSchema)
     .index('by_user_id', ['user_id'])
     .index('by_tournamentId', ['tournament_id']),
+  sponsorLeads: defineTable(sponsorLeadSchema).index('by_tournamentId', ['tournament_id']),
   subscriptions: defineTable(subscriptionSchema)
     .index('by_user_id', ['user_id'])
     .index('by_tournamentId', ['tournament_id']),

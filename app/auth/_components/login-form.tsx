@@ -69,11 +69,11 @@ export function LoginForm() {
 
   return (
     <>
-      <div className='grid w-full grid-cols-2 gap-2 sm:grid-cols-4 md:gap-4'>
+      <div className='flex items-center gap-2 md:gap-4 mb-6'>
         <Button
           type='button'
           className={cn(
-            'col-span-2 h-12 gap-3 rounded-md border border-foreground/40 bg-white/80 px-4 text-sm font-medium transition-colors hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 disabled:pointer-events-none disabled:opacity-70 sm:col-span-1',
+            'col-span-2 h-12 w-auto gap-3 rounded-md border border-foreground/40 bg-white/80 px-4 text-sm font-medium transition-colors hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 disabled:pointer-events-none disabled:opacity-70 sm:col-span-1',
             { 'disabled:opacity-100': isAuthLoading }
           )}
           onClick={handleGoogle}
@@ -86,19 +86,19 @@ export function LoginForm() {
         </Button>
         <Button
           type='button'
-          className='h-12 gap-2 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='size-12 aspect-square flex-1 gap-2 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'x'} className='size-4.5 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='h-12 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='size-12 aspect-square flex-1 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'github'} className='size-8 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='h-12 gap-3 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='size-12 aspect-square flex-1 gap-3 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'msft'} className='size-4.5 text-foreground' />
         </Button>

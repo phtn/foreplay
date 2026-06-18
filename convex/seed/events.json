@@ -1,13 +1,35 @@
 [
   {
+    "title": "Seoul of Manila Golf Tournament 2026",
+    "organizer": "Foreplay Golf Club",
+    "organizer_id": "org-foreplay",
+    "venue": "Pradera Verde Golf & Country Club, Pampanga",
+    "event_date": "July 18, 2026",
+    "event_type": "tournament",
+    "gate_open_at": 1784329200000,
+    "gate_open": 1784329200000,
+    "registered_slots": 0,
+    "slots_limit": 120,
+    "bank_details_text": "Sponsor package reservations are coordinated through the tournament secretariat.",
+    "published": true,
+    "active": true,
+    "description": "A corporate golf and networking tournament built around executive access, premium brand placement, a major hole-in-one prize, and a high-value sponsor package ladder.",
+    "commission_type": "flat",
+    "commission_value": 0,
+    "ticket_price": 0,
+    "ticket_primary_color": "#1e3a8a",
+    "ticket_secondary_color": "#111827",
+    "updated_at": 1784329200000
+  },
+  {
     "title": "Batangas Spring Classic",
     "organizer": "Foreplay Golf Club",
     "organizer_id": "org-foreplay",
     "venue": "Mt Malarayat Golf & Country Club",
-    "event_date": "June 24, 2026",
+    "event_date": "August 8, 2026",
     "event_type": "championship",
-    "gate_open_at": 1782248400000,
-    "gate_open": 1782248400000,
+    "gate_open_at": 1786138200000,
+    "gate_open": 1786138200000,
     "registered_slots": 48,
     "slots_limit": 120,
     "bank_details_text": "Pay via bank transfer or GCash before tee time confirmation.",
@@ -19,17 +41,17 @@
     "ticket_price": 2500,
     "ticket_primary_color": "#0f766e",
     "ticket_secondary_color": "#134e4a",
-    "updated_at": 1782248400000
+    "updated_at": 1786138200000
   },
   {
     "title": "Coastal Classic Open",
     "organizer": "Foreplay Golf Club",
     "organizer_id": "org-foreplay",
     "venue": "Southlinks Golf Club",
-    "event_date": "July 4, 2026",
+    "event_date": "September 5, 2026",
     "event_type": "tournament",
-    "gate_open_at": 1783111500000,
-    "gate_open": 1783111500000,
+    "gate_open_at": 1788559200000,
+    "gate_open": 1788559200000,
     "registered_slots": 63,
     "slots_limit": 96,
     "bank_details_text": "GCash and bank payment accepted for slot reservation.",
@@ -41,17 +63,17 @@
     "ticket_price": 1800,
     "ticket_primary_color": "#1d4ed8",
     "ticket_secondary_color": "#0f172a",
-    "updated_at": 1783111500000
+    "updated_at": 1788559200000
   },
   {
     "title": "Mid-Summer Championship",
     "organizer": "Foreplay Golf Club",
     "organizer_id": "org-foreplay",
     "venue": "The Orchard Golf & Country Club",
-    "event_date": "August 9, 2026",
+    "event_date": "October 10, 2026",
     "event_type": "championship",
-    "gate_open_at": 1786224600000,
-    "gate_open": 1786224600000,
+    "gate_open_at": 1791582300000,
+    "gate_open": 1791582300000,
     "registered_slots": 112,
     "slots_limit": 144,
     "bank_details_text": "Payment verification required before final pairing release.",
@@ -63,17 +85,17 @@
     "ticket_price": 3500,
     "ticket_primary_color": "#7c3aed",
     "ticket_secondary_color": "#312e81",
-    "updated_at": 1786224600000
+    "updated_at": 1791582300000
   },
   {
     "title": "Sunset Links Invitational",
     "organizer": "Foreplay Golf Club",
     "organizer_id": "org-foreplay",
     "venue": "Splendido Taal Country Club",
-    "event_date": "September 18, 2026",
+    "event_date": "November 14, 2026",
     "event_type": "regular",
-    "gate_open_at": 1789705800000,
-    "gate_open": 1789705800000,
+    "gate_open_at": 1794634200000,
+    "gate_open": 1794634200000,
     "registered_slots": 37,
     "slots_limit": 84,
     "bank_details_text": "Compact invitational with short payment turnaround.",
@@ -85,6 +107,6 @@
     "ticket_price": 2000,
     "ticket_primary_color": "#ca8a04",
     "ticket_secondary_color": "#78350f",
-    "updated_at": 1789705800000
+    "updated_at": 1794634200000
   }
 ]

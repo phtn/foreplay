@@ -25,9 +25,9 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 function readStoredTheme(): Theme {
   try {
     const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
-    return isTheme(storedTheme) ? storedTheme : 'system'
+    return isTheme(storedTheme) ? storedTheme : 'light'
   } catch {
-    return 'system'
+    return 'light'
   }
 }
 
@@ -56,7 +56,7 @@ function persistTheme(theme: Theme) {
 
 function getInitialTheme(): Theme {
   if (typeof document === 'undefined') {
-    return 'system'
+    return 'light'
   }
 
   return isTheme(document.documentElement.dataset.themePreference)

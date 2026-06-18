@@ -24,6 +24,7 @@ export default function TournamentsPage() {
           eyebrow='Tournament board'
           title='A clean place to browse every entry worth selling.'
           description='Present the field, the price, and the format in a way that makes the next click feel obvious.'
+          venueLabel={featuredTournament.venue}
           primaryHref='/entries'
           secondaryHref='/'
           primaryLabel='Review my entries'

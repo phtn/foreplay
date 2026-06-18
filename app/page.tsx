@@ -3,75 +3,78 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { EventViewer } from '@/components/landing/cards'
 import { GamesList } from '@/components/landing/games-list'
 import { BookedGames } from '@/components/landing/types'
 import { Topbar } from '@/components/layouts/topbar'
+import { featuredTournament } from '@/components/protected/tournament-experience'
 import { useTheme } from '@/components/theme'
 import { Icon } from '@/lib/icons'
 import { useMemo } from 'react'
 
 const proofPoints = [
-  { label: 'Views', value: '1.5k', icon: 'bar-chart' as const },
-  { label: 'Entries', value: '132', icon: 'ticket' as const },
-  { label: 'Confirmed', value: '84%', icon: 'check' as const }
+  { label: 'Players', value: '120', icon: 'ticket' as const },
+  { label: 'Cash purse', value: '₱450k', icon: 'bar-chart' as const },
+  { label: 'Grand prize', value: 'Everest', icon: 'check' as const }
 ]
 
 const gamesList: BookedGames[] = [
   {
-    day: 'Fri',
-    date: '29',
-    month: 'November',
-    time: '10:00 - 14:00',
-    place: '5, main golf course',
-    team: 'Green kings',
-    status: 'Paid',
-    attendance: '6/8 have confirmed their presence',
-    avatar: 'DG',
-    extra: '+5'
+    day: 'Sat',
+    date: '18',
+    month: 'July',
+    time: '06:00 - 07:00',
+    place: 'Pradera Verde clubhouse',
+    team: 'Sponsor check-in',
+    status: 'Open',
+    attendance: 'Corporate guests, player kits, and sponsor flight confirmation.',
+    avatar: 'SM',
+    extra: '+4'
   },
   {
     day: 'Sat',
-    date: '30',
-    month: 'November',
-    time: '11:00 - 17:30',
-    place: '4, north wing',
-    team: 'Fore force',
-    status: 'Unpaid',
-    attendance: '4/4 have confirmed their presence',
-    avatar: 'MK',
-    extra: '+3'
+    date: '18',
+    month: 'July',
+    time: '07:00 - 12:30',
+    place: 'Pinatubo Course',
+    team: 'Shotgun start',
+    status: 'Live',
+    attendance: 'System 36 play with sponsor activations across priority holes.',
+    avatar: '36',
+    extra: '+18'
   },
   {
-    day: 'Sun',
-    date: '01',
-    month: 'December',
-    time: '12:00 - 16:00',
-    place: '5, main golf course',
-    team: 'Jaylon Saris',
-    status: 'Invite',
-    attendance: 'We need you on our team for this game.',
-    avatar: 'JS',
+    day: 'Sat',
+    date: '18',
+    month: 'July',
+    time: 'Hole 15',
+    place: 'Island green',
+    team: 'Hole-in-one prize',
+    status: 'Prize',
+    attendance: '2026 Ford Everest 4x2 Sport headline moment.',
+    avatar: 'FE',
     extra: null,
-    action: 'Accept'
+    action: 'Sponsor',
+    actionHref: `/tournaments/${featuredTournament.id}/sponsorship`
   },
   {
-    day: 'Mon',
-    date: '02',
-    month: 'December',
-    time: '11:30 - 15:30',
-    place: '2, clubhouse range',
-    team: 'Rough riders',
-    status: 'Paid',
-    attendance: '4/6 have confirmed their presence',
-    avatar: 'RR',
-    extra: '+3'
+    day: 'Sat',
+    date: '18',
+    month: 'July',
+    time: 'After scoring',
+    place: 'VIP banquet',
+    team: 'Awards program',
+    status: 'VIP',
+    attendance: 'Cash prize ceremony, sponsor acknowledgments, and banquet networking.',
+    avatar: 'VP',
+    extra: '+1'
   }
 ]
 
 const courseStats = [
-  { label: 'Total distance', value: '320', unit: 'yards' },
-  { label: 'Putting avg', value: '1.8', unit: 'putts' },
-  { label: 'Fairways hit', value: '80', unit: '%' }
+  { label: 'Cash prize purse', value: '450k', unit: 'PHP' },
+  { label: 'Sponsor tiers', value: '4', unit: 'levels' },
+  { label: 'Player field', value: '120', unit: 'slots' }
 ]
 
 export default function HomePage() {
@@ -102,17 +105,14 @@ export default function HomePage() {
                 <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
                   Upcoming Tournament
                 </p>
-                <h1 className='max-w-[20rem] font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>
-                  Golden Ticket
+                <h1 className='max-w-[34rem] font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>
+                  Seoul of Manila
                 </h1>
                 <p className='hidden md:flex mt-6 max-w-xl text-base leading-7 dark:text-white/90 text-foreground/80 sm:text-lg'>
-                  Foreplay opens like a private club dashboard: clear bookings, live player context, and a course view
-                  that makes the next tournament feel ready to join.
+                  A corporate golf and networking tournament at Pradera Verde with System 36 play, premium sponsor
+                  visibility, and a Ford Everest hole-in-one grand prize.
                 </p>
-                <div className='mt-6 flex items-center space-x-2'>
-                  <Icon name='map-pin' className='size-5 text-white/70' />
-                  <p className='max-w-xl text-base leading-7 text-white/90 sm:text-lg'>Mt Malarayat</p>
-                </div>
+
                 <div className='mt-8 flex flex-wrap items-center gap-5 text-sm font-medium text-white/85'>
                   {proofPoints.map((point) => (
                     <div key={point.label} className='flex items-center gap-2'>
@@ -124,9 +124,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className='hidden gap-5 sm:grid md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2'>
-                {/*<FeatureEvent />*/}
-                {/*<PracticeCard />*/}
+              <div className='hidden gap-5 sm:grid'>
+                <EventViewer />
               </div>
             </div>
           </section>
@@ -135,7 +134,7 @@ export default function HomePage() {
             <div>
               <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='flex items-center gap-3'>
-                  <h2 className='font-poly text-2xl leading-none'>Games</h2>
+                  <h2 className='font-poly text-2xl leading-none'>Tournament Day</h2>
                   <button
                     className='flex size-5 md:size-8 items-center justify-center rounded-full bg-white/70 text-[#1d2824] shadow-sm'
                     type='button'
@@ -255,7 +254,7 @@ export default function HomePage() {
 
             <aside className='rounded-[28px] bg-white/62 p-5 shadow-[0_24px_70px_rgba(31,62,46,0.12)] backdrop-blur-xl sm:p-6'>
               <div className='flex items-center justify-between gap-4'>
-                <h2 className='font-poly text-3xl leading-none'>Golf Course</h2>
+                <h2 className='font-poly text-3xl leading-none'>Pinatubo Course</h2>
                 <button
                   className='flex size-12 items-center justify-center rounded-full bg-white/85 text-[#1d2824]'
                   type='button'
@@ -281,7 +280,7 @@ export default function HomePage() {
                     <Icon name='flag-fill' className='size-4' />
                   </span>
                   <span className='absolute bottom-11 left-[48%] flex size-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#1d2824] shadow-lg'>
-                    DG
+                    SM
                   </span>
                 </div>
 
@@ -300,19 +299,19 @@ export default function HomePage() {
 
               <div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
                 <span className='flex size-12 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold'>
-                  DG
+                  SM
                 </span>
                 <div className='min-w-0'>
-                  <p className='truncate text-base font-semibold'>Davis Geidt</p>
-                  <p className='truncate text-sm text-[#1d2824]/50'>Rough riders</p>
+                  <p className='truncate text-base font-semibold'>Seoul of Manila</p>
+                  <p className='truncate text-sm text-[#1d2824]/50'>Sponsor flight</p>
                 </div>
                 <div className='text-center'>
-                  <p className='font-semibold'>70%</p>
-                  <p className='text-xs text-[#1d2824]/45'>GIR</p>
+                  <p className='font-semibold'>36</p>
+                  <p className='text-xs text-[#1d2824]/45'>Format</p>
                 </div>
                 <div className='text-center'>
                   <p className='font-semibold'>4</p>
-                  <p className='text-xs text-[#1d2824]/45'>Strokes</p>
+                  <p className='text-xs text-[#1d2824]/45'>Tiers</p>
                 </div>
               </div>
             </aside>

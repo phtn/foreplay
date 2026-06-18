@@ -67,6 +67,57 @@
     "ticket_secondary_color": {
       "type": "string",
       "description": "Secondary accent color hex for ticket design elements (e.g. #f5a623)"
+    },
+    "overview_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      },
+      "description": "Sponsor/player-facing fact sheet rows"
+    },
+    "partner_pitch": {
+      "type": "string",
+      "description": "Corporate partnership positioning copy"
+    },
+    "partner_reasons": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      },
+      "description": "Reasons a partner should sponsor the tournament"
+    },
+    "sponsorship_tiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "investment_label": { "type": "string" },
+          "playing_access": { "type": "string" },
+          "access_note": { "type": "string" },
+          "benefits": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "description": "Corporate sponsor package ladder"
+    },
+    "sponsor_contact_phone": {
+      "type": "string",
+      "description": "Sponsor secretariat phone/contact label"
+    },
+    "sponsor_contact_email": {
+      "type": "string",
+      "description": "Sponsor secretariat email"
     }
   },
   "required": ["title", "venue", "event_date", "registration_fee"]

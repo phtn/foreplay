@@ -5,19 +5,19 @@ import Link from 'next/link'
 import { buttonVariants } from '../ui/button'
 
 const practiceDays = [
-  { day: 'Mon', label: '3h', height: 74 },
-  { day: 'Tue', label: '-', height: 30 },
-  { day: 'Wed', label: '3h', height: 74 },
-  { day: 'Thu', label: '4h', height: 96, active: true },
-  { day: 'Fri', label: '-', height: 30 }
+  { day: '6a', label: 'In', height: 58 },
+  { day: '7a', label: 'Tee', height: 88 },
+  { day: '15', label: 'SUV', height: 96, active: true },
+  { day: '12p', label: 'Score', height: 68 },
+  { day: 'VIP', label: 'Awards', height: 78 }
 ]
 export const PracticeCard = () => {
   return (
     <div className='rounded-[22px] border border-white/45 bg-white/20 p-5 shadow-[0_24px_70px_rgba(24,62,37,0.16)] backdrop-blur-2xl'>
       <div className='flex items-center justify-between gap-3'>
-        <h2 className='font-poly text-2xl leading-none text-[#1d2824]'>Practice time</h2>
+        <h2 className='font-poly text-2xl leading-none text-[#1d2824]'>Event flow</h2>
         <button className='inline-flex items-center gap-1 text-sm font-medium text-[#1d2824]/65' type='button'>
-          Weekdays
+          July 18
           <Icon name='chevron-down' className='size-4' />
         </button>
       </div>
@@ -47,28 +47,44 @@ export const PracticeCard = () => {
   )
 }
 
-export const FeaturedEvent = () => {
+export const EventViewer = () => {
   return (
-    <div className='min-h-72 rounded-[22px] border border-white/45 bg-white/18 p-5 shadow-[0_24px_70px_rgba(24,62,37,0.18)] backdrop-blur-2xl'>
+    <div className='min-h-44 rounded-[22px] border border-white/60 bg-white/52 p-5 shadow-[0_24px_70px_rgba(24,62,37,0.2)] backdrop-blur-2xl'>
       <div className='flex h-full flex-col justify-between'>
         <div>
-          <p className='text-sm font-medium text-[#27352f]/75'>Featured event</p>
-          <h2 className='mt-3 font-poly text-3xl leading-tight text-[#1e2924]'>{featuredTournament.title}</h2>
-          <p className='mt-3 text-sm leading-6 text-[#31413a]/75'>{featuredTournament.venue}</p>
+          <h2 className='mt-3 font-poly text-2xl leading-tight text-[#1e2924]'>View Tournament</h2>
+          <div className='mt-4 grid gap-2'>
+            <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
+              <Icon name='watch' className='size-4.5 shrink-0 text-slate-600' />
+              <span>{featuredTournament.dateLabel}</span>
+            </div>
+            <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
+              <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
+              <span className='truncate'>{featuredTournament.venue}</span>
+            </div>
+          </div>
         </div>
 
-        <div className='mt-8 flex items-center justify-between gap-3'>
+        <div className='mt-8 flex items-center justify-between gap-4 w-full'>
           <Link
             className={cn(
               buttonVariants({ size: 'lg' }),
-              'rounded-full bg-white/80 px-5 text-[#1d2824] shadow-sm hover:bg-white'
+              'rounded-full bg-white/80 px-5 text-[#1d2824] shadow-sm hover:bg-white flex-1'
             )}
             href={`/tournaments/${featuredTournament.id}`}>
-            View tournament
+            Open Tournament
           </Link>
-          <div className='rounded-full bg-white/75 px-4 py-3 text-sm font-semibold shadow-sm'>
+          <Link
+            className={cn(
+              buttonVariants({ size: 'lg' }),
+              'rounded-full bg-[#ef4b20] px-5 text-white shadow-sm hover:bg-[#d63f19] flex-1'
+            )}
+            href={`/tournaments/${featuredTournament.id}/sponsorship`}>
+            Sponsor
+          </Link>
+          {/*<div className='rounded-full bg-white/75 px-4 py-3 text-sm font-semibold shadow-sm'>
             {featuredTournament.feeLabel}
-          </div>
+          </div>*/}
         </div>
       </div>
     </div>

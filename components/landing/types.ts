@@ -10,4 +10,5 @@ export interface BookedGames {
   avatar: string
   extra: string | null
   action?: string
+  actionHref?: string
 }
