@@ -94,6 +94,7 @@
   --color-success-foreground: var(--success-foreground);
   --color-success: var(--success);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-hermes: oklch(0.64 0.207 34.88);
 }
 
 :root {

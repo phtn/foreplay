@@ -121,7 +121,7 @@ export const ThemeToggle = ({ label, withLabel = false }: ThemeToggleProps) => {
       <Icon
         name='theme'
         className={cn(
-          'size-4 opacity-80 group-active:scale-80 transition-all duration-250 ease-in text-slate-500 dark:text-slate-200',
+          'size-4 opacity-80 group-active:scale-80 transition-all duration-250 ease-in text-slate-600 dark:text-slate-200',
           {
             'rotate-90': themeShortLabels[currentTheme] === 'Da',
             '-rotate-90': themeShortLabels[currentTheme] === 'Li'

@@ -2,13 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 
+import { GamesList } from '@/components/landing/games-list'
+import { BookedGames } from '@/components/landing/types'
+import { Topbar } from '@/components/layouts/topbar'
 import { useTheme } from '@/components/theme'
-import { buttonVariants } from '@/components/ui/button'
-import { Topbar } from '@/components/unprotected/topbar'
 import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
 import { useMemo } from 'react'
 
 const proofPoints = [
@@ -17,7 +16,7 @@ const proofPoints = [
   { label: 'Confirmed', value: '84%', icon: 'check' as const }
 ]
 
-const bookingRows = [
+const gamesList: BookedGames[] = [
   {
     day: 'Fri',
     date: '29',
@@ -76,14 +75,13 @@ const courseStats = [
 ]
 
 export default function HomePage() {
-  const pathname = usePathname()
   const { resolvedTheme } = useTheme()
   const darkTheme = useMemo(() => resolvedTheme === 'dark', [resolvedTheme])
 
   return (
-    <div className='min-h-dvh dark:bg-background bg-[#1f2b27] px-3 py-4 text-[#1c2621] sm:px-5 sm:py-7 lg:px-10'>
-      <div className='mx-auto max-w-410 overflow-hidden rounded-[28px] bg-[#dcebe5] shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
-        <Topbar pathname={pathname} />
+    <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
+      <div className='mx-auto max-w-410 overflow-hidden rounded-b-[1rem] md:rounded-[3rem] bg-[#dcebe5] dark:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
+        <Topbar />
         <main className=' dark:bg-slate-400/90'>
           <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
             <Image
@@ -100,18 +98,18 @@ export default function HomePage() {
             <div className='dark:hidden absolute inset-0 bg-[url("/noise.svg")] opacity-12 blur-lg' />
 
             <div className='relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(350px,480px)] lg:items-end'>
-              <div className='max-w-3xl pt-10'>
-                <p className='mb-5 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
+              <div className='max-w-3xl pt-6 md:pt-10'>
+                <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
                   Upcoming Tournament
                 </p>
                 <h1 className='max-w-[20rem] font-poly text-4xl leading-[0.95] text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-7xl _lg:text-[7.2rem]'>
                   Golden Ticket
                 </h1>
-                <p className='mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>
+                <p className='hidden md:flex mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>
                   Foreplay opens like a private club dashboard: clear bookings, live player context, and a course view
                   that makes the next tournament feel ready to join.
                 </p>
-
+                <p className='mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>Malarayat</p>
                 <div className='mt-8 flex flex-wrap items-center gap-5 text-sm font-medium text-white/85'>
                   {proofPoints.map((point) => (
                     <div key={point.label} className='flex items-center gap-2'>
@@ -134,26 +132,30 @@ export default function HomePage() {
             <div>
               <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='flex items-center gap-3'>
+                  <h2 className='font-poly text-2xl leading-none'>Games</h2>
                   <button
-                    className='flex size-8 items-center justify-center rounded-full bg-white/70 text-[#1d2824] shadow-sm'
+                    className='flex size-5 md:size-8 items-center justify-center rounded-full bg-white/70 text-[#1d2824] shadow-sm'
                     type='button'
                     aria-label='Add booking'>
-                    <Icon name='add' className='size-4 opacity-70' />
+                    <Icon name='add' className='size-3 md:size-4 opacity-80' />
                   </button>
-                  <h2 className='font-poly text-3xl leading-none'>Games</h2>
                 </div>
 
                 <div className='flex items-center gap-4 text-sm text-[#1d2824]/60'>
                   <Link className='flex items-center gap-1' href='/tournaments'>
                     <span className='font-okx font-medium text-slate-500 dark:text-slate-200'>view more</span>
-                    <Icon name='chevron-right' className='size-4 opacity-80 -mb-0.5' />
+                    <Icon
+                      name='chevron-right'
+                      className='size-4 text-slate-500 dark:text-slate-200 opacity-80 -mb-0.5'
+                    />
                   </Link>
                 </div>
               </div>
+              <GamesList data={gamesList} />
 
-              <div className='space-y-4'>
-                {bookingRows.map((row, index) => {
-                  const showMonth = index === 0 || bookingRows[index - 1]?.month !== row.month
+              {/*<div className='space-y-4'>
+                {gamesList.map((row, index) => {
+                  const showMonth = index === 0 || gamesList[index - 1]?.month !== row.month
 
                   return (
                     <div key={`${row.day}-${row.date}-${row.team}`}>
@@ -245,11 +247,12 @@ export default function HomePage() {
                   )
                 })}
               </div>
+              */}
             </div>
 
             <aside className='rounded-[28px] bg-white/62 p-5 shadow-[0_24px_70px_rgba(31,62,46,0.12)] backdrop-blur-xl sm:p-6'>
               <div className='flex items-center justify-between gap-4'>
-                <h2 className='font-poly text-3xl leading-none'>Main golf course</h2>
+                <h2 className='font-poly text-3xl leading-none'>Golf Course</h2>
                 <button
                   className='flex size-12 items-center justify-center rounded-full bg-white/85 text-[#1d2824]'
                   type='button'
