@@ -128,7 +128,7 @@ export const ThemeToggle = ({ label, withLabel = false }: ThemeToggleProps) => {
           }
         )}
       />
-      {withLabel && <p className='capitalize'>{label ?? themeLabels[currentTheme]}</p>}
+      {withLabel && <p className='capitalize'>{(label ?? currentTheme === 'dark') ? 'light' : 'dark'}</p>}
     </button>
   )
 }

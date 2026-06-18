@@ -80,7 +80,7 @@ export default function HomePage() {
 
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
-      <div className='mx-auto max-w-410 overflow-hidden rounded-b-[1rem] md:rounded-[3rem] bg-[#dcebe5] dark:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
+      <div className='mx-auto max-w-410 overflow-hidden rounded-b-[1rem] md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
         <Topbar />
         <main className=' dark:bg-slate-400/90'>
           <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
@@ -102,14 +102,17 @@ export default function HomePage() {
                 <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
                   Upcoming Tournament
                 </p>
-                <h1 className='max-w-[20rem] font-poly text-4xl leading-[0.95] text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-7xl _lg:text-[7.2rem]'>
+                <h1 className='max-w-[20rem] font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>
                   Golden Ticket
                 </h1>
-                <p className='hidden md:flex mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>
+                <p className='hidden md:flex mt-6 max-w-xl text-base leading-7 dark:text-white/90 text-foreground/80 sm:text-lg'>
                   Foreplay opens like a private club dashboard: clear bookings, live player context, and a course view
                   that makes the next tournament feel ready to join.
                 </p>
-                <p className='mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>Malarayat</p>
+                <div className='mt-6 flex items-center space-x-2'>
+                  <Icon name='map-pin' className='size-5 text-white/70' />
+                  <p className='max-w-xl text-base leading-7 text-white/90 sm:text-lg'>Mt Malarayat</p>
+                </div>
                 <div className='mt-8 flex flex-wrap items-center gap-5 text-sm font-medium text-white/85'>
                   {proofPoints.map((point) => (
                     <div key={point.label} className='flex items-center gap-2'>

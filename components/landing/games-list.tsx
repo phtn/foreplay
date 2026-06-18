@@ -42,7 +42,7 @@ const GameRow = (row: BookedGames) => {
           <div className='absolute inset-x-4 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(29,40,36,0.14),rgba(239,75,32,0.28),transparent)]' />
 
           <div className='flex items-start gap-4'>
-            <div className='shrink-0 rounded-[22px] bg-[#1d2824] px-3 py-2.5 text-white shadow-[0_12px_28px_rgba(29,40,36,0.18)]'>
+            <div className='shrink-0 rounded-xl bg-[#1d2824] px-2.5 py-1.5 text-white text-center shadow-[0_12px_28px_rgba(29,40,36,0.18)]'>
               <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/65'>{row.day}</p>
               <p className='mt-1 font-poly text-2xl leading-none'>{row.date}</p>
             </div>
@@ -63,12 +63,12 @@ const GameRow = (row: BookedGames) => {
               </div>
 
               <div className='mt-4 grid gap-2'>
-                <div className='flex items-center gap-2 rounded-2xl bg-[#edf4f1] px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
-                  <Icon name='watch' className='size-4 shrink-0 text-[#1d2824]/45' />
+                <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
+                  <Icon name='watch' className='size-4.5 shrink-0 text-slate-600' />
                   <span>{row.time}</span>
                 </div>
-                <div className='flex items-center gap-2 rounded-2xl bg-[#edf4f1] px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
-                  <Icon name='map-pin' className='size-4 shrink-0 text-[#1d2824]/45' />
+                <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
+                  <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
                   <span className='truncate'>{row.place}</span>
                 </div>
               </div>
