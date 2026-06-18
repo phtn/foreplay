@@ -25,6 +25,20 @@
   font-style: monospace;
   font-mono: swap;
 }
+@font-face {
+  font-family: 'OKX';
+  src: url('/fonts/okxs-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-mono: swap;
+}
+@font-face {
+  font-family: 'OKX';
+  src: url('/fonts/okxs-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-mono: swap;
+}
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -33,6 +47,7 @@
   --font-display: var(--font-sans);
   --font-heading: var(--font-sans);
   --font-poly: 'PolySans';
+  --font-okx: 'OKX';
   --font-ios: 'Ios', monospace;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -178,10 +193,11 @@
   html {
     @apply font-sans;
   }
-}
-
-body {
-  ::-webkit-scrollbar {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
     display: none;
   }
 }

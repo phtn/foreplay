@@ -1,206 +1,318 @@
 'use client'
 
-import { Brand } from '@/components/layouts/brand'
-import { Navbar, NavItem } from '@/components/layouts/navbar'
-import { featuredTournament, SectionTitle, TournamentCard } from '@/components/protected/tournament-experience'
-import { buttonVariants } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Icon } from '@/lib/icons'
-import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const landingMetrics = [
-  { label: 'Players waiting', value: '132', note: 'Ready to convert into paid entries' },
-  { label: 'Open fields', value: '3', note: 'Active events with live inventory' },
-  { label: 'Sponsor value', value: 'Premium', note: 'Built to look and feel exclusive' }
+import { useTheme } from '@/components/theme'
+import { buttonVariants } from '@/components/ui/button'
+import { Topbar } from '@/components/unprotected/topbar'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { useMemo } from 'react'
+
+const proofPoints = [
+  { label: 'Views', value: '1.5k', icon: 'bar-chart' as const },
+  { label: 'Entries', value: '132', icon: 'ticket' as const },
+  { label: 'Confirmed', value: '84%', icon: 'check' as const }
 ]
 
-const sellingPoints = [
+const bookingRows = [
   {
-    icon: 'golf-flag' as const,
-    title: 'Events that feel worth joining',
-    description: 'Present the purse, venue, and format up front so golfers know the event is serious before they click.'
+    day: 'Fri',
+    date: '29',
+    month: 'November',
+    time: '10:00 - 14:00',
+    place: '5, main golf course',
+    team: 'Green kings',
+    status: 'Paid',
+    attendance: '6/8 have confirmed their presence',
+    avatar: 'DG',
+    extra: '+5'
   },
   {
-    icon: 'ticket' as const,
-    title: 'Registration that stays simple',
-    description: 'Move from interest to entry without bouncing through extra pages or unclear account flows.'
+    day: 'Sat',
+    date: '30',
+    month: 'November',
+    time: '11:00 - 17:30',
+    place: '4, north wing',
+    team: 'Fore force',
+    status: 'Unpaid',
+    attendance: '4/4 have confirmed their presence',
+    avatar: 'MK',
+    extra: '+3'
   },
   {
-    icon: 'trophy' as const,
-    title: 'A better reason to come back',
-    description:
-      'Keep the tournament, leaderboard, and follow-up entry path in one place so the experience feels connected.'
+    day: 'Sun',
+    date: '01',
+    month: 'December',
+    time: '12:00 - 16:00',
+    place: '5, main golf course',
+    team: 'Jaylon Saris',
+    status: 'Invite',
+    attendance: 'We need you on our team for this game.',
+    avatar: 'JS',
+    extra: null,
+    action: 'Accept'
+  },
+  {
+    day: 'Mon',
+    date: '02',
+    month: 'December',
+    time: '11:30 - 15:30',
+    place: '2, clubhouse range',
+    team: 'Rough riders',
+    status: 'Paid',
+    attendance: '4/6 have confirmed their presence',
+    avatar: 'RR',
+    extra: '+3'
   }
 ]
 
+const courseStats = [
+  { label: 'Total distance', value: '320', unit: 'yards' },
+  { label: 'Putting avg', value: '1.8', unit: 'putts' },
+  { label: 'Fairways hit', value: '80', unit: '%' }
+]
+
 export default function HomePage() {
-  const GUEST_NAV_ITEMS: NavItem[] = [
-    { value: '/events', label: 'Events', icon: 'home-line' },
-    { value: '/tournaments', label: 'Tournaments', icon: 'flag-line' },
-    { value: '/winners', label: 'Winners', icon: 'trophy-line' }
-  ]
   const pathname = usePathname()
+  const { resolvedTheme } = useTheme()
+  const darkTheme = useMemo(() => resolvedTheme === 'dark', [resolvedTheme])
+
   return (
-    <div className='relative isolate min-h-dvh overflow-hidden bg-background'>
-      <header className='relative z-10 mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-6 sm:px-6 lg:px-8'>
-        <Brand />
+    <div className='min-h-dvh dark:bg-background bg-[#1f2b27] px-3 py-4 text-[#1c2621] sm:px-5 sm:py-7 lg:px-10'>
+      <div className='mx-auto max-w-410 overflow-hidden rounded-[28px] bg-[#dcebe5] shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
+        <Topbar pathname={pathname} />
+        <main className=' dark:bg-slate-400/90'>
+          <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
+            <Image
+              src={darkTheme ? '/fairway-midnight.webp' : '/fairway-smooth.webp'}
+              alt='fairway-smooth'
+              fill
+              priority
+              sizes='(max-width: 768px) 100vw, 1600px'
+              className='scale-110 object-cover object-[60%_55%] bg-blend-color'
+              aria-hidden='true'
+            />
+            <div className='dark:hidden absolute inset-0 bg-[linear-gradient(180deg,rgba(224,244,239,0.98)_10%,rgba(209,229,221,0.4)_64%,rgba(32,95,51,0.64)_100%)]' />
+            <div className='dark:hidden absolute inset-x-0 bottom-0 blur-2xl h-56 bg-[linear-gradient(180deg,rgba(42,103,55,0.0)_2%,rgba(43,103,50,0.3)_70%,rgba(35,88,47,0.98)_100%)]' />
+            <div className='dark:hidden absolute inset-0 bg-[url("/noise.svg")] opacity-12 blur-lg' />
 
-        <Navbar pathname={pathname} items={GUEST_NAV_ITEMS} />
+            <div className='relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(350px,480px)] lg:items-end'>
+              <div className='max-w-3xl pt-10'>
+                <p className='mb-5 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
+                  Upcoming Tournament
+                </p>
+                <h1 className='max-w-[20rem] font-poly text-4xl leading-[0.95] text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-7xl _lg:text-[7.2rem]'>
+                  Golden Ticket
+                </h1>
+                <p className='mt-6 max-w-xl text-base leading-7 text-white/90 sm:text-lg'>
+                  Foreplay opens like a private club dashboard: clear bookings, live player context, and a course view
+                  that makes the next tournament feel ready to join.
+                </p>
 
-        <div className='flex items-center space-x-2'>
-          <ThemeToggle />
-          <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2 px-4')} href='/auth'>
-            Sign in
-            <Icon name='arrow-right' className='size-4' />
-          </Link>
-        </div>
-      </header>
-
-      <main className='relative z-10 mx-auto max-w-7xl px-4 pb-16 pt-4 sm:px-6 lg:px-8 lg:pb-24'>
-        <section className='grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center'>
-          <div className='space-y-8'>
-            <div className='inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/8 px-4 py-2 text-xs uppercase tracking-[0.24em] text-primary'>
-              <span className='size-2 rounded-full bg-primary' />
-              Public entry experience
-            </div>
-
-            <div className='space-y-5'>
-              <h1 className='max-w-3xl font-poly text-5xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl'>
-                A landing page that sells the event before sign-in.
-              </h1>
-              <p className='max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg'>
-                Foreplay gives golfers a clear reason to register, a cleaner path into the event, and a better way to
-                understand what they are joining. The home page stays public. Auth only opens when a player chooses to
-                sign in.
-              </p>
-            </div>
-
-            <div className='flex flex-col gap-3 sm:flex-row'>
-              <Link className={cn(buttonVariants({ size: 'xl' }), 'gap-2 px-6')} href='/auth'>
-                Sign in
-                <Icon name='arrow-right' className='size-4' />
-              </Link>
-              <Link className={cn(buttonVariants({ variant: 'outline', size: 'xl' }), 'px-6')} href='/tournaments'>
-                Explore tournaments
-              </Link>
-            </div>
-
-            <div className='grid gap-4 sm:grid-cols-3'>
-              {landingMetrics.map((metric) => (
-                <Card key={metric.label} className='border-border/70 bg-card/80 shadow-sm backdrop-blur'>
-                  <CardContent className='space-y-2 p-5'>
-                    <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{metric.label}</p>
-                    <p className='font-poly text-3xl font-semibold tracking-tight text-foreground'>{metric.value}</p>
-                    <p className='text-sm leading-6 text-muted-foreground'>{metric.note}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-
-          <Card className='relative overflow-hidden border-border/70 bg-card/95 shadow-[0_30px_90px_-40px_rgba(15,23,42,0.65)]'>
-            <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.18),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(217,119,6,0.14),transparent_55%)]' />
-            <div className='absolute inset-0 bg-[url("/noise.svg")] opacity-10' />
-            <CardContent className='relative space-y-6 p-6 sm:p-8'>
-              <div className='flex items-center justify-between gap-4'>
-                <div>
-                  <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>Featured event</p>
-                  <p className='mt-2 font-poly text-2xl font-semibold tracking-tight'>{featuredTournament.title}</p>
-                </div>
-                <div className='rounded-full border border-primary/15 bg-primary/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-primary'>
-                  Open now
-                </div>
-              </div>
-
-              <div className='grid gap-3 sm:grid-cols-2'>
-                {[
-                  { label: 'Venue', value: featuredTournament.venue },
-                  { label: 'Date', value: featuredTournament.dateLabel },
-                  { label: 'Format', value: featuredTournament.formatLabel },
-                  { label: 'Fee', value: featuredTournament.feeLabel }
-                ].map((item) => (
-                  <div key={item.label} className='rounded-2xl border border-border/60 bg-background/70 p-4'>
-                    <p className='text-xs uppercase tracking-[0.22em] text-muted-foreground'>{item.label}</p>
-                    <p className='mt-2 font-medium text-foreground'>{item.value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className='space-y-3 rounded-3xl border border-border/60 bg-background/70 p-4'>
-                {['Clear registration', 'Visible inventory', 'Premium presentation'].map((item) => (
-                  <div key={item} className='flex items-center gap-3'>
-                    <div className='flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary'>
-                      <Icon name='check' className='size-4' />
+                <div className='mt-8 flex flex-wrap items-center gap-5 text-sm font-medium text-white/85'>
+                  {proofPoints.map((point) => (
+                    <div key={point.label} className='flex items-center gap-2'>
+                      <Icon name={point.icon} className='size-4 opacity-85' />
+                      <span>{point.value}</span>
+                      <span className='text-white/60'>{point.label}</span>
                     </div>
-                    <p className='text-sm text-muted-foreground'>{item}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </section>
 
-        <section className='mt-16 space-y-6 lg:mt-24'>
-          <SectionTitle
-            eyebrow='Why it works'
-            title='The page introduces the product before it asks for a login'
-            description='That keeps the first touch public, gives context to the event, and leaves auth as an intentional next step.'
-          />
+              <div className='hidden gap-5 sm:grid md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2'>
+                {/*<FeatureEvent />*/}
+                {/*<PracticeCard />*/}
+              </div>
+            </div>
+          </section>
 
-          <div className='grid gap-4 lg:grid-cols-3'>
-            {sellingPoints.map((point) => (
-              <Card key={point.title} className='border-border/70 bg-card/90'>
-                <CardContent className='space-y-4 p-6'>
-                  <div className='flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
-                    <Icon name={point.icon} className='size-6' />
-                  </div>
-                  <div className='space-y-2'>
-                    <h2 className='font-heading text-xl font-semibold tracking-tight'>{point.title}</h2>
-                    <p className='text-sm leading-6 text-muted-foreground'>{point.description}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
+          <section className='grid gap-7 dark:bg-slate-400/60 bg-[#dcebe5] px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-12 lg:py-10'>
+            <div>
+              <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
+                <div className='flex items-center gap-3'>
+                  <button
+                    className='flex size-8 items-center justify-center rounded-full bg-white/70 text-[#1d2824] shadow-sm'
+                    type='button'
+                    aria-label='Add booking'>
+                    <Icon name='add' className='size-4 opacity-70' />
+                  </button>
+                  <h2 className='font-poly text-3xl leading-none'>Games</h2>
+                </div>
 
-        <section className='mt-16 space-y-6 lg:mt-24'>
-          <SectionTitle
-            eyebrow='Current inventory'
-            title='Keep the current event visible on the public home page'
-            description='Visitors can review the featured tournament, then decide whether they want to sign in and continue.'
-          />
-          <TournamentCard tournament={featuredTournament} />
-        </section>
+                <div className='flex items-center gap-4 text-sm text-[#1d2824]/60'>
+                  <Link className='flex items-center gap-1' href='/tournaments'>
+                    <span className='font-okx font-medium text-slate-500 dark:text-slate-200'>view more</span>
+                    <Icon name='chevron-right' className='size-4 opacity-80 -mb-0.5' />
+                  </Link>
+                </div>
+              </div>
 
-        <section className='mt-16 rounded-4xl border border-border/70 bg-card/90 p-6 sm:p-8 lg:mt-24 lg:p-10'>
-          <div className='grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center'>
-            <div className='space-y-2'>
-              <p className='text-xs uppercase tracking-[0.24em] text-primary/80'>Ready to continue</p>
-              <h2 className='font-poly text-3xl font-semibold tracking-tight sm:text-4xl'>
-                Sign in when you are ready to register.
-              </h2>
-              <p className='max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base'>
-                Everything else stays visible without forcing an auth round-trip. That gives the landing page a real
-                purpose and keeps the entry flow focused.
-              </p>
+              <div className='space-y-4'>
+                {bookingRows.map((row, index) => {
+                  const showMonth = index === 0 || bookingRows[index - 1]?.month !== row.month
+
+                  return (
+                    <div key={`${row.day}-${row.date}-${row.team}`}>
+                      {showMonth ? (
+                        <p className='mb-3 mt-6 text-sm font-okx font-medium text-slate-500 dark:text-slate-200'>
+                          {row.month}
+                        </p>
+                      ) : null}
+
+                      <article className='grid gap-4 rounded-[22px] bg-white/72 ps-1 pe-4 py-4 shadow-[0_18px_42px_rgba(31,62,46,0.1)] backdrop-blur-xl md:grid-cols-[80px_minmax(190px,240px)_minmax(0,1fr)_auto] md:items-center'>
+                        <div className='flex items-center justify-center gap-4 md:border-r md:border-[#1d2824]/10'>
+                          <div className='text-center'>
+                            <p className='font-okx font-light text-base text-[#ef4b20]'>{row.day}</p>
+                            <p className='font-poly font-semibold text-xl leading-none'>{row.date}</p>
+                          </div>
+                        </div>
+
+                        <div className='space-y-2 text-sm text-[#1d2824]/80 md:border-r md:border-[#1d2824]/10 md:pr-5'>
+                          <div className='flex items-center gap-2'>
+                            <Icon name='watch' className='size-5 text-[#1d2824]/45' />
+                            {row.time}
+                          </div>
+                          <div className='flex items-center gap-2'>
+                            <Icon name='map-pin' className='size-5 text-[#1d2824]/45' />
+                            {row.place}
+                          </div>
+                        </div>
+
+                        <div className='flex min-w-0 items-center gap-4'>
+                          <div className='flex shrink-0 -space-x-2'>
+                            <span className='flex size-11 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold text-[#1d2824] ring-4 ring-white/60'>
+                              {row.avatar}
+                            </span>
+                            {row.extra ? (
+                              <span className='flex size-11 items-center justify-center rounded-full bg-[#edf4f1] text-sm font-semibold text-[#1d2824] ring-4 ring-white/60'>
+                                {row.extra}
+                              </span>
+                            ) : null}
+                          </div>
+
+                          <div className='min-w-0'>
+                            <div className='flex flex-wrap items-center gap-2'>
+                              <h3 className='truncate text-base font-semibold'>{row.team}</h3>
+                              <span
+                                className={cn(
+                                  'rounded-full px-2.5 py-1 text-xs font-bold',
+                                  row.status === 'Unpaid'
+                                    ? 'bg-[#1d2824]/25 text-white'
+                                    : row.status === 'Invite'
+                                      ? 'bg-transparent text-[#1d2824]/50'
+                                      : 'bg-[#1d2824] text-white'
+                                )}>
+                                {row.status}
+                              </span>
+                            </div>
+                            <p className='mt-1 truncate text-sm text-[#1d2824]/55'>{row.attendance}</p>
+                          </div>
+                        </div>
+
+                        <div className='flex items-center justify-end gap-2'>
+                          {row.action ? (
+                            <Link
+                              className={cn(
+                                buttonVariants({ size: 'lg' }),
+                                'rounded-full bg-[#ef4b20] px-6 text-white hover:bg-[#d63f19]'
+                              )}
+                              href='/auth'>
+                              {row.action}
+                            </Link>
+                          ) : (
+                            <>
+                              <button
+                                className='flex size-10 items-center justify-center rounded-full text-[#1d2824]/85 hover:bg-[#1d2824]/5'
+                                type='button'
+                                aria-label={`Add player to ${row.team}`}>
+                                <Icon name='add' className='size-4' />
+                              </button>
+                              <button
+                                className='flex size-10 items-center justify-center rounded-full text-[#1d2824]/85 hover:bg-[#1d2824]/5'
+                                type='button'
+                                aria-label={`Open ${row.team} details`}>
+                                <Icon name='cf-pen' className='size-4' />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </article>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
-            <div className='flex flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row'>
-              <Link className={cn(buttonVariants({ size: 'lg' }), 'gap-2 px-5')} href='/auth'>
-                Sign in
-                <Icon name='arrow-right' className='size-4' />
-              </Link>
-              <Link className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'px-5')} href='/records'>
-                View scorecard
-              </Link>
-            </div>
-          </div>
-        </section>
-      </main>
+            <aside className='rounded-[28px] bg-white/62 p-5 shadow-[0_24px_70px_rgba(31,62,46,0.12)] backdrop-blur-xl sm:p-6'>
+              <div className='flex items-center justify-between gap-4'>
+                <h2 className='font-poly text-3xl leading-none'>Main golf course</h2>
+                <button
+                  className='flex size-12 items-center justify-center rounded-full bg-white/85 text-[#1d2824]'
+                  type='button'
+                  aria-label='Open course map'>
+                  <Icon name='golf-flag' className='size-5' />
+                </button>
+              </div>
+
+              <div className='mt-6 grid gap-5 sm:grid-cols-[minmax(0,1fr)_128px] lg:grid-cols-[minmax(0,1fr)_132px]'>
+                <div className='relative min-h-97.5 overflow-hidden rounded-[24px] bg-[#edf4ef] shadow-inner'>
+                  <div
+                    className='absolute inset-x-9 bottom-8 top-5 rotate-[-5deg] bg-[radial-gradient(circle_at_42%_28%,#eef5c8_0_4%,transparent_5%),radial-gradient(circle_at_62%_36%,#f3e6c8_0_5%,transparent_6%),radial-gradient(circle_at_44%_56%,#edf4c6_0_4%,transparent_5%),linear-gradient(145deg,#8fbf69,#4f8f55_45%,#2d6b43)] shadow-[inset_0_0_32px_rgba(19,63,35,0.35),0_18px_38px_rgba(34,75,45,0.28)]'
+                    style={{ borderRadius: '46% 54% 48% 52% / 34% 38% 62% 66%' }}
+                  />
+                  <div
+                    className='absolute inset-x-16 bottom-14 top-12 rotate-[-8deg] border-2 border-dashed border-white/75'
+                    style={{ borderRadius: '50% 48% 52% 46% / 36% 44% 58% 64%' }}
+                  />
+                  <span className='absolute left-[49%] top-[28%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute left-[57%] top-[46%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute left-[45%] top-[64%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute right-[19%] top-[32%] flex size-9 items-center justify-center rounded-full bg-[#ef4b20] text-white shadow-lg'>
+                    <Icon name='flag-fill' className='size-4' />
+                  </span>
+                  <span className='absolute bottom-11 left-[48%] flex size-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#1d2824] shadow-lg'>
+                    DG
+                  </span>
+                </div>
+
+                <div className='grid gap-4'>
+                  {courseStats.map((stat) => (
+                    <div key={stat.label} className='border-b border-[#1d2824]/10 pb-4 last:border-b-0'>
+                      <p className='text-sm leading-5 text-[#1d2824]/45'>{stat.label}</p>
+                      <p className='mt-2 font-poly text-3xl leading-none'>
+                        {stat.value}
+                        <span className='ml-1 font-sans text-sm font-medium text-[#1d2824]/65'>{stat.unit}</span>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
+                <span className='flex size-12 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold'>
+                  DG
+                </span>
+                <div className='min-w-0'>
+                  <p className='truncate text-base font-semibold'>Davis Geidt</p>
+                  <p className='truncate text-sm text-[#1d2824]/50'>Rough riders</p>
+                </div>
+                <div className='text-center'>
+                  <p className='font-semibold'>70%</p>
+                  <p className='text-xs text-[#1d2824]/45'>GIR</p>
+                </div>
+                <div className='text-center'>
+                  <p className='font-semibold'>4</p>
+                  <p className='text-xs text-[#1d2824]/45'>Strokes</p>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </main>
+      </div>
     </div>
   )
 }

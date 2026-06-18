@@ -27,45 +27,47 @@ export const Topbar = ({ pathname, user, mobileOpen, toggleMobileOpen, setMobile
           'border-sky-950/20': pathname.includes('entry')
         }
       )}>
-      <div className='mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
-        <Brand />
-        <Navbar pathname={pathname} />
+      {user ? (
+        <div className='mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
+          <Brand className='dark:text-foreground' />
+          <Navbar pathname={pathname} />
 
-        <div className='flex items-center gap-2'>
-          <div className='hidden sm:block'>
-            <ThemeToggle />
-          </div>
-          <div className='relative z-60 flex items-center gap-2'>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button variant='ghost' size='default' className='w-auto shrink-0 gap-2 px-3'>
-                    <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
-                      <Avatar size='sm'>
-                        <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
-                        <AvatarFallback>{user?.displayName?.split(' ').shift()?.substring(0, 1)}</AvatarFallback>
-                      </Avatar>
-                    </div>
-                    <Icon name='chevron-down' className='size-2 opacity-60' />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align='end' className=''>
-                <DropdownMenuItem className='rounded-sm rounded-t-xl'>
-                  <ThemeToggle withLabel />
-                </DropdownMenuItem>
-                <DropdownMenuItem className='rounded-sm rounded-b-xl'>
-                  <SignOutButton withLabel />
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className='flex items-center gap-2'>
+            <div className='hidden sm:block'>
+              <ThemeToggle />
+            </div>
+            <div className='relative z-60 flex items-center gap-2'>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button variant='ghost' size='default' className='w-auto shrink-0 gap-2 px-3'>
+                      <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
+                        <Avatar size='sm'>
+                          <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
+                          <AvatarFallback>{user?.displayName?.split(' ').shift()?.substring(0, 1)}</AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <Icon name='chevron-down' className='size-2 opacity-60' />
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align='end' className=''>
+                  <DropdownMenuItem className='rounded-sm rounded-t-xl'>
+                    <ThemeToggle withLabel />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className='rounded-sm rounded-b-xl'>
+                    <SignOutButton withLabel />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-            <Button variant='ghost' size='icon' className='shrink-0 md:hidden' onClick={toggleMobileOpen}>
-              <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
-            </Button>
+              <Button variant='ghost' size='icon' className='shrink-0 md:hidden' onClick={toggleMobileOpen}>
+                <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4' />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {mobileOpen ? <MobileNav pathname={pathname} onNavigate={() => setMobileOpen(false)} /> : null}
     </header>
