@@ -49,9 +49,9 @@ export const metadata: Metadata = {
     siteName: 'Foreplay PRO',
     images: [
       {
-        url: '/foreplay-og.webp',
-        width: 3358,
-        height: 2022,
+        url: '/fp-og.webp',
+        width: 2700,
+        height: 2070,
         alt: 'Foreplay PRO'
       }
     ]
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
     description: 'Host events and tournaments.',
     images: [
       {
-        url: '/foreplay-twitter.webp',
-        width: 3358,
-        height: 2022,
+        url: '/fp-x-og.webp',
+        width: 2700,
+        height: 2070,
         alt: 'Foreplay PRO'
       }
     ]
