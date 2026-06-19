@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 
 export const tournamentSchema = v.object({
+  id: v.optional(v.string()),
   title: v.string(),
   venue: v.string(),
   event_date: v.string(),

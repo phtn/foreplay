@@ -105,7 +105,7 @@ export default function HomePage() {
                 <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
                   Upcoming Tournament
                 </p>
-                <h1 className='max-w-[34rem] font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>
+                <h1 className='max-w-136 font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>
                   Seoul of Manila
                 </h1>
                 <p className='hidden md:flex mt-6 max-w-xl text-base leading-7 dark:text-white/90 text-foreground/80 sm:text-lg'>

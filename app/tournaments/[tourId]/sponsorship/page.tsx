@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import ProtectedLayout from '@/ctx/protected'
 import { findTournament } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import ProtectedLayout from '@/ctx/protected'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
@@ -33,7 +33,7 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
     <ProtectedLayout>
       <main className='space-y-6 md:space-y-8'>
         <Card className='relative overflow-hidden border-border/70 bg-card'>
-          <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.16),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.14),transparent_62%)]' />
+          <div className='absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--color-hermes),transparent_36%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.14),transparent_62%)]' />
           <CardContent className='relative grid gap-6 p-5 sm:p-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-end'>
             <div className='space-y-5'>
               <Badge variant='secondary' radius='full' className='bg-primary/10 text-primary'>
@@ -171,12 +171,7 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
               this form when the client-side Convex provider is introduced.
             </p>
             <div className='grid gap-4 rounded-3xl border border-dashed border-border bg-muted/20 p-5 sm:grid-cols-2'>
-              {[
-                'Company name',
-                'Authorized signatory',
-                'Contact number',
-                'Preferred tier'
-              ].map((label) => (
+              {['Company name', 'Authorized signatory', 'Contact number', 'Preferred tier'].map((label) => (
                 <label key={label} className='space-y-2'>
                   <span className='text-xs uppercase tracking-[0.22em] text-muted-foreground'>{label}</span>
                   <input

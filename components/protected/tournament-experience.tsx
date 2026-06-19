@@ -366,6 +366,7 @@ interface TournamentHeroProps {
   prizes?: Array<string>
   events?: Array<{ label: string; detail: string }>
   specialGuests?: Array<string>
+  darkButton?: boolean
 }
 
 export function TournamentHero({
@@ -379,14 +380,16 @@ export function TournamentHero({
   secondaryLabel,
   metrics,
   primaryAction,
-  teeTimeLabel
+  teeTimeLabel,
+  darkButton = false
 }: TournamentHeroProps) {
   return (
-    <Card className='relative overflow-hidden border-border mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
-      <div className='absolute rounded-full size-250 overflow-hidden -right-36 -top-54'>
-        <Image fill src='/som-logo-dark.svg' alt='logo' className='opacity-60 w-auto aspect-auto' />
+    <Card className='relative rounded-2xl overflow-hidden border-border/50 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
+      <div className='absolute inset-0 bg-linear-to-r from-sky-200 dark:from-emerald-400/70 via-emerald-400/60 to-background dark:to-foreground rounded-3xl' />
+      <div className='absolute rounded-full size-200 overflow-hidden -right-32 -top-32'>
+        <Image fill src='/som-logo-dark.svg' alt='logo' className='opacity-100 w-auto aspect-auto shadow-xl' />
       </div>
-      <div className='absolute inset-0 dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)]' />
+      {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
       <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
       <CardContent className='relative grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
         <div className='space-y-6 sm:space-y-8'>
@@ -400,9 +403,11 @@ export function TournamentHero({
             <h1 className='max-w-2xl text-balance font-poly text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
               {title}
             </h1>
-            <p className='max-w-xl text-sm leading-7 text-foreground sm:text-base'>{description}</p>
+            <p className='max-w-lg text-sm leading-7 text-foreground dark:text-foreground/70 sm:text-base'>
+              {description}
+            </p>
           </div>
-          <div className='max-w-xl rounded-lg border border-dashed bg-background/80 dark:bg-foreground/10 backdrop-blur-2xl px-3 sm:px-4'>
+          <div className='max-w-lg rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
             <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
               <Icon name='location' className='size-4' />
               <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
@@ -419,14 +424,18 @@ export function TournamentHero({
               <Link
                 className={cn(
                   buttonVariants({ size: 'xl' }),
-                  'w-full bg-primary text-white px-8 text-sm font-poly font-medium sm:w-auto'
+                  'w-full hover:bg-foreground/80 text-white px-8 text-sm font-poly font-medium sm:w-auto',
+                  { 'bg-foreground dark:bg-background': darkButton }
                 )}
                 href={primaryHref}>
                 {primaryLabel}
               </Link>
             )}
             <Link
-              className={cn(buttonVariants({ variant: 'ghost', size: 'xl' }), 'w-full font-poly sm:w-auto')}
+              className={cn(
+                buttonVariants({ variant: 'secondary', size: 'xl' }),
+                'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-hermes hover:text-white'
+              )}
               href={secondaryHref}>
               {secondaryLabel}
             </Link>

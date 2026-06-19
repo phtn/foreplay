@@ -24,7 +24,7 @@ interface TypewriterProps {
   speed?: number
 
   /**
-   * Initial delay before typing starts
+   * Delay before typing starts in milliseconds
    * @default 0
    */
   initialDelay?: number

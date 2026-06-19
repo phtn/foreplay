@@ -63,7 +63,7 @@ function AuthenticatedTopbar({
         'border-sky-950/20': pathname.includes('entry')
       })}>
       <div className='relative z-50'>
-        <div className='mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
+        <div className='mx-auto flex min-h-16 _max-w-7xl md:mt-3 items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
           <Brand className='dark:text-foreground' />
           <Navbar pathname={pathname} />
 
