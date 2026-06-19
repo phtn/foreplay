@@ -1,6 +1,6 @@
 import { RootProviders } from '@/ctx/root'
 import { cn } from '@/lib/utils'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Figtree, Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -17,8 +17,77 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Foreplay PRO',
-  description: 'Pro Web App'
+  title: {
+    default: 'Foreplay PRO',
+    template: '%s ・ Foreplay'
+  },
+  description: 'Host events and tournaments.',
+  keywords: ['golf', 'tournaments', 'events', 'tickets', 'games', 'fairway'],
+  authors: [{ name: 'xpriori' }, { name: 'quimpoi' }],
+  creator: 're-up.ph',
+  publisher: 're-up.ph',
+  applicationName: 'Foreplay PRO',
+  appleWebApp: {
+    capable: true,
+    title: 'Foreplay PRO',
+    statusBarStyle: 'default'
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false
+  },
+  metadataBase: new URL('https://foreplay.pro'),
+  alternates: {
+    canonical: '/'
+  },
+  openGraph: {
+    title: 'Foreplay PRO',
+    description: 'Host events and tournaments.',
+    type: 'website',
+    url: 'https://foreplay.pro',
+    siteName: 'Foreplay PRO',
+    images: [
+      {
+        url: '/foreplay-og.webp',
+        width: 3358,
+        height: 2022,
+        alt: 'Foreplay PRO'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Foreplay PRO',
+    description: 'Host events and tournaments.',
+    images: [
+      {
+        url: '/foreplay-twitter.webp',
+        width: 3358,
+        height: 2022,
+        alt: 'Foreplay PRO'
+      }
+    ]
+  },
+  icons: [
+    {
+      rel: 'icon',
+      url: '/apple-icon.png',
+      sizes: '180x180'
+    },
+    {
+      rel: 'apple-touch-icon',
+      url: '/apple-icon.png'
+    }
+  ],
+
+  referrer: 'strict-origin-when-cross-origin'
+}
+
+export const viewport: Viewport = {
+  themeColor: '#1a1a1a',
+  width: 'device-width',
+  initialScale: 1
 }
 
 export default function RootLayout({
