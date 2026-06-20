@@ -355,7 +355,7 @@ interface TournamentHeroProps {
   description: string
   venueLabel?: string
   primaryHref: string
-  secondaryHref: string
+  secondaryHref?: string
   primaryLabel: string
   secondaryLabel: string
   metrics: Array<{ label: string; value: string; icon?: IconName }>
@@ -384,61 +384,67 @@ export function TournamentHero({
   darkButton = false
 }: TournamentHeroProps) {
   return (
-    <Card className='relative rounded-2xl overflow-hidden border-border/50 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
-      <div className='absolute inset-0 bg-linear-to-r from-sky-200 dark:from-emerald-400/70 via-emerald-400/60 to-background dark:to-foreground rounded-3xl' />
-      <div className='absolute rounded-full size-200 overflow-hidden -right-32 -top-32'>
-        <Image fill src='/som-logo-dark.svg' alt='logo' className='opacity-100 w-auto aspect-auto shadow-xl' />
+    <Card className='relative rounded-3xl overflow-hidden border border-slate-400/60 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
+      <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-emerald-400/70 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
+      <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden left-0 -top-10 md:-right-10 md:-top-20'>
+        <Image
+          fill
+          alt='logo'
+          src='/som-optimized.svg'
+          className='opacity-25 w-auto aspect-auto object-cover shadow-xl'
+        />
       </div>
       {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
       <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
       <CardContent className='relative grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
-        <div className='space-y-6 sm:space-y-8'>
+        <div className='space-y-8 sm:space-y-8'>
           <div className='flex flex-wrap items-center gap-4'>
-            <Badge variant='secondary' radius='full' className='bg-primary/5 text-primary rounded-md uppercase'>
+            <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase'>
               {eyebrow}
             </Badge>
             {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
           </div>
           <div className='space-y-4'>
-            <h1 className='max-w-2xl text-balance font-poly text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+            <h1 className='max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
               {title}
             </h1>
-            <p className='max-w-lg text-sm leading-7 text-foreground dark:text-foreground/70 sm:text-base'>
+            <p className='hidden md:flex max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
               {description}
             </p>
           </div>
-          <div className='max-w-lg rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
+          <div className='hidden md:flex max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
             <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
               <Icon name='location' className='size-4' />
               <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
-              <p className='shrink-0 opacity-60'>Venue</p>
             </div>
             <div className='flex items-center gap-2 py-2 tracking-tight'>
               <Icon name='clock' className='size-4' />
               <span className='font-ios text-sm'>{teeTimeLabel ?? 'July 18, 2026 at 7:00 AM'}</span>
-              <span className='px-2 text-xs opacity-60'>TEE</span>
             </div>
           </div>
           <div className='flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
             {primaryAction ?? (
               <Link
                 className={cn(
-                  buttonVariants({ size: 'xl' }),
-                  'w-full hover:bg-foreground/80 text-white px-8 text-sm font-poly font-medium sm:w-auto',
+                  buttonVariants({ size: '2xl' }),
+                  'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
                   { 'bg-foreground dark:bg-background': darkButton }
                 )}
                 href={primaryHref}>
-                {primaryLabel}
+                <span>{primaryLabel}</span>
+                <Icon name='chevron-right' className='size-4.5' />
               </Link>
             )}
-            <Link
-              className={cn(
-                buttonVariants({ variant: 'secondary', size: 'xl' }),
-                'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-hermes hover:text-white'
-              )}
-              href={secondaryHref}>
-              {secondaryLabel}
-            </Link>
+            {secondaryHref && (
+              <Link
+                className={cn(
+                  buttonVariants({ variant: 'secondary', size: 'xl' }),
+                  'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
+                )}
+                href={secondaryHref}>
+                {secondaryLabel}
+              </Link>
+            )}
           </div>
         </div>
 

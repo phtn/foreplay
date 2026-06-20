@@ -70,7 +70,7 @@ function getFormatLabel(tournament: Doc<'tournaments'>) {
 
 function getStatusLabel(tournament: Doc<'tournaments'>) {
   if (tournament.sponsorship_tiers?.length) {
-    return 'Sponsors open'
+    return '120 slots left'
   }
 
   return tournament.published === false ? 'Coming soon' : 'Entry open'

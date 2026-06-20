@@ -24,16 +24,26 @@ const GUEST_NAV_ITEMS: NavItem[] = [
 
 interface AuthenticatedTopbarProps {
   pathname: string
-  user: User | null
+  user: User
   mobileOpen: boolean
   toggleMobileOpen: () => void
   setMobileOpen: (value: boolean) => void
 }
 
+function getUserAvatarFallback(user: User) {
+  const fallbackSource = user.displayName ?? user.email ?? user.uid
+
+  return fallbackSource.trim().substring(0, 1).toUpperCase()
+}
+
 export function Topbar() {
   const pathname = usePathname()
-  const { user } = useFirebaseUser()
+  const { isLoading, user } = useFirebaseUser()
   const { on: mobileOpen, toggle: toggleMobileOpen, setOn: setMobileOpen } = useToggle(false)
+
+  if (isLoading) {
+    return null
+  }
 
   if (user) {
     return (
@@ -57,6 +67,9 @@ function AuthenticatedTopbar({
   toggleMobileOpen,
   setMobileOpen
 }: AuthenticatedTopbarProps) {
+  const avatarFallback = getUserAvatarFallback(user)
+  const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
+
   return (
     <header
       className={cn('sticky top-0 z-50 overflow-visible', {
@@ -78,8 +91,8 @@ function AuthenticatedTopbar({
                     <Button variant='ghost' size='icon-sm' className='w-auto shrink-0 aspect-square rounded-full'>
                       <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
                         <Avatar size='sm'>
-                          <AvatarImage src={user?.photoURL ?? '/vercel.svg'} alt='pfp' />
-                          <AvatarFallback>{user?.displayName?.split(' ').shift()?.substring(0, 1)}</AvatarFallback>
+                          {user.photoURL ? <AvatarImage src={user.photoURL} alt={avatarLabel} /> : null}
+                          <AvatarFallback>{avatarFallback}</AvatarFallback>
                         </Avatar>
                       </div>
                     </Button>

@@ -150,42 +150,44 @@ export const Content = ({
             speed={15}
             showCursor={false}
             className='text-slate-500/50 uppercase font-light'
-            initialDelay={500}
+            initialDelay={1500}
           />
         </div>
       </div>
-      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-300 dark:border-background dark:bg-slate-700 bg-slate-200/20 shadow-md shadow-slate-100 dark:shadow-none p-0'>
+      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-background dark:bg-slate-700 bg-slate-200/20 shadow-md shadow-slate-100 dark:shadow-none p-0'>
         <CardContent className='p-0'>
           {tourId ? (
             <>
               <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 border-b'>
                 <div className='space-y-1'>
-                  <p className='text-xs font-medium uppercase tracking-widest text-sky-600'>Venue</p>
+                  <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>
+                    {tournament.venue.split(',').pop()}
+                  </p>
                   <h2 id='book-now-title' className='font-heading text-xl font-bold tracking-tight sm:text-2xl'>
-                    {tournament.venue}
+                    {tournament.venue.split(',').shift()}
                   </h2>
                 </div>
 
                 <div className='grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8'>
                   <div className='p-0 space-y-1.5'>
-                    <p className='font-ios text-xs uppercase tracking-wide dark:text-slate-400'>Price</p>
-                    <p className='font-okx font-semibold mt-1 text-base'>
+                    <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>Price</p>
+                    <p className='font-okx font-medium mt-1 text-base'>
                       {price > 0 ? currencyFormatter.format(price) : tournament.entryFeeLabel}
                     </p>
                   </div>
                   <div className='p-0 space-y-1.5'>
-                    <p className='text-xs uppercase tracking-wide dark:text-slate-400'>Total</p>
-                    <p className='font-okx font-semibold mt-1 text-base'>{currencyFormatter.format(total)}</p>
+                    <p className='text-xs uppercase tracking-widest dark:text-slate-400'>Total</p>
+                    <p className='font-okx font-medium mt-1 text-base'>{currencyFormatter.format(total)}</p>
                   </div>
                   <div className='p-0 space-y-1.5'>
-                    <p className='text-xs uppercase tracking-wide dark:text-slate-400'>Players</p>
-                    <p className='font-okx font-semibold mt-1 text-base'>{players}</p>
+                    <p className='text-xs uppercase tracking-widest dark:text-slate-400'>Entries</p>
+                    <p className='font-okx font-medium mt-1 text-base text-center'>{players}</p>
                   </div>
                 </div>
                 {/* Countdown */}
-                <div className='flex items-start h-12 bg-slate-100 dark:bg-transparent'>
+                <div className='flex items-start h-10 bg-slate-200/60 dark:bg-transparent'>
                   <div className='min-w-24 bg-sky-200/5 rounded-md px-4 py-2'>
-                    <div className='flex items-center space-x-2 font-ios text-sky-600 dark:text-sky-500 text-base md:text-lg tracking-wide leading-none whitespace-nowrap'>
+                    <div className='flex items-center space-x-2 font-ios text-foreground dark:text-sky-500 text-base md:text-lg tracking-wide leading-none whitespace-nowrap'>
                       <span className='font-poly font-bold text-slate-400/80 text-base mt-0.5 tracking-widest'>T-</span>
                       <span aria-live='polite'>{countdownLabel}</span>
                     </div>

@@ -83,7 +83,7 @@ export const NewEntryForm = ({
           event.preventDefault()
           void form.handleSubmit()
         }}>
-        <div className='border-r border-slate-300 dark:border-slate-800 p-8'>
+        <div className='border-r border-slate-400 dark:border-slate-800 p-8'>
           <form.AppField name='fullName'>
             {({ TextField }) => (
               <TextField
@@ -131,7 +131,7 @@ export const NewEntryForm = ({
           </form.AppField>
         </div>
 
-        <div className='bg-sky-500/0 p-8 border-r border-slate-300 dark:border-slate-800'>
+        <div className='bg-sky-500/0 p-8 border-r border-slate-400 dark:border-slate-800'>
           <form.AppField name='playerCount'>
             {({ TextField }) => (
               <TextField

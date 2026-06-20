@@ -1,13 +1,7 @@
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
-import {
-  featuredTournament,
-  SectionTitle,
-  TournamentCard,
-  TournamentHero,
-  tournamentList
-} from '@/components/protected/tournament-experience'
+import { featuredTournament, SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,14 +15,14 @@ export default function TournamentsPage() {
     <ProtectedLayout>
       <div className='space-y-4 md:space-y-8'>
         <TournamentHero
-          eyebrow='Tournament board'
-          title='A clean place to browse every entry worth selling.'
+          eyebrow='0|120'
+          title='Seoul of Manila Golf Tournament 2026'
           description='Present the field, the price, and the format in a way that makes the next click feel obvious.'
           venueLabel={featuredTournament.venue}
           primaryHref='/entries'
-          secondaryHref='/'
-          primaryLabel='Review my entries'
-          secondaryLabel='Back to dashboard'
+          // secondaryHref='/'
+          primaryLabel='My Entries'
+          secondaryLabel=''
           teeTimeAt={featuredTournament.teeTimeAt}
           teeTimeLabel={featuredTournament.teeTimeLabel}
           prizes={featuredTournament.prizes}
@@ -41,21 +35,23 @@ export default function TournamentsPage() {
           ]}
         />
 
-        <div className='flex flex-wrap gap-2'>
+        <div className='flex flex-wrap gap-2 py-6'>
           {tournamentFilters.map((filter, index) => (
             <Badge
               key={filter}
               variant={index === 0 ? 'secondary' : 'outline'}
-              size='sm'
+              size='default'
               radius='full'
-              className={cn(index === 0 ? 'bg-primary text-primary-foreground' : 'border-border/70 bg-background')}>
+              className={cn('font-okx font-normal bg-background text-foreground/70 tracking-wide', {
+                'border-border/70 bg-foreground text-background': index === 0
+              })}>
               {filter}
             </Badge>
           ))}
         </div>
 
         <div className='grid gap-6 lg:grid-cols-[1.1fr_0.9fr]'>
-          <div className='space-y-4'>
+          {/*<div className='space-y-4'>
             <SectionTitle
               eyebrow='Open entries'
               title='Make the premium event impossible to ignore'
@@ -67,8 +63,8 @@ export default function TournamentsPage() {
               ))}
             </div>
           </div>
-
-          <div className='space-y-4'>
+*/}
+          <div className='hidden space-y-4'>
             <SectionTitle eyebrow='Why the field buys' title='Package the experience, not just the bracket' />
             <Card className='border-border/70 bg-muted/20'>
               <CardHeader>
