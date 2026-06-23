@@ -80,10 +80,10 @@ export const Content = ({ subscriptions }: ContentProps) => {
         ))}
       </div>
 
-      <Card className='border-border/70 py-0'>
+      <Card className='border-border/80 py-0'>
         <CardContent className='p-0'>
           {subscriptions.length ? (
-            <div className='divide-y divide-border/70'>
+            <div className='divide-y divide-border/35'>
               {subscriptions.map((subscription, index) => {
                 const status = subscription.status ?? 'pending_payment'
 

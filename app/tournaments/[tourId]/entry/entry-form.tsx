@@ -187,23 +187,6 @@ export const NewEntryForm = ({
         }}>
         <div className='grid md:grid-cols-3'>
           <div className='border-r border-slate-400 dark:border-slate-800 p-8'>
-            <form.AppField name='fullName'>
-              {({ TextField }) => (
-                <TextField
-                  id='name'
-                  type='text'
-                  label='Team Name (Optional)'
-                  icon={'pentagon'}
-                  placeholder='Team A'
-                  autoComplete='organization'
-                  containerClassName='mb-4'
-                  className={entryControlClassName}
-                  disabled={isSubmitting || isSaved}
-                  onChange={(event) => {
-                    void setEntryQuery({ teamName: event.currentTarget.value || null })
-                  }}></TextField>
-              )}
-            </form.AppField>
             <form.AppField name='email'>
               {({ TextField }) => (
                 <TextField
@@ -227,11 +210,11 @@ export const NewEntryForm = ({
                 <TextField
                   id='book-phone'
                   type='tel'
-                  // label='Phone'
+                  label='Phone (Optional)'
                   icon='phone-accept'
                   placeholder='+63'
                   autoComplete='tel'
-                  required
+                  required={false}
                   containerClassName='mb-0'
                   className={entryControlClassName}
                   disabled={isSubmitting || isSaved}
@@ -244,6 +227,23 @@ export const NewEntryForm = ({
           </div>
 
           <div className='bg-sky-500/0 p-8 border-r border-slate-400 dark:border-slate-800'>
+            <form.AppField name='fullName'>
+              {({ TextField }) => (
+                <TextField
+                  id='name'
+                  type='text'
+                  label='Team Name (Optional)'
+                  icon={'pentagon'}
+                  placeholder='Team A'
+                  autoComplete='organization'
+                  containerClassName='mb-4'
+                  className={entryControlClassName}
+                  disabled={isSubmitting || isSaved}
+                  onChange={(event) => {
+                    void setEntryQuery({ teamName: event.currentTarget.value || null })
+                  }}></TextField>
+              )}
+            </form.AppField>
             <form.AppField name='playerCount'>
               {({ TextField }) => (
                 <TextField
@@ -261,15 +261,11 @@ export const NewEntryForm = ({
                     const nextPlayers = Number.parseInt(event.currentTarget.value, 10)
                     const playerCount = Number.isNaN(nextPlayers) ? players : nextPlayers
                     onPlayersChange(playerCount)
-                  }}>
-                  <div>
-                    <Icon name='add-circle' className='opacity-70' />
-                  </div>
-                </TextField>
+                  }}></TextField>
               )}
             </form.AppField>
             {/*<div className='h-28 bg-slate-100 rounded-md'></div>*/}
-            <div className='flex flex-col gap-4 sm:flex-row sm:items-start'>
+            <div className='hidden _flex flex-col gap-4 sm:flex-row sm:items-start'>
               <form.AppField name='division'>
                 {({ SelectField }) => (
                   <SelectField
@@ -306,7 +302,7 @@ export const NewEntryForm = ({
             </div>
           </div>
 
-          <div className='h-full flex flex-col gap-14 pt-4 text-center md:justify-center bg-sky-500/0'>
+          <div className='h-full flex flex-col gap-8 pt-4 text-center md:justify-center bg-sky-500/0'>
             <p className='font-okx text-foreground/80 text-base text-balance text-center'>
               By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
               follows payment review.

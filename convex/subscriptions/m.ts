@@ -140,3 +140,33 @@ export const cancel = mutation({
     }
   }
 })
+
+export const confirmForAdmin = mutation({
+  args: {
+    subscriptionId: v.id('subscriptions')
+  },
+  returns: v.object({
+    subscriptionId: v.id('subscriptions'),
+    payment_status: v.literal('paid'),
+    status: v.literal('confirmed')
+  }),
+  handler: async (ctx, args) => {
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    const nextStatus = {
+      payment_status: 'paid' as const,
+      status: 'confirmed' as const
+    }
+
+    await ctx.db.patch(args.subscriptionId, nextStatus)
+
+    return {
+      subscriptionId: args.subscriptionId,
+      ...nextStatus
+    }
+  }
+})

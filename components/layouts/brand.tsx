@@ -14,7 +14,7 @@ export function Brand({ className }: BrandProps) {
         <Icon name='squircle' className='absolute top-0 h-9 w-9 text-primary sm:h-10 sm:w-10' />
         <Icon name='golf-tee' className='relative size-6.5 text-white sm:size-7.5' />
       </div>
-      <span className={cn('hidden font-poly font-bold text-xl tracking-tight sm:inline xl:text-2xl', className)}>
+      <span className={cn('font-poly font-bold text-xl tracking-tight sm:inline xl:text-2xl', className)}>
         Foreplay
       </span>
     </Link>

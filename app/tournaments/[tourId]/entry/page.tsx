@@ -24,15 +24,6 @@ interface PageProps {
   params: Promise<{ tourId: string }>
 }
 
-const formatSponsorPackageLabel = (sponsorshipTiers: Array<{ investment_label: string }> | undefined) => {
-  const lowestTier = sponsorshipTiers
-    ?.map((tier) => Number(tier.investment_label.replace(/[^\d.]/g, '')))
-    .filter((amount) => Number.isFinite(amount) && amount > 0)
-    .sort((left, right) => left - right)[0]
-
-  return lowestTier ? `Sponsor packages from ₱${lowestTier.toLocaleString('en-US')}` : 'Sponsor package'
-}
-
 const parsePesoAmount = (value: string) => {
   const amount = Number(value.replace(/[^\d.]/g, ''))
   return Number.isFinite(amount) ? amount : 0

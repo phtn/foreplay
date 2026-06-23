@@ -83,7 +83,7 @@ function mapConvexTournament(tournament: Doc<'tournaments'>, fallback: Tournamen
 
   return {
     ...fallback,
-    id: tournament.id ?? fallback.id,
+    id: tournament.id ?? tournament._id ?? fallback.id,
     title: tournament.title,
     venue: tournament.venue,
     dateLabel,
@@ -135,7 +135,7 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         darkButton
         eyebrow={tournament.statusLabel}
         title={tournament.title}
-        description={'Fuick'}
+        description={tournament.description}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
         secondaryHref={`/tournaments/${tournament.id}/sponsorship`}

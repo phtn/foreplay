@@ -44,7 +44,7 @@ export function SignOutButton({ label, withLabel = false }: SignOutButtonProps) 
             'w-full space-x-2 justify-start hover:bg-background': withLabel
           }
         )}>
-        <Icon name='logout' className='size-5' />
+        <Icon name='logout' className='size-4' />
         {withLabel && <p className='capitalize'>{label ?? 'Sign out'}</p>}
       </Button>
       {signOutError ? (

@@ -12,6 +12,17 @@ export const listByUserId = query({
   }
 })
 
+export const listByTournamentId = query({
+  args: { tournamentId: v.string() },
+  handler: async (ctx, { tournamentId }) => {
+    return await ctx.db
+      .query('subscriptions')
+      .withIndex('by_tournamentId', (q) => q.eq('tournament_id', tournamentId))
+      .order('desc')
+      .collect()
+  }
+})
+
 export const getByIdForUser = query({
   args: {
     subscriptionId: v.id('subscriptions'),

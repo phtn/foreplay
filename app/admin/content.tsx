@@ -31,26 +31,28 @@ export const Content = ({ events }: ContentProps) => {
   )
 
   return (
-    <main className='space-y-8'>
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-5'>
+    <main className='md:space-y-8'>
+      <div className='grid xl:gap-4 grid-cols-5 xl:grid-cols-5'>
         {[
-          { label: 'Total', value: counts.total },
+          { label: 'Events', value: counts.total },
           { label: 'Published', value: counts.published },
           { label: 'Drafts', value: counts.drafts },
           { label: 'Full fields', value: counts.full },
-          { label: 'Registered slots', value: counts.registeredSlots }
+          { label: 'Slots', value: counts.registeredSlots }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-border/70 bg-border/10 p-0'>
-            <CardContent className='space-y-1 p-0'>
-              <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>{stat.label}</p>
-              <p className='font-heading text-2xl font-bold'>{stat.value}</p>
+          <Card key={stat.label} size='sm' className='bg-border/10 border-[0.33px] p-0! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 p-2! divide-y divide-border/35'>
+              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
+                {stat.label}
+              </p>
+              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card className='border-border/70 p-0'>
-        <CardContent>
+      <Card className='p-0 md:py-1 bg-border/10 rounded-xs md:rounded-xl'>
+        <CardContent className='px-0 rounded-xs md:rounded-xl border-0'>
           {tournamentList.length ? (
             <EventsList data={tournamentList} />
           ) : (

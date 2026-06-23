@@ -95,7 +95,7 @@ function getStatusClass(status: string) {
     return 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
   }
 
-  return 'bg-emerald-500/10 text-emerald-700 ring-1 ring-inset ring-emerald-500/20 dark:text-emerald-300'
+  return 'bg-sky-500/10 text-sky-700 ring-1 ring-inset ring-sky-500/20 dark:bg-sky-600 dark:text-white'
 }
 
 function getSummary(event: Tournament) {
@@ -110,8 +110,7 @@ function getTournamentHref(event: Tournament) {
   if (!event.id) {
     return null
   }
-
-  return `/tournaments/${event.id}`
+  return `/admin/${event.id}`
 }
 
 function buildEventRows(events: Tournament[]): EventRow[] {
@@ -158,51 +157,67 @@ const EventRow = (row: EventRow) => {
   return (
     <div className='space-y-3'>
       {row.monthLabel ? (
-        <p className='mt-2 text-sm font-okx font-medium text-slate-500 dark:text-slate-300'>{row.monthLabel}</p>
+        <p className='my-2 px-3 text-xs font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
+          {row.monthLabel}
+        </p>
       ) : null}
 
-      <article className='overflow-hidden rounded-lg border border-[#1d2824]/8 backdrop-blur-xl md:hidden'>
-        <div className='space-y-4 p-4 sm:p-5'>
+      {/* Mobile */}
+      <article className='overflow-hidden rounded-xs _border border-[#1d2824]/8 backdrop-blur-xl md:hidden'>
+        <div className='space-y-4 p-2 sm:p-5'>
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
-              <div className='shrink-0 rounded-xl bg-[#1d2824] px-3 py-2 text-center text-white '>
-                <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/65'>{row.day}</p>
+              <div className='shrink-0 rounded-xl bg-[#1d2824] dark:bg-slate-700 px-3 py-2 text-center text-white '>
+                <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/70'>{row.day}</p>
                 <p className='mt-1 font-poly text-2xl leading-none'>{row.date}</p>
               </div>
 
               <div className='min-w-0'>
-                <p className='font-okx text-base text-[#1d2824]'>{row.title}</p>
-                <p className='mt-1 text-sm text-[#1d2824]/65'>{row.place}</p>
+                <p className='font-okx text-base text-[#1d2824] dark:text-white'>{row.title}</p>
+                <p className='mt-1 text-sm text-[#1d2824]/65 dark:text-white/80'>{row.place}</p>
               </div>
             </div>
 
             <span
               className={cn(
-                'inline-flex rounded-md px-2.5 py-1 font-ios text-[10px] uppercase tracking-widest',
+                'inline-flex rounded-sm px-1.5 py-1 font-ios text-[11px] uppercase tracking-widest',
                 getStatusClass(row.status)
               )}>
               {row.status}
             </span>
           </div>
 
-          <p className='text-sm leading-6 text-[#1d2824]/70'>{row.summary}</p>
+          <p className='text-sm leading-6 text-[#1d2824]/70 dark:text-foreground'>{row.summary}</p>
 
-          <div className='grid grid-cols-2 gap-3 rounded-2xl border border-[#1d2824]/10 bg-white/60 p-3'>
+          <div className='grid grid-cols-4 gap-3 md:rounded-2xl border-b-2 border-[#1d2824]/10 bg-white/60 dark:bg-slate-400/4 p-3'>
             <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45'>Start</p>
-              <p className='mt-1 text-sm text-[#1d2824]/80'>{row.time}</p>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+                Start
+              </p>
+              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.time}</p>
             </div>
             <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45'>Entry fee</p>
-              <p className='mt-1 text-sm text-[#1d2824]/80'>{row.feeLabel}</p>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+                Entry fee
+              </p>
+              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.feeLabel}</p>
             </div>
-            <div className='col-span-2'>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45'>Field</p>
-              <p className='mt-1 text-sm text-[#1d2824]/80'>{row.slotsLabel}</p>
+            <div className=''>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+                Slots
+              </p>
+              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.slotsLabel}</p>
+            </div>
+            <div className='flex items-center justify-end'>
+              <Link
+                className={cn(buttonVariants({ size: 'sm' }), 'bg-foreground hover:bg-foreground/80 rounded-full')}
+                href={row.href ?? '#'}>
+                <Icon name='arrow-right' className='size-4' />
+              </Link>
             </div>
           </div>
 
-          <div className='flex items-center justify-end'>
+          {/*<div className='flex items-center justify-end'>
             {row.href ? (
               <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2 rounded-full px-4')} href={row.href}>
                 Open event
@@ -211,16 +226,17 @@ const EventRow = (row: EventRow) => {
             ) : (
               <span className='text-sm text-[#1d2824]/45'>Public route unavailable</span>
             )}
-          </div>
+          </div>*/}
         </div>
       </article>
 
-      <article className='hidden rounded-[22px] border border-[#1d2824]/8 bg-white/70 p-4 shadow-[0_18px_42px_rgba(31,62,46,0.1)] backdrop-blur-xl md:grid md:grid-cols-[88px_minmax(0,1.35fr)_minmax(180px,0.8fr)_auto] md:items-center md:gap-4'>
+      {/* Desktop */}
+      <article className='hidden rounded-sm border border-[#1d2824]/8 bg-white dark:bg-slate-300 p-4 md:grid md:grid-cols-[64px_minmax(0,1.35fr)_auto_auto_auto] md:items-center md:gap-4'>
         <div className='flex items-center justify-center border-r border-[#1d2824]/10 pr-4'>
-          <div className='text-center'>
-            <p className='font-okx text-sm text-[#ef4b20]'>{row.day}</p>
+          <div className='text-center space-y-1'>
+            <p className='font-okx text-sm text-hermes'>{row.day}</p>
             <p className='font-poly text-2xl leading-none text-[#1d2824]'>{row.date}</p>
-            <p className='mt-2 text-xs text-[#1d2824]/55'>{row.time}</p>
+            {/*<p className='mt-2 text-xs text-[#1d2824]/55'>{row.time}</p>*/}
           </div>
         </div>
 
@@ -229,7 +245,7 @@ const EventRow = (row: EventRow) => {
             <p className='truncate font-okx text-base text-[#1d2824]'>{row.title}</p>
             <span
               className={cn(
-                'inline-flex rounded-md px-2.5 py-1 font-ios text-[10px] uppercase tracking-widest',
+                'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest',
                 getStatusClass(row.status)
               )}>
               {row.status}
@@ -237,33 +253,34 @@ const EventRow = (row: EventRow) => {
           </div>
 
           <div className='flex items-center gap-2 text-sm text-[#1d2824]/70'>
-            <Icon name='map-pin' className='size-4 text-[#1d2824]/40' />
+            <Icon name='map-pin' className='size-4 text-slate-800/80' />
             <span className='truncate'>{row.place}</span>
           </div>
 
-          <p className='line-clamp-2 text-sm leading-6 text-[#1d2824]/65'>{row.summary}</p>
+          {/*<p className='line-clamp-2 text-sm leading-6 text-[#1d2824]/65'>{row.summary}</p>*/}
+        </div>
+        <div className='px-4 space-y-2'>
+          <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Entry fee</p>
+          <p className='mt-1 font-medium text-[#1d2824]'>{row.feeLabel}</p>
+        </div>
+        <div className='px-4 space-y-2'>
+          <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Slots</p>
+          <p className='mt-1 font-medium text-[#1d2824]'>{row.slotsLabel}</p>
         </div>
 
-        <div className='grid gap-3 border-l border-[#1d2824]/10 pl-4 text-sm text-[#1d2824]/75'>
-          <div>
-            <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/40'>Entry fee</p>
-            <p className='mt-1 font-medium text-[#1d2824]'>{row.feeLabel}</p>
-          </div>
-
-          <div>
-            <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/40'>Field</p>
-            <p className='mt-1 font-medium text-[#1d2824]'>{row.slotsLabel}</p>
-          </div>
-        </div>
-
-        <div className='flex items-center justify-end'>
+        <div className='flex items-center justify-end min-w-24'>
           {row.href ? (
-            <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2 rounded-full px-4')} href={row.href}>
-              Open event
-              <Icon name='arrow-right' className='size-4' />
+            <Link
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'sm' }),
+                'bg-background hover:bg-background/80 text-foreground rounded-full'
+              )}
+              href={row.href}>
+              Open
+              <Icon name='chevron-right' className='size-4 text-foreground' />
             </Link>
           ) : (
-            <span className='text-sm text-[#1d2824]/45'>Public route unavailable</span>
+            <span className='text-sm text-[#1d2824]/45'>n/a</span>
           )}
         </div>
       </article>
