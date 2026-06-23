@@ -25,7 +25,8 @@ export default defineSchema({
   txns: defineTable(txnSchema).index('by_userId', ['userId']).index('by_accountId', ['accountId']),
   registrations: defineTable(registrationSchema)
     .index('by_user_id', ['user_id'])
-    .index('by_tournamentId', ['tournament_id']),
+    .index('by_tournamentId', ['tournament_id'])
+    .index('by_subscriptionId', ['subscription_id']),
   sponsorLeads: defineTable(sponsorLeadSchema).index('by_tournamentId', ['tournament_id']),
   subscriptions: defineTable(subscriptionSchema)
     .index('by_user_id', ['user_id'])

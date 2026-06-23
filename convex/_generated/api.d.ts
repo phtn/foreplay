@@ -23,6 +23,8 @@ import type * as orders_d from "../orders/d.js";
 import type * as orders_m from "../orders/m.js";
 import type * as orders_q from "../orders/q.js";
 import type * as registrations_d from "../registrations/d.js";
+import type * as registrations_m from "../registrations/m.js";
+import type * as registrations_q from "../registrations/q.js";
 import type * as sponsorLeads_d from "../sponsorLeads/d.js";
 import type * as sponsorLeads_m from "../sponsorLeads/m.js";
 import type * as sponsorLeads_q from "../sponsorLeads/q.js";
@@ -61,6 +63,8 @@ declare const fullApi: ApiFromModules<{
   "orders/m": typeof orders_m;
   "orders/q": typeof orders_q;
   "registrations/d": typeof registrations_d;
+  "registrations/m": typeof registrations_m;
+  "registrations/q": typeof registrations_q;
   "sponsorLeads/d": typeof sponsorLeads_d;
   "sponsorLeads/m": typeof sponsorLeads_m;
   "sponsorLeads/q": typeof sponsorLeads_q;

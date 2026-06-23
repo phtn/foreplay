@@ -3,6 +3,7 @@ import { v } from 'convex/values'
 export const registrationSchema = v.object({
   user_id: v.string(),
   tournament_id: v.string(),
+  subscription_id: v.optional(v.id('subscriptions')),
   player_id: v.string(),
   player_name: v.string(),
   player_email: v.optional(v.string()),
