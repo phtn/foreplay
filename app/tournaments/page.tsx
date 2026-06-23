@@ -15,9 +15,9 @@ export default function TournamentsPage() {
     <ProtectedLayout>
       <div className='space-y-4 md:space-y-8'>
         <TournamentHero
-          eyebrow='0|120'
-          title='Seoul of Manila Golf Tournament 2026'
-          description='Present the field, the price, and the format in a way that makes the next click feel obvious.'
+          eyebrow='120 Slots'
+          title='Seoul of Manila'
+          description={featuredTournament.description}
           venueLabel={featuredTournament.venue}
           primaryHref='/subscriptions'
           // secondaryHref='/'
@@ -42,7 +42,7 @@ export default function TournamentsPage() {
               variant={index === 0 ? 'secondary' : 'outline'}
               size='default'
               radius='full'
-              className={cn('font-okx font-normal bg-background text-foreground/70 tracking-wide', {
+              className={cn('font-okx font-normal bg-background text-foreground/70 tracking-wide px-2 py-1.5', {
                 'border-border/70 bg-foreground text-background': index === 0
               })}>
               {filter}

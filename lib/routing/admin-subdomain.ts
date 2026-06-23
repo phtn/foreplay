@@ -88,6 +88,12 @@ export function supportsAdminSubdomain(hostname: string) {
     return false
   }
 
+  // Keep localhost on the same origin. Browsers do not reliably support sharing
+  // the session cookie across localhost and admin.localhost via the Domain attribute.
+  if (normalizedHostname === 'localhost') {
+    return false
+  }
+
   if (isIpHostname(normalizedHostname)) {
     return false
   }

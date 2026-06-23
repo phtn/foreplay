@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { getFirebaseCustomClaimsFromDecodedToken } from '@/lib/firebase/custom-claims'
+import { emptyInitialFirebaseAuthState, type FirebaseSessionUser, type InitialFirebaseAuthState } from '@/lib/firebase/auth-state'
 import { stripAdminSubdomain } from '@/lib/routing/admin-subdomain'
 import type { DecodedIdToken } from 'firebase-admin/auth'
 import { cookies, headers } from 'next/headers'
@@ -12,6 +13,15 @@ import { firebaseSessionCookieName } from './session'
 type VerifiedFirebaseSession = {
   customClaims: ReturnType<typeof getFirebaseCustomClaimsFromDecodedToken>
   decodedToken: DecodedIdToken
+}
+
+function getFirebaseSessionUserFromDecodedToken(decodedToken: DecodedIdToken): FirebaseSessionUser {
+  return {
+    uid: decodedToken.uid,
+    email: decodedToken.email ?? null,
+    displayName: typeof decodedToken.name === 'string' ? decodedToken.name : null,
+    photoURL: typeof decodedToken.picture === 'string' ? decodedToken.picture : null
+  }
 }
 
 async function buildAppHomeUrl() {
@@ -65,6 +75,20 @@ export const getVerifiedAdminSession = cache(async (): Promise<VerifiedFirebaseS
   }
 
   return session
+})
+
+export const getInitialFirebaseAuthState = cache(async (): Promise<InitialFirebaseAuthState> => {
+  const session = await getVerifiedFirebaseSession()
+
+  if (!session) {
+    return emptyInitialFirebaseAuthState
+  }
+
+  return {
+    sessionUser: getFirebaseSessionUserFromDecodedToken(session.decodedToken),
+    customClaims: session.customClaims,
+    hasAdminClaim: session.customClaims.admin === true
+  }
 })
 
 export async function requireAdminSession() {

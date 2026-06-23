@@ -7,9 +7,18 @@ import {
 } from '@/lib/firebase/session'
 import { resolveFirebaseSessionCookieDomain, syncFirebaseSessionIdentityToConvex } from '@/lib/firebase/server-session'
 import { getHostnameFromHostHeader, stripAdminSubdomain } from '@/lib/routing/admin-subdomain'
+import type { DecodedIdToken } from 'firebase-admin/auth'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export const runtime = 'nodejs'
+
+async function syncFirebaseIdentityBestEffort(decodedToken: DecodedIdToken) {
+  try {
+    await syncFirebaseSessionIdentityToConvex(decodedToken)
+  } catch (error) {
+    console.error('Failed to sync Firebase admin session identity to Convex.', error)
+  }
+}
 
 type AdminHandoffBody = {
   idToken?: unknown
@@ -119,7 +128,7 @@ export async function POST(request: NextRequest) {
         : NextResponse.redirect(appHomeUrl, 303)
     }
 
-    await syncFirebaseSessionIdentityToConvex(decodedToken)
+    await syncFirebaseIdentityBestEffort(decodedToken)
 
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: firebaseSessionCookieMaxAgeMs

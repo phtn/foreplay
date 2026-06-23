@@ -9,6 +9,7 @@ import { BookedGames } from '@/components/landing/types'
 import { Topbar } from '@/components/layouts/topbar'
 import { featuredTournament } from '@/components/protected/tournament-experience'
 import { useTheme } from '@/components/theme'
+import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { useMemo } from 'react'
 
@@ -83,7 +84,7 @@ export default function HomePage() {
 
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
-      <div className='mx-auto max-w-410 overflow-hidden rounded-b-[1rem] md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
+      <div className='mx-auto max-w-410 overflow-hidden rounded-b-md md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
         <Topbar />
         <main className=' dark:bg-slate-400/90'>
           <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
@@ -113,15 +114,18 @@ export default function HomePage() {
                   visibility, and a Ford Everest hole-in-one grand prize.
                 </p>
 
-                <div className='mt-8 flex flex-wrap items-center gap-5 text-sm font-medium text-white/85'>
+                <div className='mt-16 md:mt-8 md:flex flex-wrap items-center gap-5 text-sm font-medium text-white/95'>
                   {proofPoints.map((point) => (
                     <div key={point.label} className='flex items-center gap-2'>
-                      <Icon name={point.icon} className='size-4 opacity-85' />
-                      <span>{point.value}</span>
+                      <Icon name={point.icon} className='size-4 opacity-95' />
+                      <span className='font-okx'>{point.value}</span>
                       <span className='text-white/60'>{point.label}</span>
                     </div>
                   ))}
                 </div>
+                <Button className='md:hidden bg-foreground w-full mt-4 rounded-full invert' size='xl'>
+                  Book Entry
+                </Button>
               </div>
 
               <div className='hidden gap-5 sm:grid'>
@@ -131,7 +135,7 @@ export default function HomePage() {
           </section>
 
           <section className='grid gap-7 dark:bg-slate-400/60 bg-[#dcebe5] px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-12 lg:py-10'>
-            <div>
+            <div className='md:block hidden'>
               <div className='mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='flex items-center gap-3'>
                   <h2 className='font-poly text-2xl leading-none'>Tournament Day</h2>

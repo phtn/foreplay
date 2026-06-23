@@ -61,18 +61,20 @@ export const Content = ({ subscriptions }: ContentProps) => {
         </p>
       </div>
 
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-5'>
+      <div className='grid gap-1 xl:gap-4 grid-cols-5 xl:grid-cols-5'>
         {[
           { label: 'Total', value: counts.total },
-          { label: 'Pending payment', value: counts.pending },
-          { label: 'Payment review', value: counts.review },
+          { label: 'Pending', value: counts.pending },
+          { label: 'review', value: counts.review },
           { label: 'Confirmed', value: counts.confirmed },
           { label: 'Cancelled', value: counts.cancelled }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-border/70 bg-border/10 p-0'>
-            <CardContent className='space-y-1 p-0'>
-              <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>{stat.label}</p>
-              <p className='font-heading text-xl font-bold'>{stat.value}</p>
+          <Card key={stat.label} size='sm' className='border-border/70 bg-border/10 p-0! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 p-1!'>
+              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
+                {stat.label}
+              </p>
+              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}

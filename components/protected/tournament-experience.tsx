@@ -384,90 +384,118 @@ export function TournamentHero({
   darkButton = false
 }: TournamentHeroProps) {
   return (
-    <Card className='relative rounded-3xl overflow-hidden border border-slate-400/60 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
-      <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
-      <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
-        <Image
-          fill
-          alt='logo'
-          src='/som-optimized.svg'
-          className='opacity-25 w-auto aspect-auto object-cover shadow-xl'
-        />
-      </div>
-      {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
-      <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
-      <CardContent className='relative grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
-        <div className='space-y-8 sm:space-y-8'>
-          <div className='flex flex-wrap items-center gap-4'>
-            <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase'>
-              {eyebrow}
-            </Badge>
-            {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
-          </div>
-          <div className='space-y-4'>
-            <h1 className='max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
-              {title}
-            </h1>
-            <p className='hidden md:flex max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
-              {description}
-            </p>
-          </div>
-          <div className='hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
-            <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
-              <Icon name='location' className='size-4' />
-              <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
-            </div>
-            <div className='flex items-center gap-2 py-2 tracking-tight'>
-              <Icon name='clock' className='size-4' />
-              <span className='font-ios text-sm'>{teeTimeLabel ?? 'July 18, 2026 at 7:00 AM'}</span>
-            </div>
-          </div>
-          <div className='flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
-            {primaryAction ?? (
-              <Link
-                className={cn(
-                  buttonVariants({ size: '2xl' }),
-                  'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
-                  { 'bg-foreground dark:bg-background': darkButton }
-                )}
-                href={primaryHref}>
-                <span>{primaryLabel}</span>
-                <Icon name='chevron-right' className='size-4.5' />
-              </Link>
-            )}
-            {secondaryHref && (
-              <Link
-                className={cn(
-                  buttonVariants({ variant: 'secondary', size: 'xl' }),
-                  'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
-                )}
-                href={secondaryHref}>
-                {secondaryLabel}
-              </Link>
-            )}
-          </div>
+    <div>
+      <Card className='relative rounded-3xl overflow-hidden border border-slate-400 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)] p-0'>
+        <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
+        <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
+          <Image
+            fill
+            alt='logo'
+            src='/som-optimized.svg'
+            className='opacity-25 w-auto aspect-auto object-cover shadow-xl'
+          />
         </div>
+        {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
+        <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
+        <CardContent className='min-h-64 relative grid gap-6 p-0 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
+          <div className='space-y-8 sm:space-y-8'>
+            <div className='hidden md:flex flex-wrap items-center gap-4'>
+              <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase'>
+                {eyebrow}
+              </Badge>
+              {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
+            </div>
+            <div className='md:space-y-4 flex md:flex-col md:items-start items-end h-full md:h-fit'>
+              <div className=' bg-slate-300/30 backdrop-blur-3xl md:backdrop-blur-none md:bg-transparent md:max-w-2xl p-4'>
+                <h1 className='max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+                  {title}
+                </h1>
+              </div>
+              <p className='hidden md:flex max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
+                {description}
+              </p>
+            </div>
+            <div className='portrait:hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
+              <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
+                <Icon name='location' className='size-4' />
+                <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
+              </div>
+              <div className='flex items-center gap-2 py-2 tracking-tight'>
+                <Icon name='clock' className='size-4' />
+                <span className='font-ios text-sm'>{teeTimeLabel ?? 'July 18, 2026 at 7:00 AM'}</span>
+              </div>
+            </div>
+            <div className='hidden md:flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
+              {primaryAction ?? (
+                <Link
+                  className={cn(
+                    buttonVariants({ size: '2xl' }),
+                    'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
+                    { 'bg-foreground dark:bg-background': darkButton }
+                  )}
+                  href={primaryHref}>
+                  <span>{primaryLabel}</span>
+                  <Icon name='chevron-right' className='size-4.5' />
+                </Link>
+              )}
+              {secondaryHref && (
+                <Link
+                  className={cn(
+                    buttonVariants({ variant: 'secondary', size: 'xl' }),
+                    'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
+                  )}
+                  href={secondaryHref}>
+                  {secondaryLabel}
+                </Link>
+              )}
+            </div>
+          </div>
 
-        <div className='hidden _grid gap-3 grid-cols-3 md:grid-cols-1 place-items-end'>
-          {metrics.map((metric) => (
-            <Card
-              key={metric.label}
-              size='sm'
-              className='border-border/60 bg-background/80 backdrop-blur-2xl relative z-40 lg:py-0 lg:px-2 p-0 min-w-80 max-w-80'>
-              <CardContent className='flex items-center gap-2 lg:gap-5 lg:py-0 p-0'>
-                <div className='flex size-6 lg:size-10 items-center justify-center text-hermes'>
-                  <Icon name={metric.icon ?? 'trophy'} className='size-6 lg:size-7' />
-                </div>
-                <div>
-                  <p className='font-poly font-semibold text-base tracking-tight'>{metric.value}</p>
-                  <p className='font-ios text-muted-foreground text-xs uppercase'>{metric.label}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          <div className='hidden _grid gap-3 grid-cols-3 md:grid-cols-1 place-items-end'>
+            {metrics.map((metric) => (
+              <Card
+                key={metric.label}
+                size='sm'
+                className='border-border/60 bg-background/80 backdrop-blur-2xl relative z-40 lg:py-0 lg:px-2 p-0 min-w-80 max-w-80'>
+                <CardContent className='flex items-center gap-2 lg:gap-5 lg:py-0 p-0'>
+                  <div className='flex size-6 lg:size-10 items-center justify-center text-hermes'>
+                    <Icon name={metric.icon ?? 'trophy'} className='size-6 lg:size-7' />
+                  </div>
+                  <div>
+                    <p className='font-poly font-semibold text-base tracking-tight'>{metric.value}</p>
+                    <p className='font-ios text-muted-foreground text-xs uppercase'>{metric.label}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      <div className='md:hidden flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto mt-4'>
+        {primaryAction ?? (
+          <Link
+            className={cn(
+              buttonVariants({ size: '2xl' }),
+              'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
+              { 'bg-foreground dark:bg-background': darkButton }
+            )}
+            href={primaryHref}>
+            <span>{primaryLabel}</span>
+            <Icon name='chevron-right' className='size-4.5' />
+          </Link>
+        )}
+        {secondaryHref && (
+          <Link
+            className={cn(
+              buttonVariants({ variant: 'secondary', size: 'xl' }),
+              'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
+            )}
+            href={secondaryHref}>
+            {secondaryLabel}
+          </Link>
+        )}
+      </div>
+    </div>
   )
 }
 

@@ -5,9 +5,18 @@ import {
   firebaseSessionCookieName
 } from '@/lib/firebase/session'
 import { resolveFirebaseSessionCookieDomain, syncFirebaseSessionIdentityToConvex } from '@/lib/firebase/server-session'
+import type { DecodedIdToken } from 'firebase-admin/auth'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export const runtime = 'nodejs'
+
+async function syncFirebaseIdentityBestEffort(decodedToken: DecodedIdToken) {
+  try {
+    await syncFirebaseSessionIdentityToConvex(decodedToken)
+  } catch (error) {
+    console.error('Failed to sync Firebase session identity to Convex.', error)
+  }
+}
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
   return NextResponse.json(body, {
@@ -38,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     const decodedToken = await auth.verifyIdToken(idToken)
-    await syncFirebaseSessionIdentityToConvex(decodedToken)
+    await syncFirebaseIdentityBestEffort(decodedToken)
 
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: firebaseSessionCookieMaxAgeMs

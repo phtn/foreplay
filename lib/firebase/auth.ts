@@ -1,7 +1,9 @@
 'use client'
 
 import { FirebaseError } from 'firebase/app'
+import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from 'react'
 import { getFirebaseCustomClaimsFromIdTokenResult, type FirebaseCustomClaims } from '@/lib/firebase/custom-claims'
+import { emptyInitialFirebaseAuthState, type FirebaseSessionUser, type InitialFirebaseAuthState } from '@/lib/firebase/auth-state'
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -13,9 +15,9 @@ import {
   type User,
   type UserCredential
 } from 'firebase/auth'
-import { useEffect, useState } from 'react'
 
 import { auth, isFirebaseConfigured } from './config'
+import { createFirebaseSession } from './session'
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -29,6 +31,27 @@ function getConfiguredAuth() {
   }
 
   return auth
+}
+
+function getFirebaseSessionUser(user: Pick<User, 'uid' | 'email' | 'displayName' | 'photoURL'>): FirebaseSessionUser {
+  return {
+    uid: user.uid,
+    email: user.email ?? null,
+    displayName: user.displayName ?? null,
+    photoURL: user.photoURL ?? null
+  }
+}
+
+const FirebaseAuthBootstrapContext = createContext<InitialFirebaseAuthState>(emptyInitialFirebaseAuthState)
+
+export function FirebaseAuthBootstrapProvider({
+  children,
+  initialState
+}: {
+  children: ReactNode
+  initialState: InitialFirebaseAuthState
+}) {
+  return createElement(FirebaseAuthBootstrapContext.Provider, { value: initialState }, children)
 }
 
 const firebaseAuthErrorMessages: Record<string, string> = {
@@ -82,9 +105,11 @@ export function getFirebaseAuthErrorMessage(error: unknown): string {
 }
 
 export function useFirebaseUser() {
+  const initialAuthState = useContext(FirebaseAuthBootstrapContext)
   const [user, setUser] = useState<User | null>(null)
-  const [customClaims, setCustomClaims] = useState<FirebaseCustomClaims>({})
-  const [hasAdminClaim, setHasAdminClaim] = useState(false)
+  const [sessionUser, setSessionUser] = useState<FirebaseSessionUser | null>(initialAuthState.sessionUser)
+  const [customClaims, setCustomClaims] = useState<FirebaseCustomClaims>(initialAuthState.customClaims)
+  const [hasAdminClaim, setHasAdminClaim] = useState(initialAuthState.hasAdminClaim)
   const [isLoading, setIsLoading] = useState(Boolean(auth))
 
   useEffect(() => {
@@ -100,15 +125,18 @@ export function useFirebaseUser() {
       setUser(nextUser)
 
       if (!nextUser) {
+        setSessionUser(null)
         setCustomClaims({})
         setHasAdminClaim(false)
         setIsLoading(false)
         return
       }
 
+      setSessionUser(getFirebaseSessionUser(nextUser))
+
       void nextUser
-        .getIdTokenResult()
-        .then((tokenResult) => {
+        .getIdTokenResult(true)
+        .then(async (tokenResult) => {
           if (isCancelled || requestId !== latestTokenRequest) {
             return
           }
@@ -116,6 +144,9 @@ export function useFirebaseUser() {
           const nextCustomClaims = getFirebaseCustomClaimsFromIdTokenResult(tokenResult)
           setCustomClaims(nextCustomClaims)
           setHasAdminClaim(nextCustomClaims.admin === true)
+
+          // Keep the server session cookie aligned with the latest Firebase token claims.
+          await createFirebaseSession(tokenResult.token).catch(() => undefined)
         })
         .catch(() => {
           if (isCancelled || requestId !== latestTokenRequest) {
@@ -140,7 +171,7 @@ export function useFirebaseUser() {
     }
   }, [])
 
-  return { customClaims, hasAdminClaim, isLoading, user }
+  return { customClaims, hasAdminClaim, isLoading, sessionUser, user }
 }
 
 export async function signOutUser(): Promise<void> {

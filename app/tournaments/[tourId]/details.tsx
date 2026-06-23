@@ -135,7 +135,7 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         darkButton
         eyebrow={tournament.statusLabel}
         title={tournament.title}
-        description={tournament.description}
+        description={'Fuick'}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
         secondaryHref={`/tournaments/${tournament.id}/sponsorship`}

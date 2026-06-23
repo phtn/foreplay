@@ -19,10 +19,10 @@ export const NAV_ITEMS: NavItem[] = [
   { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
 ]
 
-export function getActiveNavPath(pathname: string) {
-  const match = NAV_ITEMS.find((item) => isNavItemActive(pathname, item.value))
+export function getActiveNavPath(pathname: string, items: NavItem[] = NAV_ITEMS) {
+  const match = items.find((item) => isNavItemActive(pathname, item.value))
 
-  return match?.value ?? NAV_ITEMS[0]?.value ?? '/'
+  return match?.value ?? items[0]?.value ?? '/'
 }
 
 export function isNavItemActive(pathname: string, path: string) {
@@ -40,7 +40,7 @@ interface NavbarProps {
 
 export const Navbar = ({ pathname, items = NAV_ITEMS }: NavbarProps) => {
   const router = useRouter()
-  const activePath = getActiveNavPath(pathname)
+  const activePath = getActiveNavPath(pathname, items)
 
   return (
     <nav className='hidden md:flex items-center gap-3'>

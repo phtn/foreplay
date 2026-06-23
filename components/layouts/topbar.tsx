@@ -9,11 +9,11 @@ import { SignOutButton } from '@/components/ui/signout'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useToggle } from '@/hooks/use-toggle'
 import { useFirebaseUser } from '@/lib/firebase/auth'
+import type { FirebaseSessionUser } from '@/lib/firebase/auth-state'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import { type User } from 'firebase/auth'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 const GUEST_NAV_ITEMS: NavItem[] = [
   { value: '/', label: 'Dashboard', icon: 'home-line' },
@@ -23,62 +23,43 @@ const GUEST_NAV_ITEMS: NavItem[] = [
 ]
 
 interface AuthenticatedTopbarProps {
-  pathname: string
-  user: User
-  mobileOpen: boolean
-  toggleMobileOpen: () => void
-  setMobileOpen: (value: boolean) => void
+  user: FirebaseSessionUser
+  hasAdminClaim: boolean
 }
 
-function getUserAvatarFallback(user: User) {
+function getUserAvatarFallback(user: FirebaseSessionUser) {
   const fallbackSource = user.displayName ?? user.email ?? user.uid
 
   return fallbackSource.trim().substring(0, 1).toUpperCase()
 }
 
 export function Topbar() {
-  const pathname = usePathname()
-  const { isLoading, user } = useFirebaseUser()
-  const { on: mobileOpen, toggle: toggleMobileOpen, setOn: setMobileOpen } = useToggle(false)
+  const { hasAdminClaim, sessionUser } = useFirebaseUser()
 
-  if (isLoading) {
-    return null
+  if (sessionUser) {
+    return <AuthenticatedTopbar user={sessionUser} hasAdminClaim={hasAdminClaim} />
   }
 
-  if (user) {
-    return (
-      <AuthenticatedTopbar
-        pathname={pathname}
-        user={user}
-        mobileOpen={mobileOpen}
-        toggleMobileOpen={toggleMobileOpen}
-        setMobileOpen={setMobileOpen}
-      />
-    )
-  }
-
-  return <GuestTopbar pathname={pathname} />
+  return <GuestTopbar />
 }
 
-function AuthenticatedTopbar({
-  pathname,
-  user,
-  mobileOpen,
-  toggleMobileOpen,
-  setMobileOpen
-}: AuthenticatedTopbarProps) {
+function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) {
+  const pathname = usePathname()
+  const { on: mobileOpen, toggle: toggleMobileOpen, setOn: setMobileOpen } = useToggle(false)
   const avatarFallback = getUserAvatarFallback(user)
   const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
+  const navItems = NAV_ITEMS
 
   return (
     <header
       className={cn('sticky top-0 z-50 overflow-visible', {
-        'border-sky-950/20': pathname.includes('entry')
+        'border-sky-950/20': pathname.includes('entry'),
+        ' max-w-7xl mx-auto': pathname !== '/'
       })}>
       <div className='relative z-50'>
         <div className='mx-auto flex min-h-16 _max-w-7xl md:mt-3 items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
           <Brand className='dark:text-foreground' />
-          <Navbar pathname={pathname} />
+          <Navbar pathname={pathname} items={navItems} />
 
           <div className='flex items-center gap-2'>
             <div className='hidden sm:block'>
@@ -99,6 +80,11 @@ function AuthenticatedTopbar({
                   }
                 />
                 <DropdownMenuContent align='end' className=''>
+                  {hasAdminClaim ? (
+                    <DropdownMenuItem className='rounded-sm rounded-t-xl'>
+                      <AdminButton />
+                    </DropdownMenuItem>
+                  ) : null}
                   <DropdownMenuItem className='rounded-sm rounded-t-xl'>
                     <ThemeToggle withLabel />
                   </DropdownMenuItem>
@@ -120,14 +106,19 @@ function AuthenticatedTopbar({
         </div>
       </div>
 
-      <MobileNav pathname={pathname} onNavigate={() => setMobileOpen(false)} open={mobileOpen} />
+      <MobileNav items={navItems} onNavigate={() => setMobileOpen(false)} open={mobileOpen} />
     </header>
   )
 }
 
-function GuestTopbar({ pathname }: { pathname: string }) {
+function GuestTopbar() {
+  const pathname = usePathname()
+
   return (
-    <header className='relative z-20 flex items-center justify-between gap-4 px-5 py-5 sm:px-8 lg:px-12'>
+    <header
+      className={cn('flex items-center justify-between py-5 px-6', {
+        'max-w-7xl mx-auto': pathname !== '/'
+      })}>
       <Brand className='dark:text-foreground' />
       <Navbar pathname={pathname} items={GUEST_NAV_ITEMS} />
 
@@ -147,7 +138,9 @@ function GuestTopbar({ pathname }: { pathname: string }) {
   )
 }
 
-function MobileNav({ pathname, onNavigate, open }: { pathname: string; onNavigate: () => void; open: boolean }) {
+function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: () => void; open: boolean }) {
+  const pathname = usePathname()
+
   return (
     <div
       className={cn(
@@ -157,7 +150,7 @@ function MobileNav({ pathname, onNavigate, open }: { pathname: string; onNavigat
       )}>
       <div className='mx-3 mt-2 rounded-2xl border border-border/60 bg-card px-2 pt-2 pb-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:mx-4'>
         <div className='space-y-2'>
-          {NAV_ITEMS.map((item) => {
+          {items.map((item) => {
             const active = isNavItemActive(pathname, item.value)
             return (
               <Link
@@ -175,5 +168,18 @@ function MobileNav({ pathname, onNavigate, open }: { pathname: string; onNavigat
         </div>
       </div>
     </div>
+  )
+}
+
+const AdminButton = () => {
+  const router = useRouter()
+  return (
+    <Button
+      onClick={() => router.push('/admin')}
+      variant='ghost'
+      className='w-full justify-start space-x-3 px-0.5 hover:bg-transparent'>
+      <Icon name='re-up.ph' className='size-3.5' />
+      <span>Admin</span>
+    </Button>
   )
 }

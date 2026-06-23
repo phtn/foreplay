@@ -1,4 +1,5 @@
 import { RootProviders } from '@/ctx/root'
+import { getInitialFirebaseAuthState } from '@/lib/firebase/server-auth'
 import { cn } from '@/lib/utils'
 import type { Metadata, Viewport } from 'next'
 import { Figtree, Geist, Geist_Mono } from 'next/font/google'
@@ -90,17 +91,19 @@ export const viewport: Viewport = {
   initialScale: 1
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const initialAuthState = await getInitialFirebaseAuthState()
+
   return (
     <html
       lang='en'
       className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', figtree.variable)}>
       <body className='min-h-full flex flex-col'>
-        <RootProviders>{children}</RootProviders>
+        <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
       </body>
     </html>
   )
