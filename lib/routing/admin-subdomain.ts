@@ -7,10 +7,9 @@ export type AdminSubdomainMode = 'auto' | 'force' | 'off'
 /**
  * Controls admin subdomain behavior.
  *
- * - 'auto' (default): Use subdomain when the hostname supports it (custom domains with proper DNS).
- *   Falls back to same-origin /admin-handoff on Vercel previews and IPs.
+ * - 'auto': Reserved for future hostname-based subdomain handoff.
  * - 'force': Always attempt admin subdomain handoff (use when you have wildcard DNS even on custom vercel domains).
- * - 'off': Never use subdomain. Everything stays on the main origin using /admin-handoff + /admin paths.
+ * - 'off' (default): Never use subdomain. Everything stays on the main origin using /admin-handoff + /admin paths.
  *
  * Can be set via ADMIN_SUBDOMAIN_MODE or NEXT_PUBLIC_ADMIN_SUBDOMAIN_MODE.
  */
@@ -18,7 +17,7 @@ function resolveAdminSubdomainMode(): AdminSubdomainMode {
   const raw =
     (typeof process !== 'undefined' && process.env
       ? process.env.ADMIN_SUBDOMAIN_MODE ?? process.env.NEXT_PUBLIC_ADMIN_SUBDOMAIN_MODE
-      : undefined) ?? 'auto'
+      : undefined) ?? 'off'
 
   if (raw === 'force') return 'force'
   if (raw === 'off') return 'off'
@@ -81,6 +80,10 @@ function isVercelHostname(hostname: string) {
   return normalized.endsWith('.vercel.app') || normalized.endsWith('.vercel.dev')
 }
 
+function isVercelDeployment() {
+  return process.env.VERCEL === '1' || typeof process.env.VERCEL_ENV === 'string'
+}
+
 export function supportsAdminSubdomain(hostname: string) {
   const normalizedHostname = normalizeHostname(hostname)
 
@@ -108,14 +111,13 @@ export function supportsAdminSubdomain(hostname: string) {
     return true
   }
 
-  // 'auto' mode: Vercel preview/production vercel.app domains cannot reliably support
-  // the admin.* subdomain without explicit wildcard DNS + domain configuration.
-  // On these hosts we fall back to same-origin admin handoff at /admin-handoff.
-  if (isVercelHostname(normalizedHostname)) {
+  // 'auto' mode is intentionally disabled for now. Keep admin routing same-origin
+  // unless subdomain handoff is explicitly forced via environment configuration.
+  if (isVercelDeployment() || isVercelHostname(normalizedHostname)) {
     return false
   }
 
-  return true
+  return false
 }
 
 export function toAdminSubdomainHostname(hostname: string) {
