@@ -15,7 +15,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { value: '/', label: 'Home', icon: 'home-line' },
   { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
-  { value: '/entries', label: 'My Entries', icon: 'ticket' },
+  { value: '/subscriptions', label: 'My Entries', icon: 'ticket' },
   { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
 ]
 

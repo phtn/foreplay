@@ -77,11 +77,8 @@ const Page = async ({ params }: PageProps) => {
           title: tournament?.title ?? tourId,
           venue: tournament?.venue ?? 'Venue pending',
           gateOpenAt: tournament?.gate_open_at ?? null,
-          entryFee,
-          entryFeeLabel:
-            entryFee > 0
-              ? `₱${entryFee.toLocaleString('en-US')}`
-              : formatSponsorPackageLabel(tournament?.sponsorship_tiers),
+          entryFee: tournament?.registration_fee ?? 0,
+          entryFeeLabel: `₱${entryFee.toLocaleString('en-US')}`,
           divisionOptions
         }}
       />

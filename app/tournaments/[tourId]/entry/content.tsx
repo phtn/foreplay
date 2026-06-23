@@ -80,8 +80,7 @@ export const Content = ({
   const players = query.players ?? defaultPlayers
   const division = query.division && validDivisionValues.has(query.division) ? query.division : initialDivision
   // const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
-  // const price = selectedDivisionOption?.amount ?? tournament.entryFee
-  const price = 5000
+  const price = tournament.entryFee
   const total = players * price
 
   useEffect(() => {
@@ -201,6 +200,7 @@ export const Content = ({
                 tourId={tourId}
                 formId={formId}
                 players={players}
+                totalAmount={total}
                 division={division}
                 initialEmail={initialEmail}
                 initialPhone={initialPhone}

@@ -385,8 +385,8 @@ export function TournamentHero({
 }: TournamentHeroProps) {
   return (
     <Card className='relative rounded-3xl overflow-hidden border border-slate-400/60 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)]'>
-      <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-emerald-400/70 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
-      <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden left-0 -top-10 md:-right-10 md:-top-20'>
+      <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
+      <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
         <Image
           fill
           alt='logo'
@@ -412,7 +412,7 @@ export function TournamentHero({
               {description}
             </p>
           </div>
-          <div className='hidden md:flex max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
+          <div className='hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
             <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
               <Icon name='location' className='size-4' />
               <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>

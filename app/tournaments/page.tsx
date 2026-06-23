@@ -19,7 +19,7 @@ export default function TournamentsPage() {
           title='Seoul of Manila Golf Tournament 2026'
           description='Present the field, the price, and the format in a way that makes the next click feel obvious.'
           venueLabel={featuredTournament.venue}
-          primaryHref='/entries'
+          primaryHref='/subscriptions'
           // secondaryHref='/'
           primaryLabel='My Entries'
           secondaryLabel=''
