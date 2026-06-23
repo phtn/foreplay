@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import Link from 'next/link'
@@ -69,8 +69,8 @@ export const Content = ({ subscriptions }: ContentProps) => {
           { label: 'Confirmed', value: counts.confirmed },
           { label: 'Cancelled', value: counts.cancelled }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-border/70 bg-border/10 p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 p-1!'>
+          <Card key={stat.label} size='sm' className='border-border/1 bg-border/10 p-0! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 p-2!'>
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>
@@ -80,10 +80,7 @@ export const Content = ({ subscriptions }: ContentProps) => {
         ))}
       </div>
 
-      <Card className='border-border/70'>
-        <CardHeader>
-          <CardTitle className='text-xl'>Entries</CardTitle>
-        </CardHeader>
+      <Card className='border-border/70 py-0'>
         <CardContent className='p-0'>
           {subscriptions.length ? (
             <div className='divide-y divide-border/70'>
