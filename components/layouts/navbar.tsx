@@ -15,8 +15,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { value: '/', label: 'Home', icon: 'home-line' },
   { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
-  { value: '/subscriptions', label: 'My Entries', icon: 'ticket' },
-  { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
+  { value: '/subscriptions', label: 'My Entries', icon: 'ticket' }
+  // { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
 ]
 
 export function getActiveNavPath(pathname: string, items: NavItem[] = NAV_ITEMS) {
