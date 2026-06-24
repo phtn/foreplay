@@ -186,7 +186,7 @@ export const NewEntryForm = ({
           void form.handleSubmit()
         }}>
         <div className='grid md:grid-cols-3'>
-          <div className='border-r border-slate-400 dark:border-slate-800 p-8'>
+          <div className='md:border-r border-slate-400 dark:border-slate-800 p-4 md:p-8'>
             <form.AppField name='email'>
               {({ TextField }) => (
                 <TextField
@@ -226,7 +226,7 @@ export const NewEntryForm = ({
             </form.AppField>
           </div>
 
-          <div className='bg-sky-500/0 p-8 border-r border-slate-400 dark:border-slate-800'>
+          <div className='bg-sky-500/0 p-8 md:border-r border-slate-400 dark:border-slate-800'>
             <form.AppField name='fullName'>
               {({ TextField }) => (
                 <TextField
@@ -302,7 +302,7 @@ export const NewEntryForm = ({
             </div>
           </div>
 
-          <div className='h-full flex flex-col gap-8 pt-4 text-center md:justify-center bg-sky-500/0'>
+          <div className='h-full flex flex-col gap-4 md:gap-8 md:pt-4 text-center md:justify-center bg-sky-500/0'>
             <p className='font-okx text-foreground/80 text-base text-balance text-center'>
               By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
               follows payment review.
@@ -317,7 +317,7 @@ export const NewEntryForm = ({
                 {successMessage}
               </p>
             ) : null}
-            <div className='flex items-center justify-center w-full px-8'>
+            <div className='flex items-center justify-center w-full px-8 mb-8 md:mb-0'>
               <Button
                 size='xl'
                 type='submit'
@@ -343,10 +343,12 @@ export const NewEntryForm = ({
                   </div>
                   <div>
                     <p className='font-okx text-lg text-foreground'>Secure Payment</p>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Pending review</p>
+                    <p className='font-okx text-xs tracking-widest text-muted-foreground'>
+                      Scan QR Code to make a payment
+                    </p>
                   </div>
                 </div>
-                <div className='space-y-3 text-left'>
+                <div className='flex justify-start space-x-6 md:space-x-0 md:flex-col space-y-3 text-left'>
                   <div>
                     <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Reference</p>
                     <p className='font-okx text-sm uppercase text-foreground/80'>{formId}</p>
@@ -366,10 +368,10 @@ export const NewEntryForm = ({
                     void copyPaymentCode()
                   }}>
                   <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4' />
-                  <span>{paymentCodeCopied ? 'Copied' : 'Copy Payload'}</span>
+                  <span>{paymentCodeCopied ? 'Copied' : 'Copy Reference #'}</span>
                 </Button>
                 <Button type='button' variant='outline' className='justify-center' onClick={downloadPaymentQR}>
-                  <Icon name='file' className='size-4' />
+                  <Icon name='arrow-drop-down' className='size-4' />
                   <span>Download QR</span>
                 </Button>
               </div>

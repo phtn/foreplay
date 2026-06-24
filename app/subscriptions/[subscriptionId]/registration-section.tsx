@@ -1,5 +1,6 @@
 'use client'
 
+import { QRCodeSVG, type QRCodeOptions } from '@/components/qrcode/viewer'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -43,6 +44,14 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
   }
 }
 
+function buildGatePassPayload(registration: Pick<Doc<'registrations'>, '_id' | 'player_name' | 'player_email'>) {
+  return JSON.stringify({
+    id: registration._id,
+    name: registration.player_name,
+    email: registration.player_email ?? ''
+  })
+}
+
 export function RegistrationSection({
   defaultDivision,
   maxEntries,
@@ -66,6 +75,7 @@ export function RegistrationSection({
         slotLabel: `Player ${index + 1}`,
         name: registration.player_name,
         email: registration.player_email ?? 'No email',
+        gatePassPayload: buildGatePassPayload(registration),
         phone: registration.player_phone ?? 'No phone',
         division: registration.division ?? 'No division',
         handicap: registration.handicap_index ?? 'No handicap',
@@ -108,28 +118,32 @@ export function RegistrationSection({
   }
 
   return (
-    <Card className='border-border/70'>
-      <CardHeader>
-        <div className='flex flex-col sm:flex-row sm:items-start sm:justify-between'>
+    <Card className='rounded-xl border-border/70'>
+      <CardHeader className='px-4 sm:px-6'>
+        <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
           <div className='space-y-1.5'>
-            <CardTitle className='flex items-center space-x-3 font-okx text-lg'>
+            <CardTitle className='flex items-center gap-3 font-okx text-lg'>
               <span>Register Players</span>
-              <Button
-                size='icon-xs'
-                className='rounded-full bg-foreground'
-                onClick={() => {
-                  setErrorMessage(null)
-                  setIsAdding(true)
-                }}>
-                <Icon name={isPending ? 'spinner-ring' : 'add'} />
-              </Button>
+              {canAddMore ? (
+                <Button
+                  size='icon-xs'
+                  className='rounded-full bg-foreground'
+                  disabled={isAdding || isPending}
+                  aria-label='Add player'
+                  onClick={() => {
+                    setErrorMessage(null)
+                    setIsAdding(true)
+                  }}>
+                  <Icon name={isPending ? 'spinner-ring' : 'add'} />
+                </Button>
+              ) : null}
             </CardTitle>
             <p className='text-sm text-muted-foreground'>
               Add one player form at a time until all {registrationLimit} entry slots are assigned.
             </p>
           </div>
 
-          <div className='flex items-center gap-2'>
+          <div className='flex flex-wrap items-center gap-2'>
             <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
               {registrations.length}/{registrationLimit} saved
             </span>
@@ -139,34 +153,46 @@ export function RegistrationSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent className='space-y-5'>
+      <CardContent className='space-y-5 px-4 sm:px-6'>
         {registrationCards.length ? (
-          <div className='grid gap-4 md:grid-cols-2'>
+          <div className='grid gap-3 md:grid-cols-2 md:gap-4'>
             {registrationCards.map((registration) => (
-              <div key={registration.id} className='rounded-2xl border border-border/60 bg-muted/20 p-4'>
-                <div className='flex items-start justify-between gap-3'>
-                  <div>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
-                      {registration.slotLabel}
-                    </p>
-                    <p className='mt-2 font-okx text-base text-foreground/90'>{registration.name}</p>
-                  </div>
-                  <span className='inline-flex rounded-md bg-background px-2.5 py-1 text-xs font-medium text-foreground/75'>
-                    {registration.shirtSize}
-                  </span>
-                </div>
+              <div key={registration.id} className='rounded-xl border border-border/60 bg-muted/20 p-4'>
+                <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
+                  <div className='min-w-0 space-y-4'>
+                    <div className='flex items-start justify-between gap-3 sm:block'>
+                      <div className='min-w-0'>
+                        <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+                          {registration.slotLabel}
+                        </p>
+                        <p className='mt-2 wrap-break-word font-okx text-base text-foreground/90'>
+                          {registration.name}
+                        </p>
+                      </div>
+                      <span className='inline-flex rounded-md bg-background px-2.5 py-1 text-xs font-medium text-foreground/75 sm:hidden'>
+                        {registration.shirtSize}
+                      </span>
+                    </div>
 
-                <div className='mt-4 grid gap-3 sm:grid-cols-2'>
-                  <RegistrationField label='Email' value={registration.email} />
-                  <RegistrationField label='Phone' value={registration.phone} />
-                  <RegistrationField label='Division' value={registration.division} />
-                  <RegistrationField label='Handicap' value={registration.handicap} />
+                    <div className='grid gap-3 grid-cols-2'>
+                      <RegistrationField label='Email' value={registration.email} />
+                      <RegistrationField label='Phone' value={registration.phone} />
+                      <RegistrationField label='Division' value={registration.division} />
+                      <RegistrationField label='Handicap' value={registration.handicap} />
+                    </div>
+                  </div>
+
+                  <GatePassQRCode
+                    content={registration.gatePassPayload}
+                    label={registration.slotLabel}
+                    shirtSize={registration.shirtSize}
+                  />
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border/70 bg-muted/10 p-6 text-center'>
+          <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/70 bg-muted/10 p-5 text-center sm:p-6'>
             <Icon name='person-multiple' className='size-8 text-muted-foreground/60' />
             <div className='space-y-1'>
               <p className='font-okx text-base'>No players registered yet</p>
@@ -182,7 +208,7 @@ export function RegistrationSection({
         ) : null}
 
         {isAdding ? (
-          <div className='rounded-2xl border border-border/70 bg-muted/10 p-5'>
+          <div className='rounded-xl border border-border/70 bg-muted/10 p-4 sm:p-5'>
             <div className='grid gap-4 md:grid-cols-2'>
               <RegistrationInput
                 id='player-name'
@@ -239,11 +265,12 @@ export function RegistrationSection({
               </div>
             </div>
 
-            <div className='mt-5 flex flex-wrap justify-end gap-3'>
+            <div className='mt-5 grid gap-3 sm:flex sm:flex-wrap sm:justify-end'>
               <Button
                 type='button'
                 variant='ghost'
                 size='sm'
+                className='w-full sm:w-auto'
                 disabled={isPending}
                 onClick={() => {
                   setIsAdding(false)
@@ -252,7 +279,7 @@ export function RegistrationSection({
                 }}>
                 Cancel
               </Button>
-              <Button type='button' size='sm' disabled={isPending} onClick={handleSubmit}>
+              <Button type='button' size='sm' className='w-full sm:w-auto' disabled={isPending} onClick={handleSubmit}>
                 {isPending ? 'Saving...' : 'Save player'}
               </Button>
             </div>
@@ -283,6 +310,24 @@ function RegistrationField({ label, value }: { label: string; value: string }) {
     <div className='space-y-1'>
       <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{label}</p>
       <p className='text-sm text-foreground/80'>{value}</p>
+    </div>
+  )
+}
+
+function GatePassQRCode({ content }: { content: string; label: string; shirtSize: string }) {
+  const qrOptions = useMemo<QRCodeOptions>(
+    () => ({
+      content,
+      width: 240,
+      height: 240,
+      padding: 1
+    }),
+    [content]
+  )
+
+  return (
+    <div className='p-0 w-64'>
+      <QRCodeSVG className='size-60 overflow-hidden bg-white [&_svg]:size-full' options={qrOptions} />
     </div>
   )
 }

@@ -30,6 +30,18 @@ const formatCreatedAt = (value: number) => {
   }).format(value)
 }
 
+const formatPaymentAmount = (value: number | undefined) => {
+  if (typeof value !== 'number') {
+    return 'Pending'
+  }
+
+  return new Intl.NumberFormat('en-PH', {
+    currency: 'PHP',
+    maximumFractionDigits: 0,
+    style: 'currency'
+  }).format(value)
+}
+
 export const Content = ({ subscriptions }: ContentProps) => {
   const counts = subscriptions.reduce(
     (acc, subscription) => {
@@ -52,35 +64,40 @@ export const Content = ({ subscriptions }: ContentProps) => {
   )
 
   return (
-    <main className='space-y-8'>
-      <div className='space-y-2'>
-        <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Subscriptions</p>
-        <h1 className='font-heading text-3xl font-bold tracking-tight'>Entries</h1>
-        <p className='max-w-2xl text-sm text-muted-foreground'>
+    <main className='space-y-6 md:space-y-8'>
+      <div className='space-y-1 md:space-y-2'>
+        <p className='font-ios text-[11px] md:text-xs uppercase tracking-widest dark:text-sky-500 text-sky-600'>
+          Subscriptions
+        </p>
+        <h1 className='font-okx font-bold text-lg md:text-xl tracking-wide'>Entries</h1>
+        <p className='hidden md:flex max-w-2xl text-sm text-muted-foreground'>
           Review entry requests, payment status, receipt state, and the next action for each tournament.
         </p>
       </div>
 
-      <div className='grid gap-1 xl:gap-4 grid-cols-5 xl:grid-cols-5'>
+      <div className='grid grid-cols-2 gap-2 sm:grid-cols-5 xl:gap-4'>
         {[
           { label: 'Total', value: counts.total },
           { label: 'Pending', value: counts.pending },
-          { label: 'review', value: counts.review },
+          { label: 'Review', value: counts.review },
           { label: 'Confirmed', value: counts.confirmed },
           { label: 'Cancelled', value: counts.cancelled }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-border/1 bg-border/10 p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 p-2!'>
-              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
+          <Card
+            key={stat.label}
+            size='sm'
+            className='min-h-18 rounded-lg border-border/70 bg-border/10 p-0! sm:min-h-0'>
+            <CardContent className='space-y-1 p-3! sm:p-2!'>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-xs'>
                 {stat.label}
               </p>
-              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
+              <p className='font-heading text-xl font-bold md:text-xl'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <Card className='border-border/80 py-0'>
+      <Card className='rounded-xl border-border/80 py-0'>
         <CardContent className='p-0'>
           {subscriptions.length ? (
             <div className='divide-y divide-border/35'>
@@ -92,31 +109,63 @@ export const Content = ({ subscriptions }: ContentProps) => {
                     key={subscription._id}
                     href={`/subscriptions/${subscription._id}`}
                     prefetch={index === 0}
-                    className='grid gap-4 p-5 transition-colors hover:bg-muted/30 md:grid-cols-[1.2fr_0.5fr_0.5fr_0.7fr_auto] md:items-center'>
-                    <div className='space-y-1'>
-                      <p className='font-okx text-base text-foreground'>{subscription.tournament_name}</p>
-                      <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
-                        {subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
+                    className='block p-4 transition-colors hover:bg-muted/30 sm:p-5 md:grid md:grid-cols-[1.2fr_0.5fr_0.5fr_0.7fr_auto] md:items-center md:gap-4'>
+                    <div className='flex items-start justify-between gap-3 md:block md:space-y-1'>
+                      <div className='min-w-0 space-y-1'>
+                        <p className='line-clamp-2 font-okx text-base leading-snug text-foreground md:line-clamp-1'>
+                          {subscription.tournament_name}
+                        </p>
+                        <p className='break-all font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-xs'>
+                          {subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex shrink-0 rounded-md px-2 py-1 font-ios text-[10px] uppercase tracking-widest md:hidden ${statusStyles[status] ?? statusStyles.pending_payment}`}>
+                        {formatStatus(status)}
+                      </span>
+                    </div>
+                    <div className='mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:mt-0 md:block md:space-y-1 md:border-0 md:bg-transparent md:p-0'>
+                      <div>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
+                          Division
+                        </p>
+                        <p className='mt-1 text-sm text-foreground/80 md:mt-0'>
+                          {subscription.division ?? 'Division pending'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
+                          Entries
+                        </p>
+                        <p className='mt-1 text-sm text-foreground/80 md:hidden'>{subscription.total_players}</p>
+                        <p className='hidden text-xs text-muted-foreground md:block'>
+                          {subscription.total_players} Entries
+                        </p>
+                      </div>
+                    </div>
+                    <div className='mt-3 grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:mt-0 md:block md:space-y-1 md:border-0 md:bg-transparent md:p-0'>
+                      <div>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
+                          Amount
+                        </p>
+                        <p className='mt-1 hidden text-sm text-foreground/80 md:block'>{'Amount'}</p>
+                      </div>
+                      <p className='self-end text-right text-sm text-foreground/80 md:text-left md:text-xs md:text-muted-foreground'>
+                        {formatPaymentAmount(subscription.payment_amount)}
                       </p>
                     </div>
-                    <div className='space-y-1'>
-                      <p className='text-sm text-foreground/80'>{subscription.division ?? 'Division pending'}</p>
-                      <p className='text-xs text-muted-foreground'>{subscription.total_players} Entries</p>
-                    </div>
-                    <div className='space-y-1'>
-                      <p className='text-sm text-foreground/80'>{'Amount'}</p>
-                      <p className='text-xs text-muted-foreground'>{subscription.payment_amount}</p>
-                    </div>
-                    <div>
+                    <div className='hidden md:block'>
                       <p className='text-sm text-foreground/80'>{'Status'}</p>
                       <span
                         className={`inline-flex rounded-md px-2.5 py-1 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
                         {formatStatus(status)}
                       </span>
                     </div>
-                    <div className='flex items-center justify-between gap-3 md:justify-end'>
+                    <div className='mt-4 flex items-center justify-between gap-3 md:mt-0 md:justify-end'>
                       <div>
-                        <p className='text-sm text-foreground/80'>{'Date'}</p>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-sm md:normal-case md:tracking-normal md:text-foreground/80'>
+                          {'Date'}
+                        </p>
                         <p className='text-xs text-muted-foreground'>{formatCreatedAt(subscription._creationTime)}</p>
                       </div>
                       <Icon name='chevron-right' className='size-4 text-muted-foreground' />

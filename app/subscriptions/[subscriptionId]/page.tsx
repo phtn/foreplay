@@ -37,9 +37,9 @@ const formatStatus = (value: string | undefined) => {
     .join(' ')
 }
 const DetailRow = ({ label, value }: { label: string; value: string | undefined }) => (
-  <div className='space-y-1'>
-    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>{label}</p>
-    <p className='font-okx text-sm text-foreground/85'>{value || 'Not provided'}</p>
+  <div className='space-y-1 rounded-lg border border-border/50 bg-muted/10 p-3 sm:border-0 sm:bg-transparent sm:p-0'>
+    <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground sm:text-xs'>{label}</p>
+    <p className='wrap-break-word font-okx text-sm text-foreground/85'>{value || 'Not provided'}</p>
   </div>
 )
 
@@ -77,9 +77,9 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <ProtectedLayout>
-      <main className='space-y-8'>
+      <main className='space-y-6 md:space-y-8'>
         <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-          <div className='space-y-8'>
+          <div className='min-w-0 space-y-5 md:space-y-8'>
             <Link
               href='/subscriptions'
               prefetch='auto'
@@ -88,14 +88,23 @@ const Page = async ({ params }: PageProps) => {
               Subscriptions
             </Link>
             <div className='space-y-1'>
-              <h1 className='font-heading text-3xl font-bold tracking-tight'>{subscription.tournament_name}</h1>
+              <h1 className='font-heading text-2xl font-bold leading-tight tracking-tight md:text-3xl space-x-2'>
+                <span>{subscription.tournament_name}</span>
+                <span>&middot;</span>
+                <span className='font-ios font-thin opacity-50 text-base tracking-widest'>
+                  {subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
+                </span>
+              </h1>
             </div>
           </div>
-          <div className='flex items-center space-x-4'>
+          <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
             {/*<span
               className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles.pending_payment}`}>
               {subscription.total_players} Entries
             </span>*/}
+            <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+              {subscription.total_players} Entries
+            </span>
             <span
               className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
               {formatStatus(status)}
@@ -111,11 +120,11 @@ const Page = async ({ params }: PageProps) => {
           />
         )}
         <div className='grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'>
-          <Card className='border-border/70'>
-            <CardHeader>
+          <Card className='rounded-xl border-border/70'>
+            <CardHeader className='px-4 sm:px-6'>
               <CardTitle className='text-xl'>Entry Details</CardTitle>
             </CardHeader>
-            <CardContent className='grid gap-5 sm:grid-cols-2'>
+            <CardContent className='grid gap-3 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6'>
               <DetailRow label='Team name' value={subscription.team_name} />
               <DetailRow label='Division' value={subscription.division} />
               <DetailRow label='Players' value={subscription.total_players} />
@@ -125,21 +134,21 @@ const Page = async ({ params }: PageProps) => {
             </CardContent>
           </Card>
 
-          <Card className='border-border/70'>
-            <CardHeader>
+          <Card className='rounded-xl border-border/70'>
+            <CardHeader className='px-4 sm:px-6'>
               <CardTitle className='text-xl'>Contact</CardTitle>
             </CardHeader>
-            <CardContent className='space-y-5'>
+            <CardContent className='grid gap-3 px-4 sm:px-6'>
               <DetailRow label='Email' value={subscription.contact_email} />
               <DetailRow label='Phone' value={subscription.contact_phone} />
             </CardContent>
           </Card>
 
-          <Card className='border-border/70'>
-            <CardHeader>
+          <Card className='rounded-xl border-border/70'>
+            <CardHeader className='px-4 sm:px-6'>
               <CardTitle className='text-xl'>Payment</CardTitle>
             </CardHeader>
-            <CardContent className='grid gap-5 sm:grid-cols-2'>
+            <CardContent className='grid gap-3 px-4 sm:grid-cols-2 sm:gap-5 sm:px-6'>
               <DetailRow label='Payment status' value={formatStatus(subscription.payment_status)} />
               <DetailRow label='Transaction reference' value={subscription.txn_ref_no} />
               <DetailRow label='QR payload' value={subscription.payment_qrcode ? 'Stored' : 'Not stored'} />
@@ -147,11 +156,11 @@ const Page = async ({ params }: PageProps) => {
             </CardContent>
           </Card>
 
-          <Card className='border-border/70'>
-            <CardHeader>
+          <Card className='rounded-xl border-border/70'>
+            <CardHeader className='px-4 sm:px-6'>
               <CardTitle className='text-xl'>Next Step</CardTitle>
             </CardHeader>
-            <CardContent className='space-y-4'>
+            <CardContent className='space-y-4 px-4 sm:px-6'>
               <p className='text-sm text-muted-foreground'>
                 {status === 'payment_review'
                   ? 'Your receipt is uploaded and waiting for manual verification.'
@@ -174,8 +183,8 @@ const Page = async ({ params }: PageProps) => {
                   <input type='hidden' name='subscriptionId' value={subscription._id} />
                   <Button
                     type='submit'
-                    size='xl'
-                    className={cn(buttonVariants({ variant: 'default' }), 'bg-foreground w-full justify-center')}>
+                    size='lg'
+                    className={cn(buttonVariants({ variant: 'default' }), 'w-full justify-center bg-foreground')}>
                     Check for updates
                   </Button>
                 </form>

@@ -129,13 +129,12 @@ export const Content = ({
   }
 
   return (
-    <main className='space-y-6 pb-6 sm:space-y-8'>
-      <div className='relative flex items-center gap-2 text-xl font-poly'>
-        <Icon name='tag-arrow' className='size-6 text-sky-500 mb-0.5' />
-
-        <div className='flex items-center space-x-4'>
-          <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500' />
-          <Icon name='chevron-right' className='size-5 text-slate-500' />
+    <main className='space-y-6 py-6 sm:space-y-8'>
+      <div className='relative flex items-center gap-2 text-base md:text-xl font-poly'>
+        <Icon name='tag-arrow' className='size-6 text-sky-500 mb-0.5 hidden md:flex' />
+        <div className='flex items-center space-x-2 md:space-x-4'>
+          <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500 whitespace-nowrap' />
+          <Icon name='chevron-right' className='size-4 md:size-5 text-slate-500' />
           <Typewrite
             text={tournament.title}
             speed={15}
@@ -143,12 +142,12 @@ export const Content = ({
             className='font-light text-slate-900 dark:text-foreground capitalize'
             initialDelay={250}
           />
-          <Icon name='chevron-right' className='size-5 text-slate-500' />
+          <Icon name='chevron-right' className='size-5 text-slate-500 hidden md:flex' />
           <Typewrite
             text={formId}
             speed={15}
             showCursor={false}
-            className='text-slate-500/50 uppercase font-light'
+            className='hidden md:flex text-slate-500/50 uppercase font-light'
             initialDelay={1500}
           />
         </div>
@@ -167,7 +166,7 @@ export const Content = ({
                   </h2>
                 </div>
 
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-8'>
+                <div className='grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-8'>
                   <div className='p-0 space-y-1.5'>
                     <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>Price</p>
                     <p className='font-okx font-medium mt-1 text-base'>
@@ -180,7 +179,7 @@ export const Content = ({
                   </div>
                   <div className='p-0 space-y-1.5'>
                     <p className='text-xs uppercase tracking-widest dark:text-slate-400'>Entries</p>
-                    <p className='font-okx font-medium mt-1 text-base text-center'>{players}</p>
+                    <p className='font-okx font-medium mt-1 text-base'>{players}</p>
                   </div>
                 </div>
                 {/* Countdown */}

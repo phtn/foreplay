@@ -11,6 +11,7 @@ import { featuredTournament } from '@/components/protected/tournament-experience
 import { useTheme } from '@/components/theme'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
+import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
 
 const proofPoints = [
@@ -81,6 +82,7 @@ const courseStats = [
 export default function HomePage() {
   const { resolvedTheme } = useTheme()
   const darkTheme = useMemo(() => resolvedTheme === 'dark', [resolvedTheme])
+  const router = useRouter()
 
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
@@ -114,18 +116,23 @@ export default function HomePage() {
                   visibility, and a Ford Everest hole-in-one grand prize.
                 </p>
 
-                <div className='mt-16 md:mt-8 md:flex flex-wrap items-center gap-5 text-sm font-medium text-white/95'>
+                <div className='mt-10 md:mt-8 md:flex flex-wrap items-center gap-5 text-sm font-medium text-white'>
                   {proofPoints.map((point) => (
-                    <div key={point.label} className='flex items-center gap-2'>
+                    <div key={point.label} className='flex items-center gap-2 py-1'>
                       <Icon name={point.icon} className='size-4 opacity-95' />
                       <span className='font-okx'>{point.value}</span>
                       <span className='text-white/60'>{point.label}</span>
                     </div>
                   ))}
                 </div>
-                <Button className='md:hidden bg-foreground w-full mt-4 rounded-full invert' size='xl'>
-                  Book Entry
-                </Button>
+                <div className='px-4'>
+                  <Button
+                    onClick={() => router.push(`/tournaments/som-2026/entry`)}
+                    className='md:hidden bg-slate-100 text-slate-800 font-semibold w-full mt-4 mx-auto rounded-full'
+                    size='xl'>
+                    Book Entry
+                  </Button>
+                </div>
               </div>
 
               <div className='hidden gap-5 sm:grid'>
