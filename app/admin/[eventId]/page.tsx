@@ -118,18 +118,18 @@ export default async function EventPage({ params }: EventPageProps) {
     notFound()
   }
 
-  const publicHref = event.id ? `/tournaments/${event.id}` : null
-  const entryHref = event.id ? `/tournaments/${event.id}/entry` : null
-  const sponsorshipHref = event.id ? `/tournaments/${event.id}/sponsorship` : null
+  // const publicHref = event.id ? `/tournaments/${event.id}` : null
+  // const entryHref = event.id ? `/tournaments/${event.id}/entry` : null
+  // const sponsorshipHref = event.id ? `/tournaments/${event.id}/sponsorship` : null
   const eventDateLabel = formatEventDate(event.gate_open_at, event.event_date)
   const gateOpenTimeLabel = formatGateOpenTime(event.gate_open_at)
   const slotsLabel = formatSlotsLabel(event.registered_slots, event.slots_limit)
-  const sponsorshipTiers = event.sponsorship_tiers ?? []
+  // const sponsorshipTiers = event.sponsorship_tiers ?? []
 
   return (
-    <main className='space-y-8'>
+    <main className='space-y-8 px-2'>
       <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
-        <div className='space-y-4'>
+        <div className='space-y-4 mt-4 md:mt-0'>
           <Link
             href='/admin'
             className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
@@ -142,7 +142,7 @@ export default async function EventPage({ params }: EventPageProps) {
           </div>
         </div>
 
-        <div className='flex flex-wrap gap-3'>
+        {/*<div className='flex flex-wrap gap-3'>
           {publicHref ? (
             <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={publicHref}>
               Public page
@@ -161,19 +161,18 @@ export default async function EventPage({ params }: EventPageProps) {
               <Icon name='arrow-right' className='size-4' />
             </Link>
           ) : null}
-        </div>
+        </div>*/}
       </div>
 
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-5'>
+      <div className='grid gap-4 grid-cols-4'>
         {[
           { label: 'Date', value: eventDateLabel },
           { label: 'Gate open', value: gateOpenTimeLabel },
           { label: 'Entry fee', value: formatRegistrationFee(event.registration_fee) },
-          { label: 'Slots', value: slotsLabel },
-          { label: 'Sponsor tiers', value: String(sponsorshipTiers.length) }
+          { label: 'Slots', value: slotsLabel }
         ].map((stat) => (
           <Card key={stat.label} size='sm' className='border-border/1 bg-border/10 p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 p-2!'>
+            <CardContent className='space-y-1 md:p-2'>
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>
@@ -227,7 +226,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
             </p>
           </div>
 
-          <div className='grid grid-cols-2 gap-2 sm:grid-cols-5'>
+          <div className='grid grid-cols-5 gap-2 sm:grid-cols-5'>
             {[
               { label: 'Total', value: counts.total },
               { label: 'Pending', value: counts.pending },
@@ -235,7 +234,9 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
               { label: 'Confirmed', value: counts.confirmed },
               { label: 'Cancelled', value: counts.cancelled }
             ].map((stat) => (
-              <div key={stat.label} className='rounded-xl border border-border/60 bg-muted/20 px-3 py-2'>
+              <div
+                key={stat.label}
+                className='rounded-lg md:rounded-xl border border-border/60 bg-muted/0 px-1.5 md:px-3 md:py-2 py-1'>
                 <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{stat.label}</p>
                 <p className='mt-1 font-heading text-lg font-semibold'>{stat.value}</p>
               </div>
@@ -243,12 +244,12 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
           </div>
         </div>
       </CardHeader>
-      <CardContent className='px-0'>
+      <CardContent className='px-0 bg-slate-400/15 dark:bg-slate-600/10'>
         {subscriptions.length ? (
           <div className='overflow-x-auto'>
             <table className='w-full min-w-245 text-sm'>
               <thead>
-                <tr className='border-y border-border/50 bg-muted/20 text-left'>
+                <tr className='border-y border-border/50 bg-muted/20 text-left whitespace-nowrap'>
                   {[
                     'Reference',
                     'Team',
