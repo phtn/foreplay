@@ -32,16 +32,15 @@ export const Content = ({ events }: ContentProps) => {
 
   return (
     <main className='md:space-y-8'>
-      <div className='grid xl:gap-4 grid-cols-5 xl:grid-cols-5'>
+      <div className='grid xl:gap-4 grid-cols-4 xl:grid-cols-4'>
         {[
           { label: 'Events', value: counts.total },
           { label: 'Published', value: counts.published },
           { label: 'Drafts', value: counts.drafts },
-          { label: 'Full fields', value: counts.full },
           { label: 'Slots', value: counts.registeredSlots }
         ].map((stat) => (
           <Card key={stat.label} size='sm' className='bg-border/10 border-[0.33px] p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 p-2! divide-y divide-border/35'>
+            <CardContent className='space-y-1 p-2!'>
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>

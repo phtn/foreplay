@@ -127,7 +127,7 @@ export default async function EventPage({ params }: EventPageProps) {
   // const sponsorshipTiers = event.sponsorship_tiers ?? []
 
   return (
-    <main className='space-y-8 px-2'>
+    <main className='space-y-6 md:space-y-8 px-2'>
       <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
         <div className='space-y-4 mt-4 md:mt-0'>
           <Link
@@ -138,7 +138,7 @@ export default async function EventPage({ params }: EventPageProps) {
           </Link>
 
           <div className='space-y-2'>
-            <h1 className='font-heading text-3xl font-bold tracking-tight'>{event.title}</h1>
+            <h1 className='font-okx font-semibold text-xl md:text-3xl'>{event.title}</h1>
           </div>
         </div>
 
@@ -164,16 +164,19 @@ export default async function EventPage({ params }: EventPageProps) {
         </div>*/}
       </div>
 
-      <div className='grid gap-4 grid-cols-4'>
+      <div className='grid gap-0 md:gap-4 grid-cols-4'>
         {[
           { label: 'Date', value: eventDateLabel },
           { label: 'Gate open', value: gateOpenTimeLabel },
           { label: 'Entry fee', value: formatRegistrationFee(event.registration_fee) },
           { label: 'Slots', value: slotsLabel }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-border/1 bg-border/10 p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 md:p-2'>
-              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
+          <Card
+            key={stat.label}
+            size='sm'
+            className='border-border/1! border-x-0! bg-border/10 p-0! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 ps-2! md:p-2'>
+              <p className='font-ios text-[9px] md:text-xs uppercase md:tracking-widest text-muted-foreground whitespace-nowrap'>
                 {stat.label}
               </p>
               <p className='font-heading text-sm md:text-base font-semibold'>{stat.value}</p>
@@ -216,8 +219,8 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
   )
 
   return (
-    <Card className='border-border/70 bg-slate-400/10 dark:bg-slate-400/20'>
-      <CardHeader>
+    <Card className='rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 md:p-4 p-0'>
+      <CardHeader className='p-2'>
         <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-1'>
             <CardTitle className='font-okx text-xl'>Entries</CardTitle>
@@ -244,12 +247,12 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
           </div>
         </div>
       </CardHeader>
-      <CardContent className='px-0 bg-slate-400/15 dark:bg-slate-600/10'>
+      <CardContent className='px-0!  dark:bg-slate-600/10'>
         {subscriptions.length ? (
           <div className='overflow-x-auto'>
             <table className='w-full min-w-245 text-sm'>
               <thead>
-                <tr className='border-y border-border/50 bg-muted/20 text-left whitespace-nowrap'>
+                <tr className='border-y border-border/50 bg-slate-400/15 text-left whitespace-nowrap'>
                   {[
                     'Reference',
                     'Team',

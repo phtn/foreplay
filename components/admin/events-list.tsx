@@ -167,24 +167,24 @@ const EventRow = (row: EventRow) => {
         <div className='space-y-4 p-2 sm:p-5'>
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
-              <div className='shrink-0 rounded-xl bg-[#1d2824] dark:bg-slate-700 px-3 py-2 text-center text-white '>
+              <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-12 aspect-square text-white '>
                 <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/70'>{row.day}</p>
                 <p className='mt-1 font-poly text-2xl leading-none'>{row.date}</p>
               </div>
 
               <div className='min-w-0'>
                 <p className='font-okx text-base text-[#1d2824] dark:text-white'>{row.title}</p>
-                <p className='mt-1 text-sm text-[#1d2824]/65 dark:text-white/80'>{row.place}</p>
+                <p className='mt-0.5 text-sm text-[#1d2824]/65 dark:text-white/80'>{row.place}</p>
               </div>
             </div>
 
-            <span
+            {/*<span
               className={cn(
                 'inline-flex rounded-sm px-1.5 py-1 font-ios text-[11px] uppercase tracking-widest',
                 getStatusClass(row.status)
               )}>
               {row.status}
-            </span>
+            </span>*/}
           </div>
 
           <p className='text-sm leading-6 text-[#1d2824]/70 dark:text-foreground'>{row.summary}</p>
