@@ -5,9 +5,10 @@ import { createQRCodeSvg, QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
-import { Activity, useCallback, useEffect, useState } from 'react'
+import { Activity, useCallback, useEffect, useRef, useState } from 'react'
 import { createTournamentSubscription, generateReceiptUploadUrl, updateTournamentSubscriptionReceipt } from './actions'
 
 const entryControlClassName =
@@ -50,6 +51,8 @@ export const NewEntryForm = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(null)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
+  const receiptPreviewUrlRef = useRef<string | null>(null)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
   const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(null)
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
@@ -74,6 +77,14 @@ export const NewEntryForm = ({
 
     void setEntryQuery({ formId })
   }, [entryQuery.formId, formId, setEntryQuery])
+
+  useEffect(() => {
+    return () => {
+      if (receiptPreviewUrlRef.current) {
+        URL.revokeObjectURL(receiptPreviewUrlRef.current)
+      }
+    }
+  }, [])
 
   const form = useAppForm({
     defaultValues: {
@@ -387,12 +398,24 @@ export const NewEntryForm = ({
                 </div>
                 <label
                   htmlFor='payment-receipt'
-                  className='flex min-h-36 cursor-pointer flex-col items-center justify-center gap-3 rounded-lg border border-dashed border-slate-400 bg-input/20 px-4 text-center transition-colors hover:bg-input/30 dark:border-slate-700'>
-                  <Icon name={receiptFile ? 'check' : 'file'} className='size-8 text-foreground/50' />
-                  <span className='font-okx text-sm text-foreground/80'>
-                    {receiptFile ? receiptFile.name : 'Choose receipt file'}
-                  </span>
-                  <span className='font-ios text-xs text-muted-foreground'>PNG, JPG, PDF</span>
+                  className='flex h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-400 bg-input/20 text-center transition-colors hover:bg-input/30 dark:border-slate-700'>
+                  {receiptPreviewUrl ? (
+                    <Image
+                      src={receiptPreviewUrl}
+                      width={200}
+                      height={200}
+                      alt='Selected receipt preview'
+                      className='size-full object-cover'
+                    />
+                  ) : (
+                    <div className='flex size-full flex-col items-center justify-center gap-3 px-4'>
+                      <Icon name={receiptFile ? 'check' : 'file'} className='size-8 text-foreground/50' />
+                      <span className='max-w-full truncate font-okx text-sm text-foreground/80'>
+                        {receiptFile ? receiptFile.name : 'Choose receipt file'}
+                      </span>
+                      <span className='font-ios text-xs text-muted-foreground'>PNG, JPG, PDF</span>
+                    </div>
+                  )}
                 </label>
                 <input
                   id='payment-receipt'
@@ -400,7 +423,22 @@ export const NewEntryForm = ({
                   accept='image/png,image/jpeg,application/pdf'
                   className='sr-only'
                   onChange={(event) => {
-                    setReceiptFile(event.currentTarget.files?.[0] ?? null)
+                    const nextReceiptFile = event.currentTarget.files?.[0] ?? null
+
+                    if (receiptPreviewUrlRef.current) {
+                      URL.revokeObjectURL(receiptPreviewUrlRef.current)
+                      receiptPreviewUrlRef.current = null
+                    }
+
+                    if (nextReceiptFile?.type.startsWith('image/')) {
+                      const nextPreviewUrl = URL.createObjectURL(nextReceiptFile)
+                      receiptPreviewUrlRef.current = nextPreviewUrl
+                      setReceiptPreviewUrl(nextPreviewUrl)
+                    } else {
+                      setReceiptPreviewUrl(null)
+                    }
+
+                    setReceiptFile(nextReceiptFile)
                     setReceiptErrorMessage(null)
                     setReceiptSuccessMessage(null)
                   }}
