@@ -11,6 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Brand />
             <p className='font-ios text-sm uppercase tracking-widest text-pink-500 dark:text-pink-400'>Admin</p>
           </div>
+          <div>Scan Tickets</div>
 
           <div className='flex items-center gap-3 self-start sm:self-center'>
             <ThemeToggle />

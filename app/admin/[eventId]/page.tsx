@@ -129,7 +129,7 @@ export default async function EventPage({ params }: EventPageProps) {
   return (
     <main className='space-y-6 md:space-y-8 px-2'>
       <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
-        <div className='space-y-4 mt-4 md:mt-0'>
+        <div className='space-y-4 mt-4 md:mt-0 w-full'>
           <Link
             href='/admin'
             className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
@@ -137,8 +137,12 @@ export default async function EventPage({ params }: EventPageProps) {
             Events
           </Link>
 
-          <div className='space-y-2'>
+          <div className='space-y-2 w-full flex items-center justify-between'>
             <h1 className='font-okx font-semibold text-xl md:text-3xl'>{event.title}</h1>
+            <Link href={`/admin/${eventId}/pairings`} className='flex items-center space-x-2'>
+              <span className='flex items-center gap-1'>Pairings</span>
+              <Icon name='document' className='size-4' />
+            </Link>
           </div>
         </div>
 

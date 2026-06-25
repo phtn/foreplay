@@ -6,6 +6,8 @@ const trimOrUndefined = (value: string | undefined) => {
   return trimmed ? trimmed : undefined
 }
 
+const pairingGroup = v.union(v.literal('A'), v.literal('B'), v.literal('C'))
+
 export const createForSubscription = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
@@ -99,6 +101,35 @@ export const removeForSubscription = mutation({
     }
 
     await ctx.db.delete(args.registrationId)
+
+    return { registrationId: args.registrationId }
+  }
+})
+
+export const updatePairingForAdmin = mutation({
+  args: {
+    registrationId: v.id('registrations'),
+    startHole: v.optional(v.number()),
+    pairingGroup: v.optional(pairingGroup)
+  },
+  returns: v.object({
+    registrationId: v.id('registrations')
+  }),
+  handler: async (ctx, args) => {
+    const registration = await ctx.db.get(args.registrationId)
+
+    if (!registration) {
+      throw new ConvexError('Player registration not found.')
+    }
+
+    if (args.startHole !== undefined && (!Number.isInteger(args.startHole) || args.startHole < 1 || args.startHole > 18)) {
+      throw new ConvexError('Start hole must be between 1 and 18.')
+    }
+
+    await ctx.db.patch(args.registrationId, {
+      start_hole: args.startHole,
+      pairing_group: args.pairingGroup
+    })
 
     return { registrationId: args.registrationId }
   }
