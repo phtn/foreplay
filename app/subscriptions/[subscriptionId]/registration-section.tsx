@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 import { ClassName } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
-import { createSubscriptionRegistration } from './registration-actions'
+import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
 
 const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
@@ -63,6 +63,7 @@ export function RegistrationSection({
   const [isPending, startTransition] = useTransition()
   const [isAdding, setIsAdding] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [deletingRegistrationId, setDeletingRegistrationId] = useState<Id<'registrations'> | null>(null)
   const [draft, setDraft] = useState<DraftRegistration>(() => buildInitialDraft(defaultDivision))
 
   const registrationLimit = Math.max(1, maxEntries)
@@ -118,6 +119,32 @@ export function RegistrationSection({
     })
   }
 
+  const handleDelete = (registrationId: Id<'registrations'>, playerName: string) => {
+    if (!window.confirm(`Delete ${playerName}'s registration?`)) {
+      return
+    }
+
+    setErrorMessage(null)
+    setDeletingRegistrationId(registrationId)
+
+    startTransition(async () => {
+      try {
+        await deleteSubscriptionRegistration({
+          registrationId,
+          subscriptionId
+        })
+
+        setIsAdding(false)
+        resetDraft()
+        router.refresh()
+      } catch (error) {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to delete this player registration.')
+      } finally {
+        setDeletingRegistrationId(null)
+      }
+    })
+  }
+
   return (
     <Card className='rounded-xl gap-y-0 p-0 outline-none border-none'>
       <CardHeader className='px-4 sm:px-4 py-3 border bg-slate-200/50'>
@@ -157,7 +184,7 @@ export function RegistrationSection({
         {registrationCards.length ? (
           <div className='grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
-              <div key={registration.id} className='py-6 px-2'>
+              <div key={registration.id} className='relative py-6 px-2'>
                 <div className='grid gap-4 grid-cols-[1fr_auto] divide-x divide-slate-800/40 divide-dashed md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
                   <div className='min-w-0 space-y-4'>
                     <div className='flex items-start justify-between gap-4 sm:block'>
@@ -169,6 +196,19 @@ export function RegistrationSection({
                           {registration.name}
                         </p>
                       </div>
+                      <Button
+                        type='button'
+                        variant='ghost'
+                        size='icon-xs'
+                        className='shrink-0 rounded-full text-destructive hover:bg-destructive/10 sm:absolute sm:right-4 sm:top-4'
+                        disabled={isPending}
+                        aria-label={`Delete ${registration.name}`}
+                        onClick={() => handleDelete(registration.id, registration.name)}>
+                        <Icon
+                          name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
+                          className='size-4'
+                        />
+                      </Button>
                     </div>
 
                     <div className='grid gap-3 grid-cols-1 overflow-hidden'>

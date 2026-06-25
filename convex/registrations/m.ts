@@ -74,3 +74,32 @@ export const createForSubscription = mutation({
     return { registrationId }
   }
 })
+
+export const removeForSubscription = mutation({
+  args: {
+    registrationId: v.id('registrations'),
+    subscriptionId: v.id('subscriptions'),
+    ownerUserIds: v.array(v.string())
+  },
+  returns: v.object({
+    registrationId: v.id('registrations')
+  }),
+  handler: async (ctx, args) => {
+    const [registration, subscription] = await Promise.all([
+      ctx.db.get(args.registrationId),
+      ctx.db.get(args.subscriptionId)
+    ])
+
+    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    if (!registration || registration.subscription_id !== args.subscriptionId) {
+      throw new ConvexError('Player registration not found.')
+    }
+
+    await ctx.db.delete(args.registrationId)
+
+    return { registrationId: args.registrationId }
+  }
+})

@@ -25,8 +25,8 @@ const formatStatus = (value: string | undefined) => {
 
 const formatCreatedAt = (value: number) => {
   return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
+    dateStyle: 'medium'
+    // timeStyle: 'short'
   }).format(value)
 }
 
@@ -38,7 +38,8 @@ const formatPaymentAmount = (value: number | undefined) => {
   return new Intl.NumberFormat('en-PH', {
     currency: 'PHP',
     maximumFractionDigits: 0,
-    style: 'currency'
+    style: 'currency',
+    currencyDisplay: 'code'
   }).format(value)
 }
 
@@ -67,27 +68,23 @@ export const Content = ({ subscriptions }: ContentProps) => {
     <main className='space-y-6 md:space-y-8'>
       <div className='space-y-1 md:space-y-2'>
         <p className='font-ios text-[11px] md:text-xs uppercase tracking-widest dark:text-sky-500 text-sky-600'>
-          Subscriptions
+          Submitted
         </p>
         <h1 className='font-okx font-bold text-lg md:text-xl tracking-wide'>Entries</h1>
-        <p className='hidden md:flex max-w-2xl text-sm text-muted-foreground'>
+        <p className='hidden md:flex max-w-2xl text-sm text-foreground/70'>
           Review entry requests, payment status, receipt state, and the next action for each tournament.
         </p>
       </div>
 
-      <div className='grid grid-cols-2 gap-2 sm:grid-cols-5 xl:gap-4'>
+      <div className='grid grid-cols-4 divide-x divide-slate-200/10 rounded-se-lg'>
         {[
           { label: 'Total', value: counts.total },
           { label: 'Pending', value: counts.pending },
           { label: 'Review', value: counts.review },
-          { label: 'Confirmed', value: counts.confirmed },
-          { label: 'Cancelled', value: counts.cancelled }
+          { label: 'Confirmed', value: counts.confirmed }
         ].map((stat) => (
-          <Card
-            key={stat.label}
-            size='sm'
-            className='min-h-18 rounded-lg border-border/70 bg-border/10 p-0! sm:min-h-0'>
-            <CardContent className='space-y-1 p-3! sm:p-2!'>
+          <Card key={stat.label} size='sm' className='rounded-none min-h-18 bg-border/10 p-0! border-none sm:min-h-0'>
+            <CardContent className='space-y-1 p-3! sm:p-2! rounded-none border-0'>
               <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-xs'>
                 {stat.label}
               </p>
@@ -97,10 +94,10 @@ export const Content = ({ subscriptions }: ContentProps) => {
         ))}
       </div>
 
-      <Card className='rounded-xl border-border/80 py-0'>
-        <CardContent className='p-0'>
+      <Card className=' py-0'>
+        <CardContent className='p-0 dark:bg-slate-500/20 border border-slate-400/50 rounded-2xl'>
           {subscriptions.length ? (
-            <div className='divide-y divide-border/35'>
+            <div className='divide-y divide-slate-500/30'>
               {subscriptions.map((subscription, index) => {
                 const status = subscription.status ?? 'pending_payment'
 
@@ -109,14 +106,14 @@ export const Content = ({ subscriptions }: ContentProps) => {
                     key={subscription._id}
                     href={`/subscriptions/${subscription._id}`}
                     prefetch={index === 0}
-                    className='block p-4 transition-colors hover:bg-muted/30 sm:p-5 md:grid md:grid-cols-[1.2fr_0.5fr_0.5fr_0.7fr_auto] md:items-center md:gap-4'>
+                    className='block px-4 py-8 transition-colors dark:hover:bg-slate-500/25 hover:bg-slate-300/30 sm:p-5 md:grid md:grid-cols-[0.7fr_1.3fr_auto] md:items-center md:gap-4 w-full'>
                     <div className='flex items-start justify-between gap-3 md:block md:space-y-1'>
                       <div className='min-w-0 space-y-1'>
-                        <p className='line-clamp-2 font-okx text-base leading-snug text-foreground md:line-clamp-1'>
+                        <p className='line-clamp-2 font-okx text-lg leading-snug text-foreground md:line-clamp-1'>
                           {subscription.tournament_name}
                         </p>
-                        <p className='break-all font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-xs'>
-                          {subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
+                        <p className='font-ios text-foreground/70 md:text-xs text-[10px] uppercase tracking-widest'>
+                          {subscription.txn_ref_no}
                         </p>
                       </div>
                       <span
@@ -124,50 +121,38 @@ export const Content = ({ subscriptions }: ContentProps) => {
                         {formatStatus(status)}
                       </span>
                     </div>
-                    <div className='mt-4 grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:mt-0 md:block md:space-y-1 md:border-0 md:bg-transparent md:p-0'>
-                      <div>
-                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
-                          Division
-                        </p>
-                        <p className='mt-1 text-sm text-foreground/80 md:mt-0'>
-                          {subscription.division ?? 'Division pending'}
-                        </p>
+
+                    <div className='mt-8 py-3 grid grid-cols-3 gap-4 dark:bg-slate-500/10 md:mt-0 md:bg-transparent md:p-0 rounded-lg w-full whitespace-nowrap'>
+                      <div className='flex flex-col items-center justify-center w-full'>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Entries</p>
+                        <p className='text-sm text-foreground'>{subscription.total_players}</p>
                       </div>
-                      <div>
-                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
-                          Entries
-                        </p>
-                        <p className='mt-1 text-sm text-foreground/80 md:hidden'>{subscription.total_players}</p>
-                        <p className='hidden text-xs text-muted-foreground md:block'>
-                          {subscription.total_players} Entries
-                        </p>
+
+                      <div className='flex flex-col items-center justify-center w-full'>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Amount</p>
+                        <p className='text-sm text-foreground'>{formatPaymentAmount(subscription.payment_amount)}</p>
+                      </div>
+
+                      <div className='flex flex-col items-center justify-center w-full'>
+                        <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Created</p>
+                        <p className='text-sm text-foreground'>{formatCreatedAt(subscription._creationTime)}</p>
                       </div>
                     </div>
-                    <div className='mt-3 grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:mt-0 md:block md:space-y-1 md:border-0 md:bg-transparent md:p-0'>
-                      <div>
-                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:hidden'>
-                          Amount
-                        </p>
-                        <p className='mt-1 hidden text-sm text-foreground/80 md:block'>{'Amount'}</p>
-                      </div>
-                      <p className='self-end text-right text-sm text-foreground/80 md:text-left md:text-xs md:text-muted-foreground'>
-                        {formatPaymentAmount(subscription.payment_amount)}
+                    {/*<div className='mt-3 grid grid-cols-2 gap-3 rounded-lg border border-border/50 bg-muted/10 p-3 md:mt-0 md:block md:space-y-1 md:border-0 md:bg-transparent md:p-0'></div>*/}
+                    <div className='hidden'>
+                      <p className='md:text-right text-sm text-foreground/80 md:text-sm md:text-foreground'>
+                        {formatCreatedAt(subscription._creationTime)}
                       </p>
-                    </div>
-                    <div className='hidden md:block'>
+                      <p className='mt-1 hidden text-xs text-foreground/80 md:block uppercase'>{'Amount'}</p>
+                      <p className='hidden text-sm text-muted-foreground md:block'>{subscription.total_players}</p>
+
                       <p className='text-sm text-foreground/80'>{'Status'}</p>
                       <span
                         className={`inline-flex rounded-md px-2.5 py-1 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
                         {formatStatus(status)}
                       </span>
                     </div>
-                    <div className='mt-4 flex items-center justify-between gap-3 md:mt-0 md:justify-end'>
-                      <div>
-                        <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-sm md:normal-case md:tracking-normal md:text-foreground/80'>
-                          {'Date'}
-                        </p>
-                        <p className='text-xs text-muted-foreground'>{formatCreatedAt(subscription._creationTime)}</p>
-                      </div>
+                    <div className='hidden md:flex flex-1 items-center justify-between mt-4 gap-3 md:mt-0 md:justify-end'>
                       <Icon name='chevron-right' className='size-4 text-muted-foreground' />
                     </div>
                   </Link>

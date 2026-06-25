@@ -65,7 +65,7 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
             <div className='hidden sm:block'>
               <ThemeToggle />
             </div>
-            <div className='relative z-60 flex items-center gap-2'>
+            <div className='relative z-60 flex items-center gap-4'>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={

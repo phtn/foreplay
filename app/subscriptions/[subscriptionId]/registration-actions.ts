@@ -17,6 +17,11 @@ type CreateSubscriptionRegistrationInput = {
   shirtSize: string
 }
 
+type DeleteSubscriptionRegistrationInput = {
+  registrationId: Id<'registrations'>
+  subscriptionId: Id<'subscriptions'>
+}
+
 export async function createSubscriptionRegistration(input: CreateSubscriptionRegistrationInput) {
   const session = await getVerifiedFirebaseSession()
 
@@ -34,6 +39,22 @@ export async function createSubscriptionRegistration(input: CreateSubscriptionRe
     handicapIndex: input.handicapIndex,
     division: input.division,
     shirtSize: input.shirtSize
+  })
+
+  revalidatePath(`/subscriptions/${input.subscriptionId}`)
+}
+
+export async function deleteSubscriptionRegistration(input: DeleteSubscriptionRegistrationInput) {
+  const session = await getVerifiedFirebaseSession()
+
+  if (!session) {
+    throw new Error('You must be signed in to delete a player registration.')
+  }
+
+  await fetchMutation(api.registrations.m.removeForSubscription, {
+    registrationId: input.registrationId,
+    subscriptionId: input.subscriptionId,
+    ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
   })
 
   revalidatePath(`/subscriptions/${input.subscriptionId}`)

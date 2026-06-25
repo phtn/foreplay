@@ -24,7 +24,7 @@ export default function EntriesPage() {
           description='Keep the status, payment, and next action visible so the registration never feels uncertain.'
         />
 
-        <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+        <div className='grid md:gap-4 grid-cols-4'>
           {entryStats.map((stat) => (
             <Card key={stat.label} size='sm' className='border-border/70'>
               <CardContent className='space-y-2 p-4'>
