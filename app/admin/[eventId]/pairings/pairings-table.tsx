@@ -1,6 +1,5 @@
 'use client'
 
-import { StartingHole } from '@/components/examples/c-popover-10'
 import { GroupSelect } from '@/components/examples/c-select-26'
 import { Badge } from '@/components/reui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -9,9 +8,17 @@ import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { updateRegistrationPairing } from './actions'
+import { StartSelector } from './start-selector'
 
 type Registration = Doc<'registrations'>
 type PairingGroup = 'A' | 'B' | 'C'
+type PairingState = Record<
+  string,
+  {
+    pairingGroup: string
+    startHole: string
+  }
+>
 
 type PairingsTableProps = {
   eventId: string
@@ -36,12 +43,12 @@ function formatPrincipal(value: string) {
   return value
 }
 
-function buildInitialPairingState(registrations: Registration[]) {
+function buildInitialPairingState(registrations: Registration[]): PairingState {
   return Object.fromEntries(
     registrations.map((registration) => [
       registration._id,
       {
-        pairingGroup: registration.pairing_group ?? '',
+        pairingGroup: registration.pairing_group ?? 'A',
         startHole: registration.start_hole ? String(registration.start_hole) : ''
       }
     ])
@@ -57,14 +64,9 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
 
   const rows = useMemo(() => {
     return registrations.toSorted((left, right) => {
-      const leftHole = left.start_hole ?? Number.POSITIVE_INFINITY
-      const rightHole = right.start_hole ?? Number.POSITIVE_INFINITY
+      const nameSort = left.player_name.localeCompare(right.player_name)
 
-      if (leftHole !== rightHole) {
-        return leftHole - rightHole
-      }
-
-      return left.player_name.localeCompare(right.player_name)
+      return nameSort === 0 ? left._creationTime - right._creationTime : nameSort
     })
   }, [registrations])
 
@@ -72,7 +74,7 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
     registrationId: Id<'registrations'>,
     nextPairing: { pairingGroup?: string; startHole?: string }
   ) => {
-    const currentPairing = pairingByRegistrationId[registrationId] ?? { pairingGroup: '', startHole: '' }
+    const currentPairing = pairingByRegistrationId[registrationId] ?? { pairingGroup: 'A', startHole: '' }
     const optimisticPairing = {
       ...currentPairing,
       ...nextPairing
@@ -140,7 +142,7 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
           {rows.length ? (
             rows.map((registration, index) => {
               const pairing = pairingByRegistrationId[registration._id] ?? {
-                pairingGroup: registration.pairing_group ?? '',
+                pairingGroup: registration.pairing_group ?? 'A',
                 startHole: registration.start_hole ? String(registration.start_hole) : ''
               }
               const rowPending = isPending && pendingRegistrationId === registration._id
@@ -173,7 +175,7 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
                     </Badge>
                   </TableCell>
                   <TableCell className='text-center'>
-                    <StartingHole
+                    <StartSelector
                       value={pairing.startHole}
                       disabled={rowPending}
                       onChangeAction={(startHole) => updatePairing(registration._id, { startHole })}
