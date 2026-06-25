@@ -105,7 +105,7 @@ export default function HomePage() {
 
             <div className='relative z-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(350px,480px)] lg:items-end'>
               <div className='max-w-3xl pt-6 md:pt-10'>
-                <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/40 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
+                <p className='mb-8 inline-flex rounded-full dark:bg-white/15 bg-white/70 px-4 py-2 text-sm font-medium text-[#23342e] dark:text-white shadow-sm backdrop-blur-xl'>
                   Upcoming Tournament
                 </p>
                 <h1 className='max-w-136 font-poly text-4xl leading-[0.95] dark:text-white drop-shadow-[0_8px_34px_rgba(22,54,31,0.34)] sm:max-w-3xl sm:text-6xl _lg:text-[7.2rem]'>

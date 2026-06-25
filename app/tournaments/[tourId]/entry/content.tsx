@@ -34,7 +34,8 @@ interface ContentProps {
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
   currency: 'PHP',
   maximumFractionDigits: 0,
-  style: 'currency'
+  style: 'currency',
+  currencyDisplay: 'code'
 })
 
 function formatCountdown(targetAt: number | null) {
@@ -161,12 +162,12 @@ export const Content = ({
                   <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>
                     {tournament.venue.split(',').pop()}
                   </p>
-                  <h2 id='book-now-title' className='font-heading text-xl font-bold tracking-tight sm:text-2xl'>
+                  <h2 id='book-now-title' className='font-heading text-xl font-semibold tracking-tight sm:text-xl'>
                     {tournament.venue.split(',').shift()}
                   </h2>
                 </div>
 
-                <div className='grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-8'>
+                <div className='grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-12'>
                   <div className='p-0 space-y-1.5'>
                     <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>Price</p>
                     <p className='font-okx font-medium mt-1 text-base'>

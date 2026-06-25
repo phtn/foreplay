@@ -63,7 +63,7 @@ export const featuredTournament: TournamentSpotlight = {
   id: 'som-2026',
   title: 'Seoul of Manila Golf Tournament 2026',
   venue: 'Pradera Verde Golf & Country Club, Pampanga',
-  dateLabel: 'July 18, 2026',
+  dateLabel: 'July 18, 2026 · Saturday',
   feeLabel: 'Sponsor packages from ₱20,000',
   slotsLabel: '100+ executives',
   formatLabel: 'System 36',
@@ -339,12 +339,14 @@ export function SectionTitle({
   description?: string
 }) {
   return (
-    <div className='space-y-2'>
-      <p className='text-xs font-semibold uppercase tracking-[0.28em] text-primary/80'>{eyebrow}</p>
+    <div className='space-y-3'>
+      <p className='text-xs font-semibold uppercase tracking-[0.28em] dark:text-primary text-hermes'>{eyebrow}</p>
       <div className='flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4'>
-        <h2 className='font-heading text-2xl font-bold tracking-tight sm:text-3xl'>{title}</h2>
+        <h2 className='font-poly font-semibold text-xl sm:text-2xl'>{title}</h2>
       </div>
-      {description ? <p className='max-w-2xl text-sm text-muted-foreground sm:text-base'>{description}</p> : null}
+      {description ? (
+        <p className='max-w-2xl text-sm text-muted-foreground sm:text-base leading-none italic'>{description}</p>
+      ) : null}
     </div>
   )
 }
@@ -400,7 +402,7 @@ export function TournamentHero({
         <CardContent className='min-h-64 relative grid gap-6 p-0 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
           <div className='space-y-8 sm:space-y-8'>
             <div className='hidden md:flex flex-wrap items-center gap-4'>
-              <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase'>
+              <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase tracking-widest'>
                 {eyebrow}
               </Badge>
               {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
@@ -431,7 +433,7 @@ export function TournamentHero({
                   className={cn(
                     buttonVariants({ size: '2xl' }),
                     'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
-                    { 'bg-foreground dark:bg-background': darkButton }
+                    { 'bg-foreground/80 dark:bg-background/80': darkButton }
                   )}
                   href={primaryHref}>
                   <span>{primaryLabel}</span>

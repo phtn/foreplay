@@ -1,5 +1,13 @@
 import { PropsWithChildren } from 'react'
 
 export default function TourLayout({ children }: PropsWithChildren) {
-  return <div>{children}</div>
+  return (
+    <div>
+      {children}
+
+      <div className='h-24 w-full flex items-center justify-center text-xs opacity-50 tracking-wider'>
+        &copy; {new Date().getFullYear()} Foreplay PRO
+      </div>
+    </div>
+  )
 }

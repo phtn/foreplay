@@ -22,7 +22,8 @@ interface TourDetailProps {
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   currency: 'PHP',
   maximumFractionDigits: 0,
-  style: 'currency'
+  style: 'currency',
+  currencyDisplay: 'code'
 })
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -40,7 +41,7 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
 
 function formatRegistrationFee(value: number, sponsorshipTiers?: Doc<'tournaments'>['sponsorship_tiers']) {
   if (value > 0) {
-    return `${pesoFormatter.format(value)} entry`
+    return `${pesoFormatter.format(value)}`
   }
 
   const lowestSponsorTier = sponsorshipTiers
@@ -70,7 +71,7 @@ function getFormatLabel(tournament: Doc<'tournaments'>) {
 
 function getStatusLabel(tournament: Doc<'tournaments'>) {
   if (tournament.sponsorship_tiers?.length) {
-    return '120 slots left'
+    return '120 slots'
   }
 
   return tournament.published === false ? 'Coming soon' : 'Entry open'
@@ -138,7 +139,7 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         description={tournament.description}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
-        secondaryHref={`/tournaments/${tournament.id}/sponsorship`}
+        // secondaryHref={`/tournaments/${tournament.id}/sponsorship`}
         primaryLabel='Book Entry'
         secondaryLabel='Sponsor Event'
         teeTimeAt={tournament.teeTimeAt}
@@ -154,41 +155,147 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         ]}
       />
 
-      <div className='hidden _grid gap-6 lg:grid-cols-[1.1fr_0.9fr]'>
-        <div className='space-y-4'>
+      <div className='mt-16 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]'>
+        <div className='space-y-9'>
           <SectionTitle
-            eyebrow='Tournament details'
-            title='Everything a golfer needs before paying'
-            description='Keep the rules, the divisions, and the value proposition in one clean flow.'
+            eyebrow='Good to know'
+            title='Get started with the tournament overview.'
+            description='Observe Golf Course rules at all times.'
           />
 
-          <Card className='border-border/70'>
-            <CardHeader>
-              <CardTitle className='text-xl'>Tournament overview</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='grid gap-3'>
+          <Card className='border border-slate-400/20 dark:border-slate-500/80 dark:bg-slate-500/20 shadow-none p-0'>
+            <CardContent className='space-y-4 px-0 border-white'>
+              <div className='grid divide-y divide-border/80 dark:divide-slate-400/25 rounded-2xl border border-border/60'>
                 {tournamentFacts.map((item) => (
                   <div
                     key={item.label}
-                    className='grid gap-2 rounded-2xl border border-border/60 bg-muted/20 p-4 sm:grid-cols-[180px_1fr] sm:items-center'>
-                    <p className='text-xs uppercase tracking-[0.24em] text-muted-foreground'>{item.label}</p>
-                    <p className='font-medium'>{item.value}</p>
+                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
+                    <p className='text-okx text-xs uppercase tracking-widest'>{item.label}</p>
+                    <p className='font-ios '>{item.value}</p>
                   </div>
-                ))}
-              </div>
-              <div className='flex flex-wrap gap-2'>
-                {tournament.divisions.map((division) => (
-                  <Badge key={division} variant='outline' size='sm' radius='full' className='border-border/70'>
-                    {division}
-                  </Badge>
                 ))}
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {tournament.partnerReasons?.length ? (
-            <Card className='border-border/70'>
+        <div className='space-y-6'>
+          <Card className='border border-slate-500/80 bg-slate-200/50 dark:bg-slate-500/20 p-0'>
+            <CardContent className='space-y-4 p-0'>
+              <div className='space-y-5 p-4'>
+                <p className='text-xs uppercase tracking-widest'>Entry fee</p>
+                <p className='font-okx font-medium text-2xl'>
+                  {tournament.feeLabel} <span className='px-1 font-normal opacity-60'> entry</span>
+                </p>
+                {/*<p className='font-display text-xs text-foreground/80 tracking-wide leading-0'>
+                  Secure your slot before the field closes.
+                </p>*/}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className='border border-border/40 dark:bg-slate-500/50'>
+            <CardHeader>
+              <CardTitle className='font-poly text-primary text-2xl text-center mt-2'>
+                Steps to book your entry
+              </CardTitle>
+            </CardHeader>
+            <CardContent className='space-y-4'>
+              {[
+                'Select how many entries you want to book.',
+                'Pay the entry fee and upload proof of payment.',
+                'Register players to confirm the slots.'
+              ].map((step, index) => (
+                <div key={step} className='flex gap-3 py-4.5'>
+                  <div className='flex size-7.5 shrink-0 items-center justify-center rounded-full bg-foreground/80 font-semibold text-background'>
+                    <span className='font-poly text-lg'>{index + 1}</span>
+                  </div>
+                  <p className='text-sm md:text-base text-foreground'>{step}</p>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const PremiumEntry = () => {
+  return (
+    <Card className='border-border/70 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
+      <CardHeader>
+        <CardTitle className='text-xl'>Why this entry feels premium</CardTitle>
+      </CardHeader>
+      <CardContent className='grid gap-4 sm:grid-cols-2'>
+        {[
+          'A clean premium field with clear division structure.',
+          'Entry is visible, direct, and easy to complete.',
+          'Players know the venue, the date, and the format before they commit.',
+          'The page is built to convert curiosity into payment.'
+        ].map((item) => (
+          <div key={item} className='flex gap-3 rounded-2xl border border-border/60 bg-card p-4'>
+            <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'>
+              <Icon name='check' className='size-4' />
+            </div>
+            <p className='text-sm text-muted-foreground'>{item}</p>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  )
+}
+
+interface SponsorshipTier {
+  name: string
+  investmentLabel: string
+  playingAccess: string
+  accessNote?: string
+  benefits: string[]
+}
+
+interface SponsorshipProps {
+  id: string
+  partnerPitch: string | undefined
+  sponsorshipTiers: SponsorshipTier[] | undefined
+}
+
+export const Sponsorship = ({ id, partnerPitch, sponsorshipTiers }: SponsorshipProps) => {
+  return (
+    <Card className='border-border/70 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
+      <CardHeader>
+        <CardTitle className='text-xl'>Corporate sponsorship</CardTitle>
+      </CardHeader>
+      <CardContent className='space-y-5'>
+        {partnerPitch ? <p className='max-w-3xl text-sm leading-7 text-muted-foreground'>{partnerPitch}</p> : null}
+        <div className='grid gap-3 sm:grid-cols-2'>
+          {sponsorshipTiers?.slice(0, 4).map((tier) => (
+            <div key={tier.name} className='rounded-2xl border border-border/60 bg-card p-4'>
+              <div className='flex items-start justify-between gap-3'>
+                <div>
+                  <p className='font-semibold'>{tier.name}</p>
+                  <p className='mt-1 text-sm text-muted-foreground'>{tier.playingAccess}</p>
+                </div>
+                <Badge variant='secondary' radius='full' className='bg-primary/10 text-primary'>
+                  {tier.investmentLabel}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+        <Link
+          className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full gap-2 sm:w-auto')}
+          href={`/tournaments/${id}/sponsorship`}>
+          View sponsor packages
+          <Icon name='arrow-right' className='size-4' />
+        </Link>
+      </CardContent>
+    </Card>
+  )
+}
+
+/*
+<Card className='border-border/70 hidden'>
               <CardHeader>
                 <CardTitle className='text-xl'>Why partners sponsor this event</CardTitle>
               </CardHeader>
@@ -204,118 +311,4 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
                 ))}
               </CardContent>
             </Card>
-          ) : null}
-
-          {tournament.sponsorshipTiers?.length ? (
-            <Card className='border-border/70 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
-              <CardHeader>
-                <CardTitle className='text-xl'>Corporate sponsorship</CardTitle>
-              </CardHeader>
-              <CardContent className='space-y-5'>
-                {tournament.partnerPitch ? (
-                  <p className='max-w-3xl text-sm leading-7 text-muted-foreground'>{tournament.partnerPitch}</p>
-                ) : null}
-                <div className='grid gap-3 sm:grid-cols-2'>
-                  {tournament.sponsorshipTiers.slice(0, 4).map((tier) => (
-                    <div key={tier.name} className='rounded-2xl border border-border/60 bg-card p-4'>
-                      <div className='flex items-start justify-between gap-3'>
-                        <div>
-                          <p className='font-semibold'>{tier.name}</p>
-                          <p className='mt-1 text-sm text-muted-foreground'>{tier.playingAccess}</p>
-                        </div>
-                        <Badge variant='secondary' radius='full' className='bg-primary/10 text-primary'>
-                          {tier.investmentLabel}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full gap-2 sm:w-auto')}
-                  href={`/tournaments/${tournament.id}/sponsorship`}>
-                  View sponsor packages
-                  <Icon name='arrow-right' className='size-4' />
-                </Link>
-              </CardContent>
-            </Card>
-          ) : null}
-
-          <Card className='border-border/70 bg-linear-to-br from-primary/8 via-background to-amber-500/5'>
-            <CardHeader>
-              <CardTitle className='text-xl'>Why this entry feels premium</CardTitle>
-            </CardHeader>
-            <CardContent className='grid gap-4 sm:grid-cols-2'>
-              {[
-                'A clean premium field with clear division structure.',
-                'Entry is visible, direct, and easy to complete.',
-                'Players know the venue, the date, and the format before they commit.',
-                'The page is built to convert curiosity into payment.'
-              ].map((item) => (
-                <div key={item} className='flex gap-3 rounded-2xl border border-border/60 bg-card p-4'>
-                  <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'>
-                    <Icon name='check' className='size-4' />
-                  </div>
-                  <p className='text-sm text-muted-foreground'>{item}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className='space-y-4'>
-          <Card className='border-border/70 md:sticky md:top-24'>
-            <CardContent className='space-y-4'>
-              <div className='space-y-2 rounded-3xl bg-primary/8 p-5'>
-                <p className='text-xs uppercase tracking-[0.24em] text-primary/80'>Entry fee</p>
-                <p className='font-poly text-2xl tracking-tight'>{tournament.feeLabel}</p>
-                <p className='text-sm text-muted-foreground'>Secure your slot before the field closes.</p>
-              </div>
-              <div className='space-y-3 text-sm'>
-                {[
-                  'Real-time field status',
-                  'Division selection',
-                  'Receipt upload for payment verification',
-                  'Pairings and leaderboard access after confirmation'
-                ].map((item) => (
-                  <div key={item} className='flex items-start gap-3'>
-                    <Icon name='check' className='mt-0.5 size-4 text-primary' />
-                    <span className='text-muted-foreground'>{item}</span>
-                  </div>
-                ))}
-              </div>
-              <div className='flex flex-wrap gap-3'>
-                <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2')} href='/entries'>
-                  Reserve now
-                  <Icon name='arrow-right' className='size-4' />
-                </Link>
-                <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href='/records'>
-                  See leaderboard
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className='border-border/70'>
-            <CardHeader>
-              <CardTitle className='text-xl'>What happens next</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              {[
-                'Choose your division and confirm the slot.',
-                'Upload payment proof.',
-                'Receive pairings and final event reminders.'
-              ].map((step, index) => (
-                <div key={step} className='flex gap-3 rounded-2xl border border-border/60 bg-muted/20 p-4'>
-                  <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary'>
-                    {index + 1}
-                  </div>
-                  <p className='text-sm text-muted-foreground'>{step}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
-  )
-}
+*/

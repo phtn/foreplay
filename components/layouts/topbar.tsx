@@ -52,7 +52,7 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
 
   return (
     <header
-      className={cn('sticky top-0 z-50 overflow-visible bg-background/10 backdrop-blur-2xl', {
+      className={cn('sticky top-0 z-50 overflow-visible bg-background/10 backdrop-blur-2xl dark:backdrop-blur-none', {
         'border-sky-950/20': pathname.includes('entry'),
         ' max-w-7xl mx-auto bg-transparent': pathname !== '/'
       })}>

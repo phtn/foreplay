@@ -52,36 +52,33 @@ export const EventViewer = () => {
     <div className='min-h-44 rounded-[22px] border border-white/60 bg-white/52 p-5 shadow-[0_24px_70px_rgba(24,62,37,0.2)] backdrop-blur-2xl'>
       <div className='flex h-full flex-col justify-between'>
         <div>
-          <h2 className='mt-3 font-poly text-2xl leading-tight text-[#1e2924]'>View Tournament</h2>
-          <div className='mt-4 grid gap-2'>
-            <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
+          <h2 className='mt-2 font-poly text-xl leading-tight text-[#1e2924]'>Overview</h2>
+          <div className='mt-4 grid divide-y divide-border/60 divide-dashed border border-dashed border-border/60 bg-white/50 dark:bg-foreground/85 rounded-lg overflow-hidden'>
+            <div className='flex items-center gap-2 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5 rounded-t-lg'>
               <Icon name='watch' className='size-4.5 shrink-0 text-slate-600' />
               <span>{featuredTournament.dateLabel}</span>
             </div>
-            <div className='flex items-center gap-2 rounded-lg bg-primary/5 dark:bg-foreground/85 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5'>
-              <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
-              <span className='truncate'>{featuredTournament.venue}</span>
+
+            <div className='flex items-center justify-between px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5 rounded-b-lg'>
+              <div className='flex items-center gap-2'>
+                <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
+                <span className='truncate'>{featuredTournament.venue}</span>
+              </div>
+              <Icon name='navigation-fill' className='size-4 text-accent hover:text-hermes' />
             </div>
           </div>
         </div>
 
-        <div className='mt-8 flex items-center justify-between gap-4 w-full'>
+        <div className='mt-6 flex items-center justify-between gap-4 w-full'>
           <Link
             className={cn(
-              buttonVariants({ size: 'lg' }),
-              'rounded-full bg-white/80 px-5 text-[#1d2824] shadow-sm hover:bg-white flex-1'
+              buttonVariants({ size: 'xl' }),
+              'rounded-lg bg-primary px-5 text-white hover:bg-primary/80 flex-1 md:text-base'
             )}
             href={`/tournaments/${featuredTournament.id}`}>
             Open Tournament
           </Link>
-          <Link
-            className={cn(
-              buttonVariants({ size: 'lg' }),
-              'rounded-full bg-[#ef4b20] px-5 text-white shadow-sm hover:bg-[#d63f19] flex-1'
-            )}
-            href={`/tournaments/${featuredTournament.id}/sponsorship`}>
-            Sponsor
-          </Link>
+
           {/*<div className='rounded-full bg-white/75 px-4 py-3 text-sm font-semibold shadow-sm'>
             {featuredTournament.feeLabel}
           </div>*/}

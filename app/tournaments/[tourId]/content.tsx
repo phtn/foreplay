@@ -5,5 +5,9 @@ interface TourContentProps {
 }
 
 export function TourContent({ tourId }: TourContentProps) {
-  return <TourDetail tourId={tourId} />
+  return (
+    <main>
+      <TourDetail tourId={tourId} />
+    </main>
+  )
 }
