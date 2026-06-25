@@ -16,6 +16,7 @@ export const registrationSchema = v.object({
   receipt_image_url: v.optional(v.string()),
   txn_ref_no: v.optional(v.string()),
   checked_in: v.optional(v.boolean()),
+  checked_in_at: v.optional(v.number()),
   start_hole: v.optional(v.number()),
   pairing_group: v.optional(v.union(v.literal('A'), v.literal('B'), v.literal('C'))),
   ticket_token: v.optional(v.string()),

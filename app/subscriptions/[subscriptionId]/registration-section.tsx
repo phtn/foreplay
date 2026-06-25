@@ -45,11 +45,14 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
   }
 }
 
-function buildGatePassPayload(registration: Pick<Doc<'registrations'>, '_id' | 'player_name' | 'player_email'>) {
+function buildGatePassPayload(
+  registration: Pick<Doc<'registrations'>, '_id' | 'player_name' | 'player_email' | 'ticket_token'>
+) {
   return JSON.stringify({
-    id: registration._id.split(',').reverse().join(',').substring(12),
-    name: registration.player_name
-    // email: registration.player_email ?? ''
+    registrationId: registration._id,
+    ticketToken: registration.ticket_token,
+    name: registration.player_name,
+    email: registration.player_email ?? ''
   })
 }
 

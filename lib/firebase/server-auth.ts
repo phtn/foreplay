@@ -77,6 +77,16 @@ export const getVerifiedAdminSession = cache(async (): Promise<VerifiedFirebaseS
   return session
 })
 
+export const getVerifiedGateScannerSession = cache(async (): Promise<VerifiedFirebaseSession | null> => {
+  const session = await getVerifiedFirebaseSession()
+
+  if (!session || (session.customClaims.admin !== true && session.customClaims.staff !== true)) {
+    return null
+  }
+
+  return session
+})
+
 export const getInitialFirebaseAuthState = cache(async (): Promise<InitialFirebaseAuthState> => {
   const session = await getVerifiedFirebaseSession()
 
@@ -93,6 +103,16 @@ export const getInitialFirebaseAuthState = cache(async (): Promise<InitialFireba
 
 export async function requireAdminSession() {
   const session = await getVerifiedAdminSession()
+
+  if (!session) {
+    redirect(await buildAppHomeUrl())
+  }
+
+  return session
+}
+
+export async function requireGateScannerSession() {
+  const session = await getVerifiedGateScannerSession()
 
   if (!session) {
     redirect(await buildAppHomeUrl())

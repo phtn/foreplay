@@ -2,6 +2,7 @@ import { EventsList } from '@/components/admin/events-list'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
+import Link from 'next/link'
 
 interface ContentProps {
   events: Doc<'tournaments'>[] | undefined
@@ -48,6 +49,15 @@ export const Content = ({ events }: ContentProps) => {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      <div className='flex justify-end py-3 md:py-0'>
+        <Link
+          href='/admin/scanner'
+          className='inline-flex h-10 items-center gap-2 rounded-lg border border-border/70 bg-background px-3 font-okx text-sm transition-colors hover:bg-muted'>
+          <Icon name='ticket' className='size-4' />
+          Gate scanner
+        </Link>
       </div>
 
       <Card className='p-0 md:py-1 bg-border/10 rounded-xs md:rounded-xl'>
