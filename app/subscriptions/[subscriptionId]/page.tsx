@@ -93,8 +93,8 @@ const Page = async ({ params }: PageProps) => {
               </h1>
             </div>
           </div>
-          <div className='flex items-center gap-2 sm:justify-end'>
-            <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-wider text-foreground whitespace-nowrap'>
+          <div className='flex items-center gap-2 sm:justify-end whitespace-nowrap'>
+            <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-wider text-foreground'>
               {subscription.total_players} Entries
             </span>
             <span
@@ -108,13 +108,26 @@ const Page = async ({ params }: PageProps) => {
               </div>*/}
           </div>
         </div>
-        {status === 'confirmed' && (
+        {status === 'confirmed' ? (
           <RegistrationSection
             subscriptionId={typedSubscriptionId}
             registrations={registrations}
             maxEntries={maxEntries}
             defaultDivision={subscription.division}
           />
+        ) : (
+          <Card className='font-okx'>
+            <CardHeader className=''>
+              <p className='opacity-70 font-ios'>Entry ID: {subscriptionId}</p>
+            </CardHeader>
+            <CardContent>
+              <p className='text-lg font-semibold'>Payment verification is currently under review. </p>
+              <p className='opacity-70 flex items-center mt-2'>
+                <Icon name='arrow-drop-down' className='size-6 -rotate-45 opacity-50' />
+                <span>Estimated completion: within 24 hours.</span>
+              </p>
+            </CardContent>
+          </Card>
         )}
         <div className='hidden _grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'>
           <Card className='rounded-xl border-border/70'>

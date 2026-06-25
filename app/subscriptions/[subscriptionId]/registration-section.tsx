@@ -189,26 +189,28 @@ export function RegistrationSection({
                   <div className='min-w-0 space-y-4'>
                     <div className='flex items-start justify-between gap-4 sm:block'>
                       <div className='min-w-0'>
-                        <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
-                          {registration.slotLabel}
-                        </p>
+                        <div className='flex items-center space-x-4'>
+                          <p className='font-ios font-medium text-xs uppercase tracking-widest text-sky-700 w-fit'>
+                            {registration.slotLabel}
+                          </p>
+                          <Button
+                            type='button'
+                            variant='ghost'
+                            size='icon-xs'
+                            className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
+                            disabled={isPending}
+                            aria-label={`Delete ${registration.name}`}
+                            onClick={() => handleDelete(registration.id, registration.name)}>
+                            <Icon
+                              name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
+                              className='size-4'
+                            />
+                          </Button>
+                        </div>
                         <p className='mt-4 whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
                           {registration.name}
                         </p>
                       </div>
-                      <Button
-                        type='button'
-                        variant='ghost'
-                        size='icon-xs'
-                        className='shrink-0 rounded-full text-destructive hover:bg-destructive/10 sm:absolute sm:right-4 sm:top-4'
-                        disabled={isPending}
-                        aria-label={`Delete ${registration.name}`}
-                        onClick={() => handleDelete(registration.id, registration.name)}>
-                        <Icon
-                          name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
-                          className='size-4'
-                        />
-                      </Button>
                     </div>
 
                     <div className='grid gap-3 grid-cols-1 overflow-hidden'>
