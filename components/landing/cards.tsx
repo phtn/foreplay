@@ -3,6 +3,7 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { buttonVariants } from '../ui/button'
+import { MapButton } from './map-button'
 
 const practiceDays = [
   { day: '6a', label: 'In', height: 58 },
@@ -49,11 +50,14 @@ export const PracticeCard = () => {
 
 export const EventViewer = () => {
   return (
-    <div className='min-h-44 rounded-[22px] border border-white/60 bg-white/52 p-5 shadow-[0_24px_70px_rgba(24,62,37,0.2)] backdrop-blur-2xl'>
+    <div className='min-h-44 rounded-[22px] border border-white/60 dark:border-slate-500/50 bg-white/52 dark:bg-foreground/10 backdrop-blur-3xl p-5 shadow-[0_24px_70px_rgba(24,62,37,0.2)]'>
       <div className='flex h-full flex-col justify-between'>
         <div>
-          <h2 className='mt-2 font-poly text-xl leading-tight text-[#1e2924]'>Overview</h2>
-          <div className='mt-4 grid divide-y divide-border/60 divide-dashed border border-dashed border-border/60 bg-white/50 dark:bg-foreground/85 rounded-lg overflow-hidden'>
+          <h2 className='flex items-center space-x-2 mt-2 font-poly text-xl leading-tight text-foreground/80 dark:text-slate-300'>
+            <Icon name='golf-flag' className='size-5' />
+            <span className='ml-2'>Overview</span>
+          </h2>
+          <div className='mt-4 grid divide-y divide-border/60 dark:divide-slate-500/50 divide-dashed border border-dashed border-border/60 bg-white/50 dark:bg-foreground/85 rounded-lg overflow-hidden'>
             <div className='flex items-center gap-2 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5 rounded-t-lg'>
               <Icon name='watch' className='size-4.5 shrink-0 text-slate-600' />
               <span>{featuredTournament.dateLabel}</span>
@@ -64,7 +68,9 @@ export const EventViewer = () => {
                 <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
                 <span className='truncate'>{featuredTournament.venue}</span>
               </div>
-              <Icon name='navigation-fill' className='size-4 text-accent hover:text-hermes' />
+              {featuredTournament.venueCoordinates ? (
+                <MapButton coordinates={featuredTournament.venueCoordinates} venue={featuredTournament.venue} />
+              ) : null}
             </div>
           </div>
         </div>

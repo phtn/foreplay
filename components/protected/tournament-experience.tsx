@@ -12,6 +12,10 @@ export type TournamentSpotlight = {
   id: string
   title: string
   venue: string
+  venueCoordinates?: {
+    latitude: number
+    longitude: number
+  }
   dateLabel: string
   feeLabel: string
   slotsLabel: string
@@ -63,6 +67,10 @@ export const featuredTournament: TournamentSpotlight = {
   id: 'som-2026',
   title: 'Seoul of Manila Golf Tournament 2026',
   venue: 'Pradera Verde Golf & Country Club, Pampanga',
+  venueCoordinates: {
+    latitude: 14.888219,
+    longitude: 120.497161
+  },
   dateLabel: 'July 18, 2026 · Saturday',
   feeLabel: 'Sponsor packages from ₱20,000',
   slotsLabel: '100+ executives',
