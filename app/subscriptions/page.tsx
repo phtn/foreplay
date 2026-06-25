@@ -1,7 +1,7 @@
 import { api } from '@/convex/_generated/api'
 import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
-import { buildFirebaseTokenIdentifier } from '@/lib/firebase/server-session'
+import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { fetchQuery } from 'convex/nextjs'
 import { Metadata } from 'next'
 import { Content } from './content'
@@ -21,8 +21,8 @@ export const metadata: Metadata = {
 
 const Page = async () => {
   const session = await getVerifiedFirebaseSession()
-  const userId = session ? buildFirebaseTokenIdentifier(session.decodedToken) : ''
-  const subscriptions = userId ? await fetchQuery(api.subscriptions.q.listByUserId, { userId }) : []
+  const userIds = session ? buildFirebaseSubscriptionUserIds(session.decodedToken) : []
+  const subscriptions = userIds.length ? await fetchQuery(api.subscriptions.q.listByUserIds, { userIds }) : []
 
   return (
     <ProtectedLayout>

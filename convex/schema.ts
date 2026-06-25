@@ -30,7 +30,9 @@ export default defineSchema({
   sponsorLeads: defineTable(sponsorLeadSchema).index('by_tournamentId', ['tournament_id']),
   subscriptions: defineTable(subscriptionSchema)
     .index('by_user_id', ['user_id'])
-    .index('by_tournamentId', ['tournament_id']),
+    .index('by_tournamentId', ['tournament_id'])
+    .index('by_userId_tournamentId', ['user_id', 'tournament_id'])
+    .index('by_tournamentId_formId', ['tournament_id', 'form_id']),
   tournaments: defineTable(tournamentSchema).index('by_tournament_id', ['id']),
   events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id'])
 })

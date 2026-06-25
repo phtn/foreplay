@@ -1,5 +1,12 @@
 import { v } from 'convex/values'
+import type { Doc } from '../_generated/dataModel'
 import { query } from '../_generated/server'
+
+const dedupeSubscriptions = (subscriptions: Doc<'subscriptions'>[]) => {
+  return Array.from(new Map(subscriptions.map((subscription) => [subscription._id, subscription])).values()).sort(
+    (left, right) => right._creationTime - left._creationTime
+  )
+}
 
 export const listByUserId = query({
   args: { userId: v.string() },
@@ -9,6 +16,22 @@ export const listByUserId = query({
       .withIndex('by_user_id', (q) => q.eq('user_id', userId))
       .order('desc')
       .collect()
+  }
+})
+
+export const listByUserIds = query({
+  args: { userIds: v.array(v.string()) },
+  handler: async (ctx, { userIds }) => {
+    const subscriptions = await Promise.all(
+      userIds.map((userId) =>
+        ctx.db
+          .query('subscriptions')
+          .withIndex('by_user_id', (q) => q.eq('user_id', userId))
+          .collect()
+      )
+    )
+
+    return dedupeSubscriptions(subscriptions.flat())
   }
 })
 
@@ -23,15 +46,58 @@ export const listByTournamentId = query({
   }
 })
 
+export const listByTournamentIdForUserIds = query({
+  args: {
+    tournamentId: v.string(),
+    userIds: v.array(v.string())
+  },
+  handler: async (ctx, { tournamentId, userIds }) => {
+    const subscriptions = await Promise.all(
+      userIds.map((userId) =>
+        ctx.db
+          .query('subscriptions')
+          .withIndex('by_userId_tournamentId', (q) => q.eq('user_id', userId).eq('tournament_id', tournamentId))
+          .collect()
+      )
+    )
+
+    return dedupeSubscriptions(subscriptions.flat())
+  }
+})
+
+export const getByTournamentIdAndFormId = query({
+  args: {
+    tournamentId: v.string(),
+    formId: v.string(),
+    userIds: v.array(v.string())
+  },
+  handler: async (ctx, { tournamentId, formId, userIds }) => {
+    const subscription = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_tournamentId_formId', (q) => q.eq('tournament_id', tournamentId).eq('form_id', formId))
+      .first()
+
+    if (!subscription) {
+      return null
+    }
+
+    if (!userIds.includes(subscription.user_id)) {
+      return null
+    }
+
+    return subscription
+  }
+})
+
 export const getByIdForUser = query({
   args: {
     subscriptionId: v.id('subscriptions'),
-    userId: v.string()
+    userIds: v.array(v.string())
   },
-  handler: async (ctx, { subscriptionId, userId }) => {
+  handler: async (ctx, { subscriptionId, userIds }) => {
     const subscription = await ctx.db.get(subscriptionId)
 
-    if (!subscription || subscription.user_id !== userId) {
+    if (!subscription || !userIds.includes(subscription.user_id)) {
       return null
     }
 

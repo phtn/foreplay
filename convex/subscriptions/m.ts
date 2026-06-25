@@ -9,11 +9,12 @@ const trimOrUndefined = (value: string | undefined) => {
 export const create = mutation({
   args: {
     userId: v.string(),
+    ownerUserIds: v.array(v.string()),
     tournamentId: v.string(),
     formId: v.string(),
     teamName: v.optional(v.string()),
     contactEmail: v.string(),
-    contactPhone: v.string(),
+    contactPhone: v.optional(v.string()),
     totalPlayers: v.number(),
     paymentAmount: v.number(),
     handicapIndex: v.optional(v.string()),
@@ -24,16 +25,12 @@ export const create = mutation({
   }),
   handler: async (ctx, args) => {
     const contactEmail = args.contactEmail.trim().toLowerCase()
-    const contactPhone = args.contactPhone.trim()
+    const contactPhone = trimOrUndefined(args.contactPhone)
     const totalPlayers = Math.max(1, Math.min(4, Math.round(args.totalPlayers)))
     const paymentAmount = Math.max(0, Math.round(args.paymentAmount))
 
     if (!contactEmail) {
       throw new ConvexError('Contact email is required.')
-    }
-
-    if (!contactPhone) {
-      throw new ConvexError('Contact phone is required.')
     }
 
     if (!Number.isFinite(paymentAmount)) {
@@ -44,6 +41,18 @@ export const create = mutation({
       .query('tournaments')
       .withIndex('by_tournament_id', (q) => q.eq('id', args.tournamentId))
       .unique()
+    const existingSubscription = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_tournamentId_formId', (q) => q.eq('tournament_id', args.tournamentId).eq('form_id', args.formId))
+      .first()
+
+    if (existingSubscription) {
+      if (!args.ownerUserIds.includes(existingSubscription.user_id)) {
+        throw new ConvexError('Entry reference already exists.')
+      }
+
+      return { subscriptionId: existingSubscription._id }
+    }
 
     const subscriptionId = await ctx.db.insert('subscriptions', {
       user_id: args.userId,
@@ -111,7 +120,7 @@ export const updateReceipt = mutation({
 export const cancel = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
-    userId: v.string()
+    userIds: v.array(v.string())
   },
   returns: v.object({
     subscriptionId: v.id('subscriptions'),
@@ -120,7 +129,7 @@ export const cancel = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || subscription.user_id !== args.userId) {
+    if (!subscription || !args.userIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { QRCodeSVG, type QRCodeOptions } from '@/components/qrcode/viewer'
+import { CreateQR } from '@/components/qrcode/creator'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { ClassName } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { createSubscriptionRegistration } from './registration-actions'
@@ -46,9 +47,9 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
 
 function buildGatePassPayload(registration: Pick<Doc<'registrations'>, '_id' | 'player_name' | 'player_email'>) {
   return JSON.stringify({
-    id: registration._id,
-    name: registration.player_name,
-    email: registration.player_email ?? ''
+    id: registration._id.split(',').reverse().join(',').substring(12),
+    name: registration.player_name
+    // email: registration.player_email ?? ''
   })
 }
 
@@ -118,10 +119,10 @@ export function RegistrationSection({
   }
 
   return (
-    <Card className='rounded-xl border-border/70'>
-      <CardHeader className='px-4 sm:px-6'>
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-          <div className='space-y-1.5'>
+    <Card className='rounded-xl gap-y-0 p-0 outline-none border-none'>
+      <CardHeader className='px-4 sm:px-4 py-3 border bg-slate-200/50'>
+        <div className='flex gap-4 sm:flex-row sm:items-start sm:justify-between'>
+          <div className='space-y-1.5 w-full'>
             <CardTitle className='flex items-center gap-3 font-okx text-lg'>
               <span>Register Players</span>
               {canAddMore ? (
@@ -138,55 +139,66 @@ export function RegistrationSection({
                 </Button>
               ) : null}
             </CardTitle>
-            <p className='text-sm text-muted-foreground'>
-              Add one player form at a time until all {registrationLimit} entry slots are assigned.
-            </p>
           </div>
 
-          <div className='flex flex-wrap items-center gap-2'>
-            <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+          <div className='flex items-center gap-1 md:gap-2'>
+            <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-muted-foreground whitespace-nowrap'>
               {registrations.length}/{registrationLimit} saved
             </span>
-            <span className='inline-flex rounded-md bg-sky-500/5 px-3 py-1.5 font-ios text-xs uppercase tracking-widest text-sky-600'>
+            <span className='inline-flex rounded-md bg-sky-500/5 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 whitespace-nowrap'>
               {remainingSlots} open
             </span>
           </div>
         </div>
+        <p className='text-sm text-foreground/60'>Add player&apos;s details to register and secure the slot.</p>
       </CardHeader>
-      <CardContent className='space-y-5 px-4 sm:px-6'>
+
+      <CardContent className='space-y-0 py-0 px-0 border-x border-b rounded-b-xl bg-white'>
         {registrationCards.length ? (
-          <div className='grid gap-3 md:grid-cols-2 md:gap-4'>
+          <div className='grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
-              <div key={registration.id} className='rounded-xl border border-border/60 bg-muted/20 p-4'>
-                <div className='grid gap-4 sm:grid-cols-[1fr_auto] sm:items-start'>
+              <div key={registration.id} className='py-6 px-2'>
+                <div className='grid gap-4 grid-cols-[1fr_auto] divide-x divide-slate-800/40 divide-dashed md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
                   <div className='min-w-0 space-y-4'>
-                    <div className='flex items-start justify-between gap-3 sm:block'>
+                    <div className='flex items-start justify-between gap-4 sm:block'>
                       <div className='min-w-0'>
                         <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
                           {registration.slotLabel}
                         </p>
-                        <p className='mt-2 wrap-break-word font-okx text-base text-foreground/90'>
+                        <p className='mt-4 whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
                           {registration.name}
                         </p>
                       </div>
-                      <span className='inline-flex rounded-md bg-background px-2.5 py-1 text-xs font-medium text-foreground/75 sm:hidden'>
-                        {registration.shirtSize}
-                      </span>
                     </div>
 
-                    <div className='grid gap-3 grid-cols-2'>
+                    <div className='grid gap-3 grid-cols-1 overflow-hidden'>
                       <RegistrationField label='Email' value={registration.email} />
                       <RegistrationField label='Phone' value={registration.phone} />
-                      <RegistrationField label='Division' value={registration.division} />
-                      <RegistrationField label='Handicap' value={registration.handicap} />
+                      <RegistrationField
+                        label='Pass'
+                        value={registration.id.split(',').reverse().join(',').substring(22).toUpperCase()}
+                        className='font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white'
+                      />
                     </div>
                   </div>
 
-                  <GatePassQRCode
+                  {/*<p>{registration.gatePassPayload}</p>*/}
+
+                  <CreateQR
+                    config={{
+                      text: registration.gatePassPayload,
+                      radius: 0.36,
+                      ecLevel: 'M',
+                      fill: 'oklch(27.9% 0.041 260.031)',
+                      background: null,
+                      size: 200
+                    }}
+                  />
+                  {/*<GatePassQRCode
                     content={registration.gatePassPayload}
                     label={registration.slotLabel}
                     shirtSize={registration.shirtSize}
-                  />
+                  />*/}
                 </div>
               </div>
             ))}
@@ -287,7 +299,7 @@ export function RegistrationSection({
         ) : canAddMore ? (
           <button
             type='button'
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full justify-center gap-2')}
+            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full justify-center gap-2 hidden')}
             onClick={() => {
               setErrorMessage(null)
               setIsAdding(true)
@@ -305,32 +317,46 @@ export function RegistrationSection({
   )
 }
 
-function RegistrationField({ label, value }: { label: string; value: string }) {
+interface RegistrationFieldProps {
+  label: string
+  value: string
+  className?: ClassName
+}
+function RegistrationField({ label, value, className }: RegistrationFieldProps) {
   return (
-    <div className='space-y-1'>
-      <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{label}</p>
-      <p className='text-sm text-foreground/80'>{value}</p>
+    <div className='space-y-0.5'>
+      <p className='font-ios font-medium text-[10px] uppercase tracking-widest text-foreground/80 dark:text-slate-500 italic'>
+        {label}
+      </p>
+      <p
+        className={cn(
+          'font-ios tracking-[0.28em] text-sm text-foreground/80 dark:text-slate-800 max-w-[16ch]! text-clip',
+          className
+        )}>
+        {value}
+      </p>
     </div>
   )
 }
 
-function GatePassQRCode({ content }: { content: string; label: string; shirtSize: string }) {
-  const qrOptions = useMemo<QRCodeOptions>(
-    () => ({
-      content,
-      width: 240,
-      height: 240,
-      padding: 1
-    }),
-    [content]
-  )
+// function GatePassQRCode({ content }: { content: string; label: string; shirtSize: string }) {
+//   const qrOptions = useMemo<QRCodeOptions>(
+//     () => ({
+//       content,
+//       width: 240,
+//       height: 240,
+//       padding: 1
+//     }),
+//     [content]
+//   )
 
-  return (
-    <div className='p-0 w-64'>
-      <QRCodeSVG className='size-60 overflow-hidden bg-white [&_svg]:size-full' options={qrOptions} />
-    </div>
-  )
-}
+//   return (
+//     <div className='p-0 w-64 relative flex items-center justify-center'>
+//       <QRCodeSVG className='size-64 overflow-hidden [&_svg]:size-full' options={qrOptions} />
+//       <div className='bg-[url("/som-optimized.svg")] bg-cover absolute top-0 z-90 w-54 h-54 opacity-40' />
+//     </div>
+//   )
+// }
 
 function RegistrationInput({
   id,

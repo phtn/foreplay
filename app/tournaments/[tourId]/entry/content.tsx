@@ -2,7 +2,10 @@
 
 import { Typewrite } from '@/components/text/typewriter'
 import { Card, CardContent } from '@/components/ui/card'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import Link from 'next/link'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
 import { NewEntryForm } from './entry-form'
@@ -15,12 +18,17 @@ type DivisionOption = {
   amount: number
 }
 
+type Subscription = Doc<'subscriptions'>
+type EntryStatus = 'pending_payment' | 'payment_review' | 'confirmed' | 'cancelled'
+
 interface ContentProps {
   tourId: string
   initialFormId: string
   initialDivision: string
   initialEmail: string
   initialPhone: string
+  initialSubscription: Subscription | null
+  currentEntries: Subscription[]
   tournament: {
     title: string
     venue: string
@@ -37,6 +45,68 @@ const currencyFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currencyDisplay: 'code'
 })
+
+const statusStyles: Record<EntryStatus, string> = {
+  pending_payment: 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  payment_review: 'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300',
+  confirmed: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  cancelled: 'border-destructive/25 bg-destructive/10 text-destructive'
+}
+
+const formatStatus = (value: EntryStatus) => {
+  return value
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+}
+
+const getEntryStatus = (subscription: Subscription): EntryStatus => {
+  if (subscription.status === 'cancelled') {
+    return 'cancelled'
+  }
+
+  if (subscription.payment_status === 'paid' || subscription.status === 'confirmed') {
+    return 'confirmed'
+  }
+
+  if (subscription.status === 'payment_review') {
+    return 'payment_review'
+  }
+
+  return 'pending_payment'
+}
+
+const getSummaryStatus = (entries: Subscription[]): EntryStatus => {
+  const statuses = entries.map(getEntryStatus)
+
+  if (statuses.includes('pending_payment')) {
+    return 'pending_payment'
+  }
+
+  if (statuses.includes('payment_review')) {
+    return 'payment_review'
+  }
+
+  if (statuses.includes('confirmed')) {
+    return 'confirmed'
+  }
+
+  return 'cancelled'
+}
+
+const getEntryCount = (subscription: Subscription) => {
+  const entries = Number.parseInt(subscription.total_players, 10)
+  return Number.isFinite(entries) && entries > 0 ? entries : 0
+}
+
+const getSubscriptionReference = (subscription: Subscription) => {
+  return subscription.form_id ?? subscription.txn_ref_no ?? subscription._id
+}
+
+const getActiveUniqueEntries = (entries: Subscription[]) => {
+  const activeEntries = entries.filter((entry) => getEntryStatus(entry) !== 'cancelled')
+  return Array.from(new Map(activeEntries.map((entry) => [getSubscriptionReference(entry), entry])).values())
+}
 
 function formatCountdown(targetAt: number | null) {
   if (!targetAt) {
@@ -60,6 +130,8 @@ export const Content = ({
   initialDivision,
   initialEmail,
   initialPhone,
+  initialSubscription,
+  currentEntries,
   tournament
 }: ContentProps) => {
   const [countdownLabel, setCountdownLabel] = useState('...')
@@ -77,12 +149,21 @@ export const Content = ({
     { history: 'replace', shallow: true }
   )
 
-  const formId = query.formId ?? initialFormId
-  const players = query.players ?? defaultPlayers
-  const division = query.division && validDivisionValues.has(query.division) ? query.division : initialDivision
+  const subscriptionPlayers = Number.parseInt(initialSubscription?.total_players ?? '', 10)
+  const initialPlayers = Number.isFinite(subscriptionPlayers) ? Math.max(1, subscriptionPlayers) : defaultPlayers
+  const formId = initialFormId
+  const players = initialSubscription ? initialPlayers : (query.players ?? defaultPlayers)
+  const division = initialSubscription
+    ? (initialSubscription.division ?? initialDivision)
+    : query.division && validDivisionValues.has(query.division)
+      ? query.division
+      : initialDivision
   // const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
   const price = tournament.entryFee
   const total = players * price
+  const activeCurrentEntries = getActiveUniqueEntries(currentEntries)
+  const currentEntryCount = activeCurrentEntries.reduce((sum, entry) => sum + getEntryCount(entry), 0)
+  const currentEntriesStatus = activeCurrentEntries.length ? getSummaryStatus(activeCurrentEntries) : null
 
   useEffect(() => {
     void setQuery((current) => {
@@ -92,21 +173,21 @@ export const Content = ({
         next.tourId = tourId
       }
 
-      if (!current.formId) {
+      if (current.formId !== initialFormId) {
         next.formId = initialFormId
       }
 
-      if (current.players == null) {
-        next.players = defaultPlayers
+      if (current.players == null || (initialSubscription && current.players !== initialPlayers)) {
+        next.players = initialPlayers
       }
 
-      if (!current.division || !validDivisionValues.has(current.division)) {
-        next.division = initialDivision
+      if (!current.division || !validDivisionValues.has(current.division) || initialSubscription) {
+        next.division = division
       }
 
       return Object.keys(next).length ? next : null
     })
-  }, [initialDivision, initialFormId, setQuery, tourId, validDivisionValues])
+  }, [division, initialFormId, initialPlayers, initialSubscription, setQuery, tourId, validDivisionValues])
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -131,27 +212,47 @@ export const Content = ({
 
   return (
     <main className='space-y-6 py-6 sm:space-y-8'>
-      <div className='relative flex items-center gap-2 text-base md:text-xl font-poly'>
-        <Icon name='tag-arrow' className='size-6 text-sky-500 mb-0.5 hidden md:flex' />
-        <div className='flex items-center space-x-2 md:space-x-4'>
-          <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500 whitespace-nowrap' />
-          <Icon name='chevron-right' className='size-4 md:size-5 text-slate-500' />
-          <Typewrite
-            text={tournament.title}
-            speed={15}
-            showCursor={false}
-            className='font-light text-slate-900 dark:text-foreground capitalize'
-            initialDelay={250}
-          />
-          <Icon name='chevron-right' className='size-5 text-slate-500 hidden md:flex' />
-          <Typewrite
-            text={formId}
-            speed={15}
-            showCursor={false}
-            className='hidden md:flex text-slate-500/50 uppercase font-light'
-            initialDelay={1500}
-          />
+      <div className='flex items-center justify-between'>
+        <div className='relative flex items-center gap-2 text-base md:text-xl font-poly'>
+          <Icon name='tag-arrow' className='size-6 text-sky-500 mb-0.5 hidden md:flex' />
+          <div className='flex items-center space-x-2 md:space-x-4'>
+            <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500 whitespace-nowrap' />
+            <Icon name='chevron-right' className='size-4 md:size-5 text-slate-500' />
+            <Typewrite
+              text={tournament.title}
+              speed={15}
+              showCursor={false}
+              className='font-light text-slate-900 dark:text-foreground capitalize'
+              initialDelay={250}
+            />
+            <Icon name='chevron-right' className='size-5 text-slate-500 hidden md:flex' />
+            <Typewrite
+              text={formId}
+              speed={15}
+              showCursor={false}
+              className='hidden md:flex text-slate-500/50 uppercase font-light'
+              initialDelay={1500}
+            />
+          </div>
         </div>
+
+        {currentEntriesStatus ? (
+          <Link
+            href='/subscriptions'
+            prefetch='auto'
+            className={cn(
+              'flex h-12 items-center space-x-3 rounded-md border px-4 py-2 transition-colors hover:bg-muted/40',
+              statusStyles[currentEntriesStatus]
+            )}>
+            <div className='flex flex-col'>
+              <span className='font-okx text-sm font-medium'>
+                {currentEntryCount} {currentEntryCount === 1 ? 'Entry' : 'Entries'}
+              </span>
+              <span className='font-ios text-xs uppercase tracking-widest'>{formatStatus(currentEntriesStatus)}</span>
+            </div>
+            <Icon name='chevron-right' className='size-5 opacity-70' />
+          </Link>
+        ) : null}
       </div>
       <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-background dark:bg-slate-700 bg-slate-200/20 shadow-md shadow-slate-100 dark:shadow-none p-0'>
         <CardContent className='p-0'>
@@ -204,6 +305,7 @@ export const Content = ({
                 division={division}
                 initialEmail={initialEmail}
                 initialPhone={initialPhone}
+                initialSubscription={initialSubscription}
                 divisionOptions={tournament.divisionOptions}
                 onPlayersChange={handlePlayersChange}
                 onDivisionChange={handleDivisionChange}

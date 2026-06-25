@@ -15,6 +15,17 @@ export function buildFirebaseTokenIdentifier(decodedToken: DecodedIdToken) {
   return `${decodedToken.iss}|${decodedToken.sub}`
 }
 
+export function buildFirebaseUserId(decodedToken: DecodedIdToken) {
+  return decodedToken.sub
+}
+
+export function buildFirebaseSubscriptionUserIds(decodedToken: DecodedIdToken) {
+  const userId = buildFirebaseUserId(decodedToken)
+  const legacyTokenIdentifier = buildFirebaseTokenIdentifier(decodedToken)
+
+  return userId === legacyTokenIdentifier ? [userId] : [userId, legacyTokenIdentifier]
+}
+
 export async function syncFirebaseSessionIdentityToConvex(decodedToken: DecodedIdToken) {
   await fetchMutation(api.users.m.upsertByTokenIdentifier, {
     tokenIdentifier: buildFirebaseTokenIdentifier(decodedToken),

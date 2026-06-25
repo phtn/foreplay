@@ -10,6 +10,7 @@ export const createForSubscription = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
     userId: v.string(),
+    ownerUserIds: v.array(v.string()),
     playerName: v.string(),
     playerEmail: v.optional(v.string()),
     playerPhone: v.optional(v.string()),
@@ -23,7 +24,7 @@ export const createForSubscription = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || subscription.user_id !== args.userId) {
+    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 

@@ -3,7 +3,7 @@
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
-import { buildFirebaseTokenIdentifier } from '@/lib/firebase/server-session'
+import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -23,7 +23,7 @@ export async function cancelSubscription(formData: FormData) {
 
   await fetchMutation(api.subscriptions.m.cancel, {
     subscriptionId: subscriptionId as Id<'subscriptions'>,
-    userId: buildFirebaseTokenIdentifier(session.decodedToken)
+    userIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
   })
 
   revalidatePath('/subscriptions')

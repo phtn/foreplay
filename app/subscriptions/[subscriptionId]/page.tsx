@@ -4,7 +4,7 @@ import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
-import { buildFirebaseTokenIdentifier } from '@/lib/firebase/server-session'
+import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { fetchQuery } from 'convex/nextjs'
@@ -26,7 +26,7 @@ interface PageProps {
 const statusStyles: Record<string, string> = {
   pending_payment: 'bg-orange-500/10 text-orange-700 dark:text-orange-200',
   payment_review: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  confirmed: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
+  confirmed: 'bg-emerald-500/5 text-emerald-800 dark:text-emerald-300',
   cancelled: 'bg-destructive/10 text-destructive'
 }
 
@@ -50,16 +50,16 @@ const Page = async ({ params }: PageProps) => {
     notFound()
   }
 
-  const userId = buildFirebaseTokenIdentifier(session.decodedToken)
+  const userIds = buildFirebaseSubscriptionUserIds(session.decodedToken)
   const typedSubscriptionId = subscriptionId as Id<'subscriptions'>
   const [subscription, registrations] = await Promise.all([
     fetchQuery(api.subscriptions.q.getByIdForUser, {
       subscriptionId: typedSubscriptionId,
-      userId
+      userIds
     }),
     fetchQuery(api.registrations.q.listBySubscriptionIdForUser, {
       subscriptionId: typedSubscriptionId,
-      userId
+      userIds
     })
   ])
 
@@ -77,38 +77,35 @@ const Page = async ({ params }: PageProps) => {
 
   return (
     <ProtectedLayout>
-      <main className='space-y-6 md:space-y-8'>
-        <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
-          <div className='min-w-0 space-y-5 md:space-y-8'>
+      <main className='space-y-4 md:space-y-8'>
+        <div className='flex gap-4 items-end sm:items-start sm:justify-between'>
+          <div className='min-w-0 space-y-2 md:space-y-6 w-full'>
             <Link
               href='/subscriptions'
               prefetch='auto'
-              className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
-              <Icon name='arrow-left' className='size-4' />
-              Subscriptions
+              className='group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dashed md:tracking-wider hover:text-sky-600'>
+              <Icon name='chevron-down' className='size-4 rotate-45 text-sky-500 group-hover:text-sky-600' />
+              Entries
             </Link>
-            <div className='space-y-1'>
-              <h1 className='font-heading text-2xl font-bold leading-tight tracking-tight md:text-3xl space-x-2'>
+            <div className='flex items-center justify-between w-full'>
+              <h1 className='w-full font-heading text-xl font-bold leading-tight tracking-tight md:text-2xl space-x-2'>
                 <span>{subscription.tournament_name}</span>
-                <span>&middot;</span>
-                <span className='font-ios font-thin opacity-50 text-base tracking-widest'>
-                  {subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
-                </span>
               </h1>
             </div>
           </div>
-          <div className='flex flex-wrap items-center gap-2 sm:justify-end'>
-            {/*<span
-              className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles.pending_payment}`}>
-              {subscription.total_players} Entries
-            </span>*/}
-            <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+          <div className='flex items-center gap-2 sm:justify-end'>
+            <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-wider text-foreground whitespace-nowrap'>
               {subscription.total_players} Entries
             </span>
             <span
               className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
               {formatStatus(status)}
             </span>
+            {/*<div className='px-4'>
+                <span className='font-ios font-thin text-xs md:text-sm uppercase opacity-80 tracking-widest whitespace-nowrap'>
+                  txn-{subscription.txn_ref_no}
+                </span>
+              </div>*/}
           </div>
         </div>
         {status === 'confirmed' && (
@@ -119,7 +116,7 @@ const Page = async ({ params }: PageProps) => {
             defaultDivision={subscription.division}
           />
         )}
-        <div className='grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'>
+        <div className='hidden _grid gap-5 lg:grid-cols-[1.1fr_0.9fr]'>
           <Card className='rounded-xl border-border/70'>
             <CardHeader className='px-4 sm:px-6'>
               <CardTitle className='text-xl'>Entry Details</CardTitle>

@@ -4,12 +4,12 @@ import { query } from '../_generated/server'
 export const listBySubscriptionIdForUser = query({
   args: {
     subscriptionId: v.id('subscriptions'),
-    userId: v.string()
+    userIds: v.array(v.string())
   },
-  handler: async (ctx, { subscriptionId, userId }) => {
+  handler: async (ctx, { subscriptionId, userIds }) => {
     const subscription = await ctx.db.get(subscriptionId)
 
-    if (!subscription || subscription.user_id !== userId) {
+    if (!subscription || !userIds.includes(subscription.user_id)) {
       return []
     }
 

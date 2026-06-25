@@ -1,7 +1,11 @@
 import { api } from '@/convex/_generated/api'
 import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
-import { buildFirebaseTokenIdentifier } from '@/lib/firebase/server-session'
+import {
+  buildFirebaseSubscriptionUserIds,
+  buildFirebaseTokenIdentifier,
+  buildFirebaseUserId
+} from '@/lib/firebase/server-session'
 import { fetchQuery } from 'convex/nextjs'
 import { Metadata } from 'next'
 import { Content } from './content'
@@ -22,6 +26,7 @@ const createFormId = () => crypto.randomUUID().replace(/-/g, '').slice(0, 10)
 
 interface PageProps {
   params: Promise<{ tourId: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
 const parsePesoAmount = (value: string) => {
@@ -29,16 +34,41 @@ const parsePesoAmount = (value: string) => {
   return Number.isFinite(amount) ? amount : 0
 }
 
-const Page = async ({ params }: PageProps) => {
-  const [{ tourId }, session] = await Promise.all([params, getVerifiedFirebaseSession()])
+const getSearchParamValue = (value: string | string[] | undefined) => {
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+const Page = async ({ params, searchParams }: PageProps) => {
+  const [{ tourId }, query, session] = await Promise.all([params, searchParams, getVerifiedFirebaseSession()])
+  const requestedFormId = getSearchParamValue(query.formId)
+  const userId = session ? buildFirebaseUserId(session.decodedToken) : undefined
+  const userIds = session ? buildFirebaseSubscriptionUserIds(session.decodedToken) : []
   const tournamentPromise = fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
   const userPromise = session
     ? fetchQuery(api.users.q.getUserByTokenId, {
         tokenIdentifier: buildFirebaseTokenIdentifier(session.decodedToken)
       })
     : Promise.resolve(null)
+  const subscriptionPromise = requestedFormId && userId
+    ? fetchQuery(api.subscriptions.q.getByTournamentIdAndFormId, {
+        tournamentId: tourId,
+        formId: requestedFormId,
+        userIds
+      })
+    : Promise.resolve(null)
+  const currentEntriesPromise = userId
+    ? fetchQuery(api.subscriptions.q.listByTournamentIdForUserIds, {
+        tournamentId: tourId,
+        userIds
+      })
+    : Promise.resolve([])
 
-  const [tournament, users] = await Promise.all([tournamentPromise, userPromise])
+  const [tournament, users, subscription, currentEntries] = await Promise.all([
+    tournamentPromise,
+    userPromise,
+    subscriptionPromise,
+    currentEntriesPromise
+  ])
   const user = users?.[0]
   const entryFee = tournament?.registration_fee ?? 0
   const sponsorPricingOptions =
@@ -55,15 +85,18 @@ const Page = async ({ params }: PageProps) => {
         amount: entryFee
       }))
   const initialDivision = divisionOptions[0]?.value ?? 'Pro'
+  const initialFormId = subscription?.form_id ?? createFormId()
 
   return (
     <ProtectedLayout>
       <Content
         tourId={tourId}
-        initialFormId={createFormId()}
-        initialDivision={initialDivision}
+        initialFormId={initialFormId}
+        initialDivision={subscription?.division ?? initialDivision}
         initialEmail={user?.email ?? session?.decodedToken.email ?? ''}
         initialPhone={user?.phone ?? session?.decodedToken.phone_number ?? ''}
+        initialSubscription={subscription}
+        currentEntries={currentEntries}
         tournament={{
           title: tournament?.title ?? tourId,
           venue: tournament?.venue ?? 'Venue pending',

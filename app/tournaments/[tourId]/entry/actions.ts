@@ -2,8 +2,8 @@
 
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
-import { buildFirebaseTokenIdentifier } from '@/lib/firebase/server-session'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
+import { buildFirebaseSubscriptionUserIds, buildFirebaseUserId } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
 
 type CreateTournamentSubscriptionInput = {
@@ -11,7 +11,7 @@ type CreateTournamentSubscriptionInput = {
   formId: string
   teamName?: string
   email: string
-  phone: string
+  phone?: string
   playerCount: string
   paymentAmount: number
   handicapIndex?: string
@@ -31,16 +31,12 @@ const trimOrUndefined = (value: string | undefined) => {
 
 export async function createTournamentSubscription(input: CreateTournamentSubscriptionInput) {
   const email = input.email.trim().toLowerCase()
-  const phone = input.phone.trim()
+  const phone = input.phone?.trim()
   const totalPlayers = Number.parseInt(input.playerCount, 10)
   const paymentAmount = Math.max(0, Math.round(input.paymentAmount))
 
   if (!email) {
     throw new Error('Contact email is required.')
-  }
-
-  if (!phone) {
-    throw new Error('Contact phone is required.')
   }
 
   if (!Number.isFinite(totalPlayers) || totalPlayers < 1) {
@@ -52,15 +48,20 @@ export async function createTournamentSubscription(input: CreateTournamentSubscr
   }
 
   const session = await getVerifiedFirebaseSession()
-  const userId = session ? buildFirebaseTokenIdentifier(session.decodedToken) : `email:${email}`
+  if (!session) {
+    throw new Error('You must be signed in to create an entry.')
+  }
+
+  const userId = buildFirebaseUserId(session.decodedToken)
 
   return await fetchMutation(api.subscriptions.m.create, {
     userId,
+    ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken),
     tournamentId: input.tourId,
     formId: input.formId,
     teamName: trimOrUndefined(input.teamName),
     contactEmail: email,
-    contactPhone: phone,
+    contactPhone: trimOrUndefined(phone),
     totalPlayers,
     paymentAmount,
     handicapIndex: trimOrUndefined(input.handicapIndex),

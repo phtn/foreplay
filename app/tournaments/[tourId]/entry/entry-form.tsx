@@ -3,7 +3,7 @@
 import { useAppForm } from '@/components/form'
 import { createQRCodeSvg, QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
-import type { Id } from '@/convex/_generated/dataModel'
+import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -22,6 +22,8 @@ type DivisionOption = {
   value: string
 }
 
+type Subscription = Doc<'subscriptions'>
+
 interface NewEntryFormProps {
   tourId: string
   formId: string
@@ -30,6 +32,7 @@ interface NewEntryFormProps {
   division: string
   initialEmail: string
   initialPhone: string
+  initialSubscription: Subscription | null
   divisionOptions: DivisionOption[]
   onPlayersChange: (nextPlayers: number) => void
   onDivisionChange: (nextDivision: string) => void
@@ -43,18 +46,27 @@ export const NewEntryForm = ({
   division,
   initialEmail,
   initialPhone,
+  initialSubscription,
   divisionOptions,
   onPlayersChange,
   onDivisionChange
 }: NewEntryFormProps) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(() =>
+    initialSubscription
+      ? `Entry request saved. Subscription ${initialSubscription._id} is pending payment review.`
+      : null
+  )
+  const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(initialSubscription?._id ?? null)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
   const receiptPreviewUrlRef = useRef<string | null>(null)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
-  const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(null)
+  const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(() =>
+    initialSubscription?.receipt_image_url || initialSubscription?.status === 'payment_review'
+      ? 'Receipt uploaded. Payment is pending review.'
+      : null
+  )
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
   const [paymentCodeCopied, setPaymentCodeCopied] = useState(false)
   const [entryQuery, setEntryQuery] = useQueryStates(
@@ -88,12 +100,12 @@ export const NewEntryForm = ({
 
   const form = useAppForm({
     defaultValues: {
-      fullName: entryQuery.teamName ?? '',
-      email: entryQuery.email ?? initialEmail,
-      phone: entryQuery.phone ?? initialPhone,
-      division,
-      playerCount: String(entryQuery.players ?? players),
-      handicapIndex: entryQuery.handicapIndex ?? ''
+      fullName: initialSubscription?.team_name ?? entryQuery.teamName ?? '',
+      email: initialSubscription?.contact_email ?? entryQuery.email ?? initialEmail,
+      phone: initialSubscription?.contact_phone ?? entryQuery.phone ?? initialPhone,
+      division: initialSubscription?.division ?? division,
+      playerCount: String(initialSubscription?.total_players ?? entryQuery.players ?? players),
+      handicapIndex: initialSubscription?.handicap_index ?? entryQuery.handicapIndex ?? ''
     },
     onSubmit: async ({ value }) => {
       setErrorMessage(null)
@@ -120,7 +132,7 @@ export const NewEntryForm = ({
     }
   })
   const isSubmitting = form.state.isSubmitting
-  const isSaved = successMessage !== null
+  const isSaved = subscriptionId !== null
   const copyPaymentCode = useCallback(async () => {
     if (!navigator.clipboard) {
       return
@@ -382,7 +394,7 @@ export const NewEntryForm = ({
                   <span>{paymentCodeCopied ? 'Copied' : 'Copy Reference #'}</span>
                 </Button>
                 <Button type='button' variant='outline' className='justify-center' onClick={downloadPaymentQR}>
-                  <Icon name='arrow-drop-down' className='size-4' />
+                  <Icon name='down-to-line' className='size-4' />
                   <span>Download QR</span>
                 </Button>
               </div>
@@ -413,14 +425,16 @@ export const NewEntryForm = ({
                       <span className='max-w-full truncate font-okx text-sm text-foreground/80'>
                         {receiptFile ? receiptFile.name : 'Choose receipt file'}
                       </span>
-                      <span className='font-ios text-xs text-muted-foreground'>PNG, JPG, PDF</span>
+                      <span className='font-ios text-xs text-muted-foreground'>
+                        PNG, JPG, WEBP, AVIF, TIFF, GIF, BMP, PDF
+                      </span>
                     </div>
                   )}
                 </label>
                 <input
                   id='payment-receipt'
                   type='file'
-                  accept='image/png,image/jpeg,application/pdf'
+                  accept='image/png,image/jpeg,image/webp,image/avif,image/tiff,image/gif,image/bmp,application/pdf'
                   className='sr-only'
                   onChange={(event) => {
                     const nextReceiptFile = event.currentTarget.files?.[0] ?? null
@@ -459,7 +473,7 @@ export const NewEntryForm = ({
                 size='xl'
                 variant='default'
                 className='w-full bg-slate-900 text-white/80 dark:bg-background'
-                disabled={!receiptFile || !subscriptionId || isSubmittingReceipt}
+                disabled={(!receiptFile && !receiptSuccessMessage) || !subscriptionId || isSubmittingReceipt}
                 onClick={() => {
                   if (receiptSuccessMessage) {
                     router.push(`/subscriptions/${subscriptionId}`)
