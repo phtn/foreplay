@@ -106,7 +106,7 @@ export const Content = ({ subscriptions }: ContentProps) => {
                     key={subscription._id}
                     href={`/subscriptions/${subscription._id}`}
                     prefetch={index === 0}
-                    className='block px-4 py-8 transition-colors dark:hover:bg-slate-500/25 hover:bg-slate-300/30 sm:p-5 md:grid md:grid-cols-[0.7fr_1.3fr_auto] md:items-center md:gap-4 w-full'>
+                    className='block px-4 py-8 transition-colors dark:hover:bg-slate-500/25 hover:bg-slate-300/30 sm:p-5 md:grid md:grid-cols-[0.6fr_1.4fr_auto] md:items-center md:gap-4 w-full'>
                     <div className='flex items-start justify-between gap-3 md:block md:space-y-1'>
                       <div className='min-w-0 space-y-1'>
                         <p className='line-clamp-2 font-okx text-lg leading-snug text-foreground md:line-clamp-1'>
@@ -122,7 +122,13 @@ export const Content = ({ subscriptions }: ContentProps) => {
                       </span>
                     </div>
 
-                    <div className='mt-8 py-3 grid grid-cols-3 gap-4 dark:bg-slate-500/10 md:mt-0 md:bg-transparent md:p-0 rounded-lg w-full whitespace-nowrap'>
+                    <div className='mt-8 py-3 grid grid-cols-3 md:grid-cols-4 gap-4 dark:bg-slate-500/10 md:mt-0 md:bg-transparent md:p-0 rounded-lg w-full whitespace-nowrap'>
+                      <div className='hidden md:flex flex-col items-center justify-center w-full'>
+                        <span
+                          className={`inline-flex shrink-0 rounded-md px-2 py-1 font-ios text-sm uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
+                          {formatStatus(status)}
+                        </span>
+                      </div>
                       <div className='flex flex-col items-center justify-center w-full'>
                         <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Entries</p>
                         <p className='text-sm text-foreground'>{subscription.total_players}</p>
