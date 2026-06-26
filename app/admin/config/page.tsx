@@ -174,7 +174,11 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
                 <form key={claimKey} action={removeCustomClaim}>
                   <input type='hidden' name='uid' value={user.subject} />
                   <input type='hidden' name='claimKey' value={claimKey} />
-                  <Button type='submit' size='sm' variant='ghost' className='h-8 text-destructive hover:bg-destructive/10'>
+                  <Button
+                    type='submit'
+                    size='sm'
+                    variant='ghost'
+                    className='h-8 text-destructive hover:bg-destructive/10'>
                     <Icon name='close' className='size-3.5' />
                     {claimKey}
                   </Button>
@@ -209,11 +213,11 @@ export default async function Page({ searchParams }: PageProps) {
             href='/admin'
             className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
             <Icon name='arrow-left' className='size-4' />
-            Admin
+            Back
           </Link>
           <div>
-            <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Config</p>
-            <h1 className='font-heading text-3xl font-bold tracking-tight'>Custom Claims</h1>
+            <p className='font-ios text-xs uppercase tracking-widest text-sky-600'>Admin Settings</p>
+            <h1 className='font-okx font-bold text-xl md:text-2xl'>Custom Claims</h1>
           </div>
         </div>
         <Link className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'gap-2')} href='/admin'>
@@ -222,22 +226,18 @@ export default async function Page({ searchParams }: PageProps) {
         </Link>
       </div>
 
-      <Card className='border-border/70'>
-        <CardContent className='p-4'>
-          <form className='grid gap-3 sm:grid-cols-[1fr_auto]'>
-            <Input
-              type='search'
-              name='q'
-              defaultValue={query}
-              placeholder='Search by email, name, phone, or Firebase uid'
-              className='h-11'
-            />
-            <Button type='submit' className='h-11'>
-              Search users
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      <form className='grid gap-3 sm:grid-cols-[1fr_auto]'>
+        <Input
+          type='search'
+          name='q'
+          defaultValue={query}
+          placeholder='Search by email, name, phone, or Firebase uid'
+          className='h-11'
+        />
+        <Button type='submit' className='h-11'>
+          Search users
+        </Button>
+      </form>
 
       <div className='grid gap-4'>
         {usersWithClaims.length ? (

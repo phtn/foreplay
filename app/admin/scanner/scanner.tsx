@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { checkInGatePass } from './actions'
 
@@ -211,49 +210,42 @@ export function GateScanner({ operator }: GateScannerProps) {
   }, [])
 
   return (
-    <main className='mx-auto flex w-full max-w-4xl flex-col gap-5 px-3 py-5 md:px-0'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-        <div className='space-y-2'>
-          <Link
-            href='/admin'
-            className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
-            <Icon name='arrow-left' className='size-4' />
-            Admin
-          </Link>
-          <div>
-            <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Gate</p>
-            <h1 className='font-heading text-3xl font-bold tracking-tight'>QR Scanner</h1>
-          </div>
-        </div>
+    <main className='mx-auto flex w-full max-w-4xl flex-col gap-2 px-3 pb-5 md:px-0'>
+      <div className='hidden _flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
         <Badge variant='outline' size='lg'>
           {operator}
         </Badge>
       </div>
 
       <Card className='border-border/70 p-0'>
-        <CardHeader className='border-b border-border/70 p-4'>
-          <div className='flex items-center justify-between gap-3'>
-            <CardTitle className='text-xl'>Scan gate pass</CardTitle>
+        <CardHeader className='border-b border-border/70 h-12 pt-4 pb-0'>
+          <div className='flex items-center justify-between'>
+            <CardTitle className='text-bg'>Scan Tickets</CardTitle>
             <Badge variant={active ? 'success-light' : 'outline'} size='lg'>
-              {active ? 'Camera on' : 'Camera off'}
+              {active ? 'Camera ON' : 'Camera OFF'}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className='space-y-4 p-4'>
+        <CardContent className='space-y-4 px-4'>
           <div className='overflow-hidden rounded-xl border border-border/70 bg-black'>
-            <video ref={videoRef} playsInline muted className='aspect-[3/4] w-full object-cover sm:aspect-video' />
+            <video ref={videoRef} playsInline muted className='aspect-3/4 w-full object-cover sm:aspect-video' />
           </div>
 
           <div className='grid gap-2 sm:grid-cols-2'>
-            <Button type='button' size='xl' onClick={active ? stopScanner : startScanner}>
+            <Button
+              type='button'
+              size='xl'
+              onClick={active ? stopScanner : startScanner}
+              className='bg-pink-500 text-white text-base'>
               <Icon name={active ? 'close' : 'ticket'} className='size-4' />
               {active ? 'Stop scanner' : 'Start scanner'}
             </Button>
             <Button
-              type='button'
               size='xl'
+              type='button'
               variant='outline'
               disabled={isChecking || !manualPayload.trim()}
+              className='text-base'
               onClick={() => {
                 void handlePayload(manualPayload)
               }}>
