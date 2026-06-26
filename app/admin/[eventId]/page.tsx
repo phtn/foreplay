@@ -10,6 +10,7 @@ import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { confirmSubscription } from './actions'
+import { ReceiptDrawer } from './receipt-drawer'
 
 interface EventPageProps {
   params: Promise<{ eventId: string }>
@@ -127,12 +128,12 @@ export default async function EventPage({ params }: EventPageProps) {
   // const sponsorshipTiers = event.sponsorship_tiers ?? []
 
   return (
-    <main className='space-y-6 md:space-y-8 px-2'>
+    <main className='space-y-6 md:space-y-4 px-2'>
       <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
         <div className='space-y-4 mt-4 md:mt-0 w-full'>
           <Link
             href='/admin'
-            className='inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
+            className='font-okx inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
             <Icon name='arrow-left' className='size-4' />
             Events
           </Link>
@@ -145,27 +146,6 @@ export default async function EventPage({ params }: EventPageProps) {
             </Link>
           </div>
         </div>
-
-        {/*<div className='flex flex-wrap gap-3'>
-          {publicHref ? (
-            <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={publicHref}>
-              Public page
-            </Link>
-          ) : null}
-
-          {entryHref ? (
-            <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={entryHref}>
-              Entry flow
-            </Link>
-          ) : null}
-
-          {sponsorshipHref ? (
-            <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2')} href={sponsorshipHref}>
-              Sponsor page
-              <Icon name='arrow-right' className='size-4' />
-            </Link>
-          ) : null}
-        </div>*/}
       </div>
 
       <div className='grid gap-0 md:gap-4 grid-cols-4'>
@@ -198,7 +178,11 @@ export default async function EventPage({ params }: EventPageProps) {
 
 interface EventSubscriptionsProps {
   eventId: string
-  subscriptions: Doc<'subscriptions'>[]
+  subscriptions: EventSubscription[]
+}
+
+type EventSubscription = Doc<'subscriptions'> & {
+  receiptImageUrl: string | null
 }
 
 const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps) => {
@@ -315,8 +299,15 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                         </div>
                       </td>
 
-                      <td className='px-6 py-4 text-muted-foreground text-xs'>
-                        {subscription.receipt_image_url ? 'View' : 'N/A'}
+                      <td className='px-6 py-4 text-xs'>
+                        <ReceiptDrawer
+                          amount={subscription.payment_amount}
+                          contactEmail={subscription.contact_email}
+                          receiptUrl={subscription.receiptImageUrl}
+                          reference={subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
+                          status={formatStatus(subscription.payment_status)}
+                          teamName={subscription.team_name ?? 'Team pending'}
+                        />
                       </td>
 
                       <td className='px-4 py-4'>

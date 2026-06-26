@@ -87,7 +87,7 @@ export const CreateQR = ({ className, config }: CreateQRProps) => {
           role='dialog'
           aria-modal='true'
           aria-label='Gate pass QR code'
-          className='fixed inset-0 z-[100] flex min-h-dvh flex-col bg-slate-950/95 p-4 text-white backdrop-blur-xl sm:p-6'>
+          className='fixed inset-0 z-100 flex min-h-dvh flex-col bg-slate-950/95 p-4 text-white backdrop-blur-xl sm:p-6'>
           <div className='flex items-center justify-between gap-3'>
             <div className='space-y-1'>
               <p className='font-ios text-xs uppercase tracking-widest text-white/55'>Gate pass</p>

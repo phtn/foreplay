@@ -1,5 +1,5 @@
 import { v } from 'convex/values'
-import type { Doc } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 import { query } from '../_generated/server'
 
 const dedupeSubscriptions = (subscriptions: Doc<'subscriptions'>[]) => {
@@ -38,11 +38,20 @@ export const listByUserIds = query({
 export const listByTournamentId = query({
   args: { tournamentId: v.string() },
   handler: async (ctx, { tournamentId }) => {
-    return await ctx.db
+    const subscriptions = await ctx.db
       .query('subscriptions')
       .withIndex('by_tournamentId', (q) => q.eq('tournament_id', tournamentId))
       .order('desc')
       .collect()
+
+    return await Promise.all(
+      subscriptions.map(async (subscription) => ({
+        ...subscription,
+        receiptImageUrl: subscription.receipt_image_url
+          ? await ctx.storage.getUrl(subscription.receipt_image_url as Id<'_storage'>)
+          : null
+      }))
+    )
   }
 })
 
