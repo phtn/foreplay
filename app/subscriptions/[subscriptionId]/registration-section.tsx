@@ -150,7 +150,7 @@ export function RegistrationSection({
 
   return (
     <Card className='rounded-xl gap-y-0 p-0 outline-none border-none'>
-      <CardHeader className='px-4 sm:px-4 py-3 border bg-slate-200/50'>
+      <CardHeader className='px-4 sm:px-4 py-3 border bg-slate-400/20'>
         <div className='flex gap-4 sm:flex-row sm:items-start sm:justify-between'>
           <div className='space-y-1.5 w-full'>
             <CardTitle className='flex items-center gap-3 font-okx text-lg'>
@@ -158,24 +158,24 @@ export function RegistrationSection({
               {canAddMore ? (
                 <Button
                   size='icon-xs'
-                  className='rounded-full bg-foreground'
+                  className='rounded-full bg-foreground dark:bg-sky-500'
                   disabled={isAdding || isPending}
                   aria-label='Add player'
                   onClick={() => {
                     setErrorMessage(null)
                     setIsAdding(true)
                   }}>
-                  <Icon name={isPending ? 'spinner-ring' : 'add'} />
+                  <Icon name={isPending ? 'spinner-ring' : 'add'} className='size-4' />
                 </Button>
               ) : null}
             </CardTitle>
           </div>
 
           <div className='flex items-center gap-1 md:gap-2'>
-            <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-muted-foreground whitespace-nowrap'>
+            <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-foreground whitespace-nowrap'>
               {registrations.length}/{registrationLimit} saved
             </span>
-            <span className='inline-flex rounded-md bg-sky-500/5 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 whitespace-nowrap'>
+            <span className='inline-flex rounded-md bg-sky-500/5 dark:bg-sky-100/10 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 dark:text-sky-200 whitespace-nowrap'>
               {remainingSlots} open
             </span>
           </div>
