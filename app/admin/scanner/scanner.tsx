@@ -218,7 +218,7 @@ export function GateScanner({ operator }: GateScannerProps) {
       </div>
 
       <Card className='rounded-none md:rounded-sm p-0 pb-4'>
-        <CardHeader className='border-b border-border/70 h-12 pt-4 pb-0'>
+        <CardHeader className='rounded-none md:rounded-t-sm border-b border-border/70 bg-slate-200 dark:bg-slate-400/40 h-10 pt-2 pb-0'>
           <div className='flex items-center justify-between'>
             <CardTitle className='text-bg'>Scan Tickets</CardTitle>
             <Badge variant={active ? 'success-light' : 'outline'} size='lg'>
