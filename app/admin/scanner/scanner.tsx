@@ -210,14 +210,14 @@ export function GateScanner({ operator }: GateScannerProps) {
   }, [])
 
   return (
-    <main className='mx-auto flex w-full max-w-4xl flex-col gap-2 px-3 pb-5 md:px-0'>
+    <main className='mx-auto flex w-full max-w-4xl flex-col gap-2 px-0 pb-5 md:px-0'>
       <div className='hidden _flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
         <Badge variant='outline' size='lg'>
           {operator}
         </Badge>
       </div>
 
-      <Card className='border-border/70 p-0'>
+      <Card className='rounded-none md:rounded-sm p-0 pb-4'>
         <CardHeader className='border-b border-border/70 h-12 pt-4 pb-0'>
           <div className='flex items-center justify-between'>
             <CardTitle className='text-bg'>Scan Tickets</CardTitle>
