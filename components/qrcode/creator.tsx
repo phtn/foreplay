@@ -1,13 +1,16 @@
 'use client'
 
+import { DerivedRegistration } from '@/app/subscriptions/types'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { ClassName } from '@/types'
 import QrCreator from 'qr-creator'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface CreateQRProps {
   config: QrCreator.Config
   className?: string
+  registration?: DerivedRegistration
 }
 
 function QRCanvas({ className, config }: CreateQRProps) {
@@ -31,7 +34,7 @@ function QRCanvas({ className, config }: CreateQRProps) {
   return <div className={cn('overflow-hidden [&_canvas]:size-full [&_svg]:size-full', className)} ref={containerRef} />
 }
 
-export const CreateQR = ({ className, config }: CreateQRProps) => {
+export const CreateQR = ({ className, config, registration }: CreateQRProps) => {
   const [open, setOpen] = useState(false)
   const fullscreenConfig = useMemo<QrCreator.Config>(
     () => ({
@@ -87,28 +90,61 @@ export const CreateQR = ({ className, config }: CreateQRProps) => {
           role='dialog'
           aria-modal='true'
           aria-label='Gate pass QR code'
-          className='fixed inset-0 z-100 flex min-h-dvh flex-col bg-slate-950/95 p-4 text-white backdrop-blur-xl sm:p-6'>
+          className='fixed inset-0 z-100 flex flex-col bg-slate-300/50 p-4 backdrop-blur-xl sm:p-6'>
           <div className='flex items-center justify-between gap-3'>
             <div className='space-y-1'>
-              <p className='font-ios text-xs uppercase tracking-widest text-white/55'>Gate pass</p>
-              <p className='font-okx text-lg font-medium'>Scan QR</p>
+              <p className='font-ios text-xs uppercase tracking-widest text-foreground/55'>Scan</p>
+              <p className='font-okx text-lg font-medium'>Gate Pass</p>
             </div>
-            <button
-              type='button'
-              aria-label='Close gate pass QR code'
-              className='inline-flex size-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-white/25'
-              onClick={() => setOpen(false)}>
-              <Icon name='close' className='size-5' />
-            </button>
+            <div className='flex items-center space-x-2'>
+              <Icon name='down-to-line' className='size-5' />
+              <button
+                type='button'
+                aria-label='Close gate pass QR code'
+                className='inline-flex size-11 items-center justify-center rounded-full transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-white/25'
+                onClick={() => setOpen(false)}>
+                <Icon name='close' className='size-5' />
+              </button>
+            </div>
           </div>
 
-          <div className='flex flex-1 items-center justify-center py-6'>
-            <div className='w-full max-w-[min(88vw,430px)] rounded-3xl bg-white p-4 shadow-2xl sm:p-6'>
+          <div className='flex flex-1 items-center justify-center py-4'>
+            <div className='w-full max-w-[min(88vw,430px)] rounded-3xl bg-white p-4'>
               <QRCanvas config={fullscreenConfig} className='aspect-square w-full rounded-2xl bg-white' />
+            </div>
+          </div>
+          <div className='h-2/5 flex justify-center'>
+            <div className='max-w-[min(88vw,430px)] h-fit w-full border bg-white p-4 divide-y divide-slate-300 rounded-lg'>
+              <InfoDetail label='Status' value={registration?.slotLabel ?? ''} />
+              <InfoDetail label='Name' value={registration?.name ?? ''} />
+              <InfoDetail label='Email' value={registration?.email ?? ''} />
+              <InfoDetail label='Entry Id' value={registration?.id ?? ''} />
             </div>
           </div>
         </div>
       ) : null}
     </>
+  )
+}
+
+interface InfoDetailProps {
+  label: string
+  value: string
+  className?: ClassName
+}
+function InfoDetail({ label, value, className }: InfoDetailProps) {
+  return (
+    <div className='space-y-0.5 py-3'>
+      <p className='font-ios font-medium text-[10px] uppercase tracking-widest text-foreground/80 dark:text-slate-500 italic'>
+        {label}
+      </p>
+      <p
+        className={cn(
+          'font-ios tracking-[0.28em] text-sm text-foreground/80 dark:text-slate-800 max-w-[16ch]! text-clip whitespace-nowrap',
+          className
+        )}>
+        {value}
+      </p>
+    </div>
   )
 }

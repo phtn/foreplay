@@ -181,7 +181,7 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
                       onChangeAction={(startHole) => updatePairing(registration._id, { startHole })}
                     />
                   </TableCell>
-                  <TableCell className='text-center'>
+                  <TableCell className='text-right w-32'>
                     <GroupSelect
                       value={pairing.pairingGroup}
                       disabled={rowPending}

@@ -12,7 +12,7 @@ interface GamesListProps {
 export const GamesList = ({ data }: GamesListProps) => {
   const showMonthFn = (row: BookedGames, index: number) => index === 0 || data[index - 1]?.month !== row.month
   return (
-    <HyperList data={data} component={GameRow} container='space-y-4'>
+    <HyperList data={data} component={GameRow} container='space-y-4 bg-[#dcebe5] rounded-2xl'>
       {showMonthFn(data[0], 0) ? (
         <p className='mb-3 mt-6 text-sm font-okx font-medium text-slate-500 dark:text-slate-200'>
           {showMonthFn(data[0], 0)}
@@ -31,18 +31,18 @@ function getMobileStatusClass(status: string) {
     return 'bg-[#1d2824]/10 text-[#1d2824]/75 ring-1 ring-inset ring-[#1d2824]/10'
   }
 
-  return 'bg-[#1d2824] text-white shadow-sm'
+  return 'bg-[#1d2824] text-white shadow-none'
 }
 
 const GameRow = (row: BookedGames) => {
   return (
     <>
-      <article className='overflow-hidden rounded-[26px] border border-[#1d2824]/8 bg-white/78 shadow-[0_18px_48px_rgba(31,62,46,0.12)] backdrop-blur-xl md:hidden'>
+      <article className='overflow-hidden rounded-2xl border border-[#1d2824]/8 md:hidden shadow-none'>
         <div className='relative p-4 sm:p-5'>
-          <div className='absolute inset-x-4 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(29,40,36,0.14),rgba(239,75,32,0.28),transparent)]' />
+          {/*<div className='absolute inset-x-4 top-0 h-px ' />*/}
 
           <div className='flex items-start gap-4'>
-            <div className='shrink-0 rounded-xl bg-[#1d2824] px-2.5 py-1.5 text-white text-center shadow-[0_12px_28px_rgba(29,40,36,0.18)]'>
+            <div className='shrink-0 rounded-xl bg-[#1d2824] px-2.5 py-1.5 text-white text-center'>
               <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/65'>{row.day}</p>
               <p className='mt-1 font-poly text-2xl leading-none'>{row.date}</p>
             </div>

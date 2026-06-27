@@ -32,7 +32,7 @@ const formatCreatedAt = (value: number) => {
 
 const formatPaymentAmount = (value: number | undefined) => {
   if (typeof value !== 'number') {
-    return 'Pending'
+    return 'TBD'
   }
 
   return new Intl.NumberFormat('en-PH', {
@@ -67,9 +67,6 @@ export const Content = ({ subscriptions }: ContentProps) => {
   return (
     <main className='space-y-6 md:space-y-8'>
       <div className='space-y-1 md:space-y-2'>
-        <p className='font-ios text-[11px] md:text-xs uppercase tracking-widest dark:text-sky-500 text-sky-600'>
-          Submitted
-        </p>
         <h1 className='font-okx font-bold text-lg md:text-xl tracking-wide'>Entries</h1>
         <p className='hidden md:flex max-w-2xl text-sm text-foreground/70'>
           Review entry requests, payment status, receipt state, and the next action for each tournament.
@@ -88,7 +85,7 @@ export const Content = ({ subscriptions }: ContentProps) => {
               <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground md:text-xs'>
                 {stat.label}
               </p>
-              <p className='font-heading text-xl font-bold md:text-xl'>{stat.value}</p>
+              <p className='font-poly font-medium text-xl md:text-xl'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -100,11 +97,15 @@ export const Content = ({ subscriptions }: ContentProps) => {
             <div className='divide-y divide-slate-500/30'>
               {subscriptions.map((subscription, index) => {
                 const status = subscription.status ?? 'pending_payment'
+                const route =
+                  subscription.status === 'pending_payment'
+                    ? `/tournaments/${subscription.tournament_id}/entry?formId=${subscription.form_id}`
+                    : `/subscriptions/${subscription._id}`
 
                 return (
                   <Link
                     key={subscription._id}
-                    href={`/subscriptions/${subscription._id}`}
+                    href={route}
                     prefetch={index === 0}
                     className='block px-4 py-8 transition-colors dark:hover:bg-slate-500/25 hover:bg-slate-300/30 sm:p-5 md:grid md:grid-cols-[0.6fr_1.4fr_auto] md:items-center md:gap-4 w-full'>
                     <div className='flex items-start justify-between gap-3 md:block md:space-y-1'>
@@ -131,12 +132,14 @@ export const Content = ({ subscriptions }: ContentProps) => {
                       </div>
                       <div className='flex flex-col items-center justify-center w-full'>
                         <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Entries</p>
-                        <p className='text-sm text-foreground'>{subscription.total_players}</p>
+                        <p className='font-okx text-sm text-foreground'>{subscription.total_players}</p>
                       </div>
 
                       <div className='flex flex-col items-center justify-center w-full'>
                         <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/60'>Amount</p>
-                        <p className='text-sm text-foreground'>{formatPaymentAmount(subscription.payment_amount)}</p>
+                        <p className='font-okx text-sm text-foreground'>
+                          {formatPaymentAmount(subscription.payment_amount)}
+                        </p>
                       </div>
 
                       <div className='flex flex-col items-center justify-center w-full'>

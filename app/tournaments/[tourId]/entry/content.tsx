@@ -95,7 +95,7 @@ const getSummaryStatus = (entries: Subscription[]): EntryStatus => {
 }
 
 const getEntryCount = (subscription: Subscription) => {
-  const entries = Number.parseInt(subscription.total_players, 10)
+  const entries = Number.parseInt(subscription.status === 'pending_payment' ? subscription.total_players : '0', 10)
   return Number.isFinite(entries) && entries > 0 ? entries : 0
 }
 

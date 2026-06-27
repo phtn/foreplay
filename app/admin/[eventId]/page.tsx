@@ -282,11 +282,17 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                       </td>
                       <td className='px-4 py-4'>
                         <div className='space-y-1'>
-                          <p className='text-foreground/85'>{subscription.total_players} entries</p>
-                          <p className='text-xs text-muted-foreground'>{subscription.total_checked_in} checked in</p>
+                          <p className='text-foreground/85'>
+                            <span className='font-okx'>{subscription.total_players}</span> entries
+                          </p>
+                          <p className='text-xs text-muted-foreground whitespace-nowrap'>
+                            <span className='font-okx'>{subscription.total_checked_in}</span> checked in
+                          </p>
                         </div>
                       </td>
-                      <td className='px-6 py-4 text-foreground/85'>{subscription.payment_amount?.toLocaleString()}</td>
+                      <td className='px-6 py-4 font-okx text-foreground/85'>
+                        {subscription.payment_amount?.toLocaleString()}
+                      </td>
                       <td className='px-5 py-4'>
                         <div className='space-y-2'>
                           <span

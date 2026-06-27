@@ -367,7 +367,7 @@ interface TournamentHeroProps {
   primaryHref: string
   secondaryHref?: string
   primaryLabel: string
-  secondaryLabel: string
+  secondaryLabel?: string
   metrics: Array<{ label: string; value: string; icon?: IconName }>
   primaryAction?: ReactNode
   galleryHref?: string

@@ -11,28 +11,13 @@ import { cn } from '@/lib/utils'
 import { ClassName } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
+import { DerivedRegistration, DraftRegistration, RegistrationSectionProps } from '../types'
 import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
 
 const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 const formControlClassName =
   'h-10 border-border/70 bg-background/70 text-sm shadow-none focus-visible:border-primary focus-visible:ring-primary/15'
-
-type RegistrationSectionProps = {
-  defaultDivision?: string
-  maxEntries: number
-  registrations: Doc<'registrations'>[]
-  subscriptionId: Id<'subscriptions'>
-}
-
-type DraftRegistration = {
-  division: string
-  handicapIndex: string
-  playerEmail: string
-  playerName: string
-  playerPhone: string
-  shirtSize: string
-}
 
 function buildInitialDraft(defaultDivision?: string): DraftRegistration {
   return {
@@ -75,17 +60,20 @@ export function RegistrationSection({
 
   const registrationCards = useMemo(
     () =>
-      registrations.map((registration, index) => ({
-        id: registration._id,
-        slotLabel: `Player ${index + 1}`,
-        name: registration.player_name,
-        email: registration.player_email ?? 'No email',
-        gatePassPayload: buildGatePassPayload(registration),
-        phone: registration.player_phone ?? 'No phone',
-        division: registration.division ?? 'No division',
-        handicap: registration.handicap_index ?? 'No handicap',
-        shirtSize: registration.shirt_size
-      })),
+      registrations.map(
+        (registration, index) =>
+          ({
+            id: registration._id,
+            slotLabel: `Player ${index + 1}`,
+            name: registration.player_name,
+            email: registration.player_email ?? 'No email',
+            gatePassPayload: buildGatePassPayload(registration),
+            phone: registration.player_phone ?? 'No phone',
+            division: registration.division ?? 'No division',
+            handicap: registration.handicap_index ?? 'No handicap',
+            shirtSize: registration.shirt_size
+          }) as DerivedRegistration
+      ),
     [registrations]
   )
 
@@ -238,6 +226,7 @@ export function RegistrationSection({
                       background: null,
                       size: 200
                     }}
+                    registration={registration}
                   />
                   {/*<GatePassQRCode
                     content={registration.gatePassPayload}

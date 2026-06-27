@@ -106,9 +106,12 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
               ))}
             </div>
 
-            <div className='min-h-0 flex-1 overflow-auto bg-slate-950/5 p-3 sm:p-5'>
-              <div className='flex min-h-full items-center justify-center rounded-xl border border-border/70 bg-white p-2'>
-                <object data={receiptUrl} className='h-[72dvh] w-full rounded-lg bg-white' aria-label='Payment receipt'>
+            <div className='min-h-0 flex-1 overflow-hidden bg-slate-950/5 p-3 sm:p-5'>
+              <div className='flex h-full min-h-0 items-center justify-center rounded-xl border border-border/70 bg-white p-2'>
+                <object
+                  data={receiptUrl}
+                  className='h-full max-h-full w-full max-w-full rounded-lg bg-white object-contain'
+                  aria-label='Payment receipt'>
                   <div className='flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-slate-900'>
                     <Icon name='file' className='size-8 text-slate-500' />
                     <p className='text-sm'>This receipt cannot be previewed inline.</p>

@@ -31,11 +31,11 @@ export function StartSelector({ disabled, onChangeAction, value }: StartingHoleP
           render={
             <Button
               size='icon-sm'
-              variant='outline'
+              variant='default'
               disabled={disabled}
               className={cn(
-                'font-poly font-semibold text-sm tabular-nums',
-                hasStartingHole && 'bg-emerald-500 text-white hover:bg-emerald-600'
+                'font-poly font-semibold text-sm tabular-nums bg-slate-100 dark:bg-slate-800 text-foreground',
+                hasStartingHole && 'bg-primary dark:bg-primary text-white hover:bg-primary/80 border-primary'
               )}
             />
           }>
@@ -51,7 +51,9 @@ export function StartSelector({ disabled, onChangeAction, value }: StartingHoleP
                 size='icon'
                 className={cn(
                   'flex h-12 w-12 aspect-square items-center justify-center rounded-lg font-ios text-sm font-semibold tabular-nums transition-colors',
-                  value === hole ? 'bg-slate-300/40 text-primary-foreground' : 'hover:bg-muted'
+                  value === hole
+                    ? 'bg-slate-300/40 text-primary-foreground'
+                    : 'hover:bg-primary/20 dark:hover:bg-primary'
                 )}
                 onClick={() => selectHole(hole)}>
                 {hole}

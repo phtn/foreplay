@@ -5,8 +5,22 @@ export const eventSchema = v.object({
   organizer: v.string(),
   organizer_id: v.string(),
   venue: v.string(),
+  venue_coordinates: v.optional(
+    v.object({
+      latitude: v.number(),
+      longitude: v.number()
+    })
+  ),
   event_date: v.string(),
-  event_type: v.union(v.literal('tournament'), v.literal('championship'), v.literal('regular')),
+  event_type: v.union(
+    v.literal('tournament'),
+    v.literal('championship'),
+    v.literal('regular'),
+    v.literal('sports'),
+    v.literal('party'),
+    v.literal('awards'),
+    v.literal('contest')
+  ),
   gate_open_at: v.number(),
   gate_open: v.number(),
   registered_slots: v.number(),

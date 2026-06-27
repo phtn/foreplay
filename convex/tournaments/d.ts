@@ -4,6 +4,12 @@ export const tournamentSchema = v.object({
   id: v.optional(v.string()),
   title: v.string(),
   venue: v.string(),
+  venue_coordinates: v.optional(
+    v.object({
+      latitude: v.number(),
+      longitude: v.number()
+    })
+  ),
   event_date: v.string(),
   gate_open_at: v.number(),
   gate_open: v.number(),

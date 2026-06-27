@@ -1,6 +1,8 @@
 'use client'
 
 import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { ClassName } from '@/types'
 
 type VenueCoordinates = {
   latitude: number
@@ -10,6 +12,7 @@ type VenueCoordinates = {
 type MapButtonProps = {
   coordinates: VenueCoordinates
   venue: string
+  className?: ClassName
 }
 
 const isIOS = () => {
@@ -37,7 +40,7 @@ const buildMapUrl = ({ coordinates, venue }: MapButtonProps) => {
   return `https://www.google.com/maps/search/?api=1&query=${query}`
 }
 
-export function MapButton({ coordinates, venue }: MapButtonProps) {
+export function MapButton({ coordinates, venue, className }: MapButtonProps) {
   const openMap = () => {
     window.open(buildMapUrl({ coordinates, venue }), '_blank', 'noopener,noreferrer')
   }
@@ -48,7 +51,7 @@ export function MapButton({ coordinates, venue }: MapButtonProps) {
       aria-label={`Open ${venue} in maps`}
       className='text-sky-500 hover:text-sky-600'
       onClick={openMap}>
-      <Icon name='navigation-fill' className='size-4' />
+      <Icon name='navigation-fill' className={cn('size-4', className)} />
     </button>
   )
 }

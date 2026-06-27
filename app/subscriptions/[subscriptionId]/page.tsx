@@ -83,14 +83,17 @@ const Page = async ({ params }: PageProps) => {
             <Link
               href='/subscriptions'
               prefetch='auto'
-              className='group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dashed md:tracking-wider hover:text-sky-600'>
+              className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dashed md:tracking-wider hover:text-sky-600'>
               <Icon name='chevron-down' className='size-4 rotate-45 text-sky-500 group-hover:text-sky-600' />
               Entries
             </Link>
-            <div className='flex items-center justify-between w-full'>
-              <h1 className='w-full font-heading text-xl font-bold leading-tight tracking-tight md:text-2xl space-x-2'>
-                <span>{subscription.tournament_name}</span>
+            <div className='flex items-center space-x-4 w-full'>
+              <h1 className='font-okx font-semibold text-xl leading-tight md:text-2xl space-x-2 whitespace-nowrap overflow-hidden'>
+                <span className=''>{subscription.tournament_name}</span>
               </h1>
+              <span className='hidden md:flex opacity-50 font-ios text-base uppercase tracking-widest'>
+                {subscription.txn_ref_no}
+              </span>
             </div>
           </div>
           <div className='flex items-center gap-2 sm:justify-end whitespace-nowrap'>
@@ -101,11 +104,6 @@ const Page = async ({ params }: PageProps) => {
               className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
               {formatStatus(status)}
             </span>
-            {/*<div className='px-4'>
-                <span className='font-ios font-thin text-xs md:text-sm uppercase opacity-80 tracking-widest whitespace-nowrap'>
-                  txn-{subscription.txn_ref_no}
-                </span>
-              </div>*/}
           </div>
         </div>
         {status === 'confirmed' ? (

@@ -140,8 +140,8 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
         // secondaryHref={`/tournaments/${tournament.id}/sponsorship`}
+        // secondaryLabel='Sponsor Event'
         primaryLabel='Book Entry'
-        secondaryLabel='Sponsor Event'
         teeTimeAt={tournament.teeTimeAt}
         teeTimeLabel={tournament.teeTimeLabel}
         prizes={tournament.prizes}
@@ -159,7 +159,7 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         <div className='space-y-9'>
           <SectionTitle
             eyebrow='Good to know'
-            title='Get started with the tournament overview.'
+            title='Tournament Overview'
             description='Observe Golf Course rules at all times.'
           />
 
