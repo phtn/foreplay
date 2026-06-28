@@ -23,7 +23,7 @@ export default async function Page() {
     { value: 'payments', label: 'Payments', content: '' }
   ]
   return (
-    <main className='mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pb-2'>
+    <main className='mx-auto flex w-full max-w-7xl flex-col px-4 pt-2 md:pt-0 pb-2'>
       {/*<div className='flex gap-4 items-start justify-between'>
         <div>
           <p className='font-ios text-xs uppercase tracking-wider text-sky-600 dark:text-sky-500'>Settings</p>
