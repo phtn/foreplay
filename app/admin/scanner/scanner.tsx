@@ -218,12 +218,34 @@ export function GateScanner({ operator }: GateScannerProps) {
       </div>
 
       <Card className='rounded-none md:rounded-sm p-0 pb-4'>
-        <CardHeader className='rounded-none md:rounded-t-sm border-b border-border/70 bg-slate-200 dark:bg-slate-400/40 h-10 pt-2 pb-0'>
+        <CardHeader className='rounded-none md:rounded-t-sm border-b border-border/50 bg-slate-100 dark:bg-slate-400/40 h-10 pt-2 pb-0'>
           <div className='flex items-center justify-between'>
-            <CardTitle className='text-bg'>Scan Tickets</CardTitle>
-            <Badge variant={active ? 'success-light' : 'outline'} size='lg'>
+            <CardTitle className='flex items-center font-okx'>
+              <span
+                className={cn('aspect-square rounded-full scale-120 mr-2 text-slate-400', {
+                  'text-emerald-500 animate-pulse': active
+                })}>
+                ⏺
+              </span>
+              <span className={cn('opacity-50', { 'opacity-100': active })}>{active ? 'Ready' : 'Scanner Idle'}</span>
+            </CardTitle>
+            <span className='font-okx font-semibold'>
+              {result && result.checkedIn
+                ? 'Checked In'
+                : result && result.alreadyCheckedIn
+                  ? 'Already Checked In'
+                  : ''}
+            </span>
+            <div className='flex items-center space-x-2'>
+              <Icon
+                name={active ? 'camera-fill' : 'camera-off-line'}
+                className={cn('size-5 text-foreground/50', { 'text-emerald-500': active })}
+              />
+              <span>{active ? 'ON' : 'OFF'}</span>
+            </div>
+            {/*<Badge variant={active ? 'success-light' : 'outline'} size='lg'>
               {active ? 'Camera ON' : 'Camera OFF'}
-            </Badge>
+            </Badge>*/}
           </div>
         </CardHeader>
         <CardContent className='space-y-4 px-4'>

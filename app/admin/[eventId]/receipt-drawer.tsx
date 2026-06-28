@@ -63,7 +63,7 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
           role='dialog'
           aria-modal='true'
           aria-label='Receipt verification'
-          className='fixed inset-0 z-[100] flex justify-end bg-slate-950/55 backdrop-blur-sm'>
+          className='fixed inset-0 z-100 flex justify-end bg-slate-950/55 backdrop-blur-sm'>
           <button
             type='button'
             aria-label='Close receipt viewer'
