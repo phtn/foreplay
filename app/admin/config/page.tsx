@@ -18,12 +18,12 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const tabs = [
-    { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'events', label: 'Events', content: <EventsContent /> },
+    { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'payments', label: 'Payments', content: '' }
   ]
   return (
-    <main className='mx-auto flex w-full max-w-7xl flex-col px-4 pt-2 md:pt-0 pb-2'>
+    <main className='mx-auto flex w-full max-w-7xl flex-col md:px-4 pt-4 md:pt-0 pb-2'>
       {/*<div className='flex gap-4 items-start justify-between'>
         <div>
           <p className='font-ios text-xs uppercase tracking-wider text-sky-600 dark:text-sky-500'>Settings</p>

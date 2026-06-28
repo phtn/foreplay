@@ -106,8 +106,8 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
               ))}
             </div>
 
-            <div className='min-h-0 flex-1 overflow-hidden bg-slate-950/5 p-3 sm:p-5'>
-              <div className='flex h-full min-h-0 items-center justify-center rounded-xl border border-border/70 bg-white p-2'>
+            <div className='min-h-0 flex-1 overflow-hidden bg-slate-950/5 p-0 sm:p-5'>
+              <div className='flex h-full min-h-0 items-center justify-center md:rounded-xl md:border border-border/70 bg-white p-2'>
                 <object
                   data={receiptUrl}
                   className='h-full max-h-full w-full max-w-full rounded-lg bg-white object-contain'

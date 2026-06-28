@@ -39,8 +39,8 @@ export const Content = ({ events }: ContentProps) => {
           { label: 'Drafts', value: counts.drafts },
           { label: 'Slots', value: counts.registeredSlots }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='bg-border/10 border-[0.33px] p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 p-2!'>
+          <Card key={stat.label} size='sm' className='border-[0.33px] py-1! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 ps-4'>
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>

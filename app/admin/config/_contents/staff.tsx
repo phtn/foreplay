@@ -5,6 +5,7 @@ import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { getFirebaseUserByUid } from '@/lib/firebase/admin'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
+import { Icon } from '@/lib/icons'
 import { fetchQuery } from 'convex/nextjs'
 import { StaffList } from './staff-list'
 
@@ -66,7 +67,7 @@ export const StaffContent = async () => {
 
   return (
     <div className='space-y-4'>
-      <form className='grid gap-3 sm:grid-cols-[1fr_auto]'>
+      <form className='grid gap-2 md:gap-3 px-2 grid-cols-[1fr_auto]'>
         <Input
           type='search'
           name='q'
@@ -74,8 +75,9 @@ export const StaffContent = async () => {
           placeholder='Search by email, name, phone, or user ID'
           className='h-11'
         />
-        <Button type='submit' className='h-11 '>
-          Search users
+        <Button type='submit' className='h-11 ' variant='secondary'>
+          <span className='hidden md:flex'>Search users</span>
+          <Icon name='search' className='size-4 md:hidden' />
         </Button>
       </form>
 

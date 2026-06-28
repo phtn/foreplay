@@ -155,7 +155,7 @@ export const List = EventsList
 
 const EventRow = (row: EventRow) => {
   return (
-    <div className='space-y-3'>
+    <div className='px-1 py-2 space-y-4'>
       {row.monthLabel ? (
         <p className='my-2 px-3 text-xs font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
           {row.monthLabel}
@@ -167,9 +167,9 @@ const EventRow = (row: EventRow) => {
         <div className='space-y-4 p-2 sm:p-5'>
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
-              <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-12 aspect-square text-white '>
+              <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-11 aspect-square text-white '>
                 <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/70'>{row.day}</p>
-                <p className='mt-1 font-poly text-2xl leading-none'>{row.date}</p>
+                <p className='mt-1 font-poly text-lg leading-none'>{row.date}</p>
               </div>
 
               <div className='min-w-0'>
@@ -191,19 +191,19 @@ const EventRow = (row: EventRow) => {
 
           <div className='grid grid-cols-4 gap-3 md:rounded-2xl border-b-2 border-[#1d2824]/10 bg-white/60 dark:bg-slate-400/4 p-3'>
             <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Start
               </p>
               <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.time}</p>
             </div>
             <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Entry fee
               </p>
               <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.feeLabel}</p>
             </div>
             <div className=''>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/45 dark:text-slate-400'>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Slots
               </p>
               <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.slotsLabel}</p>

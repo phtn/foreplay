@@ -128,8 +128,8 @@ export default async function EventPage({ params }: EventPageProps) {
   // const sponsorshipTiers = event.sponsorship_tiers ?? []
 
   return (
-    <main className='space-y-6 md:space-y-4 px-2'>
-      <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+    <main className='space-y-0 md:space-y-4'>
+      <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between px-2 pb-2 md:pb-0'>
         <div className='space-y-4 mt-4 md:mt-0 w-full'>
           <Link
             href='/admin'
@@ -140,9 +140,9 @@ export default async function EventPage({ params }: EventPageProps) {
 
           <div className='space-y-2 w-full flex items-center justify-between'>
             <h1 className='font-okx font-semibold text-xl md:text-3xl'>{event.title}</h1>
-            <Link href={`/admin/${eventId}/pairings`} className='flex items-center space-x-2'>
+            <Link href={`/admin/${eventId}/pairings`} className='flex items-center space-x-1 md:space-x-2'>
               <span className='flex items-center gap-1'>Pairings</span>
-              <Icon name='document' className='size-4' />
+              <Icon name='document' className='size-4 opacity-80' />
             </Link>
           </div>
         </div>
@@ -155,15 +155,12 @@ export default async function EventPage({ params }: EventPageProps) {
           { label: 'Entry fee', value: formatRegistrationFee(event.registration_fee) },
           { label: 'Slots', value: slotsLabel }
         ].map((stat) => (
-          <Card
-            key={stat.label}
-            size='sm'
-            className='border-border/1! border-x-0! bg-border/10 p-0! rounded-xs md:rounded-lg'>
-            <CardContent className='space-y-1 ps-2! md:p-2'>
-              <p className='font-ios text-[9px] md:text-xs uppercase md:tracking-widest text-muted-foreground whitespace-nowrap'>
+          <Card key={stat.label} size='sm' className='border-[0.33px] py-1! rounded-xs md:rounded-lg'>
+            <CardContent className='space-y-1 ps-3! pe-0!'>
+              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>
-              <p className='font-heading text-sm md:text-base font-semibold'>{stat.value}</p>
+              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -208,11 +205,11 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
 
   return (
     <Card className='rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 md:p-4 p-0'>
-      <CardHeader className='p-2'>
-        <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between'>
+      <CardHeader className='px-2 pt-4'>
+        <div className='flex flex-col md:gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-1'>
-            <CardTitle className='font-okx text-xl'>Entries</CardTitle>
-            <p className='text-sm text-muted-foreground'>
+            <CardTitle className='font-poly font-medium md:text-lg text-base text-sky-500'>Entries</CardTitle>
+            <p className='text-sm text-muted-foreground sr-only'>
               Entry requests, payment state, and receipt workflow for this event.
             </p>
           </div>

@@ -18,8 +18,7 @@ import { usePathname, useRouter } from 'next/navigation'
 const GUEST_NAV_ITEMS: NavItem[] = [
   { value: '/', label: 'Dashboard', icon: 'home-line' },
   { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
-  { value: '/entries', label: 'Entries', icon: 'ticket' },
-  { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
+  { value: '/entries', label: 'Entries', icon: 'ticket' }
 ]
 
 interface AuthenticatedTopbarProps {
@@ -175,7 +174,7 @@ const AdminButton = () => {
   const router = useRouter()
   return (
     <Button
-      onClick={() => router.push('/admin')}
+      onClick={() => router.push('/admin/config')}
       variant='ghost'
       className='w-full justify-start space-x-3 px-0.5 hover:bg-transparent'>
       <Icon name='re-up.ph' className='size-3.5' />

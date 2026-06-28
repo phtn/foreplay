@@ -60,9 +60,7 @@ export function StaffList({ data }: StaffListProps) {
     <div className='mb-auto w-full'>
       {data?.map(({ user, claims }) => (
         <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none'>
-          <AccordionItem
-            value={user._id}
-            className='border-none bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
+          <AccordionItem value={user._id} className='bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
             <AccordionTrigger className='items-center px-1 py-4 hover:no-underline'>
               <div className='flex items-center gap-2 md:gap-4'>
                 <Avatar className='size-8 border'>
@@ -84,7 +82,7 @@ export function StaffList({ data }: StaffListProps) {
                 </div>
               </div>
             </AccordionTrigger>
-            <AccordionContent className='text-muted-foreground pb-4 pl-11 pr-4'>
+            <AccordionContent className='rounded-none bg-transparent md:pb-4 md:pl-11 md:pr-4'>
               <UserClaimCard claims={claims} user={user} />
             </AccordionContent>
           </AccordionItem>
@@ -99,7 +97,7 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
   const hasStaffClaim = claims.staff === true
 
   return (
-    <Card className='border-border/70'>
+    <Card className='rounded-none md:rounded-lg py-1'>
       {/*<CardHeader className='gap-3 sm:flex-row sm:items-start sm:justify-between'>
         <div className='min-w-0 space-y-1'>
           <CardTitle className='truncate text-lg flex items-center space-x-2'>
@@ -119,7 +117,7 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
           <p className='font-mono text-xs text-muted-foreground'>{user.subject}</p>
         </div>
       </CardHeader>*/}
-      <CardContent className='space-y-5'>
+      <CardContent className='space-y-5 px-2 md:px-4'>
         <div className='space-y-2'>
           <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Custom claims</p>
           <ClaimBadges claims={claims} />
@@ -176,9 +174,9 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
           </div>
         ) : null}
 
-        <div className='grid gap-2 border-t border-border/70 pt-4 text-xs text-muted-foreground sm:grid-cols-2'>
+        <div className='grid md:gap-2 md:border-t border-border/70 md:pt-4 text-xs text-muted-foreground sm:grid-cols-2'>
           <p>Provider: {user.nickname ?? 'Unknown'}</p>
-          <p>Updated: {formatDate(user.updatedAt)}</p>
+          <p className='md:text-right'>Updated: {formatDate(user.updatedAt)}</p>
         </div>
       </CardContent>
     </Card>

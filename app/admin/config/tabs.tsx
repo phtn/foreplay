@@ -23,7 +23,7 @@ export const Tabs = ({ tabs }: TabsProps) => {
       className='rounded-md'
       value={activeValue}
       onValueChange={(nextValue) => setValue(typeof nextValue === 'string' ? nextValue : firstValue)}>
-      <Root.List className='relative z-0 flex gap-4'>
+      <Root.List className='relative z-0 flex gap-2 md:gap-4 px-2'>
         {tabs.map((tab, index) => (
           <Root.Tab
             key={tab.value}
