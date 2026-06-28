@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 interface ReceiptDrawerProps {
@@ -12,6 +13,7 @@ interface ReceiptDrawerProps {
   reference: string
   status: string
   teamName: string
+  uploadedAt?: number
 }
 
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
@@ -20,8 +22,17 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
   maximumFractionDigits: 0
 })
 
-export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, status, teamName }: ReceiptDrawerProps) {
+export function ReceiptDrawer({
+  amount,
+  contactEmail,
+  receiptUrl,
+  reference,
+  teamName,
+  uploadedAt
+}: ReceiptDrawerProps) {
   const [open, setOpen] = useState(false)
+  const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null)
+  const imagePreviewFailed = failedPreviewUrl === receiptUrl
 
   useEffect(() => {
     if (!open) {
@@ -76,7 +87,7 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
               'relative z-10 flex h-dvh w-full max-w-xl flex-col overflow-hidden bg-background shadow-2xl',
               'animate-in slide-in-from-right duration-200'
             )}>
-            <div className='flex items-start justify-between gap-4 border-b border-border/70 p-4 sm:p-5'>
+            <div className='flex items-start justify-between gap-4 p-4 sm:p-5'>
               <div className='min-w-0 space-y-1'>
                 <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Receipt verification</p>
                 <h2 className='truncate font-okx text-xl font-semibold'>{teamName}</h2>
@@ -93,11 +104,11 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
               </Button>
             </div>
 
-            <div className='grid grid-cols-3 gap-2 border-b border-border/70 p-4 sm:p-5'>
+            <div className='grid grid-cols-[1fr_0.6fr_auto] gap-2 px-2 sm:p-5'>
               {[
+                { label: 'Email', value: contactEmail ?? 'N/A' },
                 { label: 'Amount', value: amount == null ? 'N/A' : pesoFormatter.format(amount) },
-                { label: 'Payment', value: status },
-                { label: 'Email', value: contactEmail ?? 'N/A' }
+                { label: 'Uploaded', value: uploadedAt == null ? 'N/A' : new Date(uploadedAt).toLocaleString() }
               ].map((item) => (
                 <div key={item.label} className='min-w-0 rounded-lg border border-border/60 bg-muted/20 px-2 py-2'>
                   <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{item.label}</p>
@@ -107,11 +118,8 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
             </div>
 
             <div className='min-h-0 flex-1 overflow-hidden bg-slate-950/5 p-0 sm:p-5'>
-              <div className='flex h-full min-h-0 items-center justify-center md:rounded-xl md:border border-border/70 bg-white p-2'>
-                <object
-                  data={receiptUrl}
-                  className='h-full max-h-full w-full max-w-full rounded-lg bg-white object-contain'
-                  aria-label='Payment receipt'>
+              <div className='flex h-full min-h-0 items-center justify-center border-border/70 bg-white p-4 sm:p-6 md:rounded-xl md:border'>
+                {imagePreviewFailed ? (
                   <div className='flex min-h-80 flex-col items-center justify-center gap-3 p-6 text-center text-slate-900'>
                     <Icon name='file' className='size-8 text-slate-500' />
                     <p className='text-sm'>This receipt cannot be previewed inline.</p>
@@ -119,7 +127,19 @@ export function ReceiptDrawer({ amount, contactEmail, receiptUrl, reference, sta
                       Open original
                     </a>
                   </div>
-                </object>
+                ) : (
+                  <div className='relative size-full min-h-0 max-w-full md:h-[90%] md:w-[90%]'>
+                    <Image
+                      src={receiptUrl}
+                      alt='Payment receipt'
+                      fill
+                      unoptimized
+                      sizes='(min-width: 640px) 32rem, 100vw'
+                      className='_rounded-lg bg-white object-contain'
+                      onError={() => setFailedPreviewUrl(receiptUrl)}
+                    />
+                  </div>
+                )}
               </div>
             </div>
 

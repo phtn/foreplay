@@ -310,6 +310,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                           reference={subscription.txn_ref_no ?? subscription.form_id ?? subscription._id}
                           status={formatStatus(subscription.payment_status)}
                           teamName={subscription.team_name ?? 'Team pending'}
+                          uploadedAt={subscription._creationTime}
                         />
                       </td>
 
