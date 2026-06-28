@@ -34,14 +34,14 @@ export function StartSelector({ disabled, onChangeAction, value }: StartingHoleP
               variant='default'
               disabled={disabled}
               className={cn(
-                'font-poly font-semibold text-sm tabular-nums bg-slate-100 dark:bg-slate-800 text-foreground',
+                'font-poly font-semibold text-sm tabular-nums bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-foreground',
                 hasStartingHole && 'bg-primary dark:bg-primary text-white hover:bg-primary/80 border-primary'
               )}
             />
           }>
-          {value || <Icon name='flag-tri' className='size-3.5 opacity-70' />}
+          {value || <Icon name='flag-tri' className='size-3.5 opacity-80' />}
         </PopoverTrigger>
-        <PopoverContent className='w-4xs flex items-center gap-4 p-0' align='end'>
+        <PopoverContent className='w-4xs flex items-center gap-4 p-0 border' align='end'>
           <div className='grid grid-cols-3 gap-1 p-2'>
             {startingHoles.map((hole) => (
               <Button
@@ -50,10 +50,10 @@ export function StartSelector({ disabled, onChangeAction, value }: StartingHoleP
                 variant='secondary'
                 size='icon'
                 className={cn(
-                  'flex h-12 w-12 aspect-square items-center justify-center rounded-lg font-ios text-sm font-semibold tabular-nums transition-colors',
+                  'flex h-12 w-12 aspect-square items-center justify-center rounded-lg font-poly text-sm font-semibold tabular-nums transition-colors',
                   value === hole
-                    ? 'bg-slate-300/40 text-primary-foreground'
-                    : 'hover:bg-primary/20 dark:hover:bg-primary'
+                    ? 'bg-primary/60 dark:bg-primary/70 dark:text-white text-primary-foreground'
+                    : 'bg-slate-100 hover:bg-primary hover:text-white dark:hover:bg-primary'
                 )}
                 onClick={() => selectHole(hole)}>
                 {hole}

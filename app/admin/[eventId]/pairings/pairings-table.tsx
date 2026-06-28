@@ -1,6 +1,7 @@
 'use client'
 
 import { GroupSelect } from '@/components/examples/c-select-26'
+import { SectionTitle } from '@/components/layouts/title'
 import { Badge } from '@/components/reui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -113,9 +114,9 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
 
   return (
     <div className='mx-auto flex w-full max-w-7xl flex-col'>
-      <div className='flex items-center justify-between py-3'>
-        <div className='font-okx text-xl'>Pairings Sheet</div>
-        <Badge variant='outline' size='lg'>
+      <div className='flex items-center justify-between py-3 px-3'>
+        <SectionTitle title='Pairings' eyebrow='Event Day' />
+        <Badge variant='secondary' size='xl'>
           {registrations.length} registered
         </Badge>
       </div>

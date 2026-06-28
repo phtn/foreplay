@@ -28,7 +28,7 @@ export const AdminHeader = () => {
 
       <div className='flex items-center gap-4'>
         <Link href='/admin/scanner' className='inline-flex h-10 items-center gap-2 px-2'>
-          <Icon name='code-scanner' className='size-6 opacity-80' />
+          <Icon name='code-scanner' className='size-5 opacity-80' />
         </Link>
         <div className='relative z-60 flex items-center gap-4'>
           <DropdownMenu>
