@@ -116,10 +116,41 @@ type SaveManualPaymentMethodInput = {
   isActive: boolean
 }
 
+type CreateTournamentEventInput = {
+  id: string
+  title: string
+  venue: string
+  date: string
+  time: string
+  registrationFee?: number
+  slotsLimit?: number
+  divisions?: string[]
+  description?: string
+  ticketLogoStorageId?: Id<'_storage'>
+  coverPhotoStorageId?: Id<'_storage'>
+  published: boolean
+}
+
+const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
+
+function formatEventDate(date: string, time: string) {
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+    timeZone: 'Asia/Manila'
+  }).format(new Date(`${date}T${time}:00+08:00`))
+}
+
 export async function generatePaymentMethodQrUploadUrl() {
   await requireAdminSession()
 
   return await fetchMutation(api.paymentMethods.m.generateQrCodeUploadUrl)
+}
+
+export async function generateEventAssetUploadUrl() {
+  await requireAdminSession()
+
+  return await fetchMutation(api.tournaments.m.generateAssetUploadUrl)
 }
 
 export async function saveManualPaymentMethod(input: SaveManualPaymentMethodInput) {
@@ -130,4 +161,53 @@ export async function saveManualPaymentMethod(input: SaveManualPaymentMethodInpu
   revalidatePath('/admin/config')
 
   return { paymentMethodId }
+}
+
+export async function createTournamentEvent(input: CreateTournamentEventInput) {
+  await requireAdminSession()
+
+  const id = input.id.trim().toLowerCase()
+  const title = input.title.trim()
+  const venue = input.venue.trim()
+  const date = input.date.trim()
+  const time = input.time.trim()
+  const gateOpenAt = new Date(`${date}T${time}:00+08:00`).getTime()
+
+  if (!id || !title || !venue || !date || !time) {
+    throw new Error('Event title, slug, venue, date, and time are required.')
+  }
+
+  if (!slugPattern.test(id)) {
+    throw new Error('Event slug must use lowercase letters, numbers, and hyphens.')
+  }
+
+  if (!Number.isFinite(gateOpenAt)) {
+    throw new Error('Event date and time are invalid.')
+  }
+
+  if (input.registrationFee !== undefined && !Number.isFinite(input.registrationFee)) {
+    throw new Error('registrationFee must be a valid number.')
+  }
+
+  if (input.slotsLimit !== undefined && !Number.isFinite(input.slotsLimit)) {
+    throw new Error('slotsLimit must be a valid number.')
+  }
+
+  await fetchMutation(api.tournaments.m.create, {
+    id,
+    title,
+    venue,
+    eventDate: formatEventDate(date, time),
+    gateOpenAt,
+    registrationFee: input.registrationFee ?? 0,
+    slotsLimit: input.slotsLimit,
+    divisions: input.divisions ?? [],
+    description: input.description?.trim() || undefined,
+    ticketLogoStorageId: input.ticketLogoStorageId,
+    coverPhotoStorageId: input.coverPhotoStorageId,
+    published: input.published
+  })
+
+  revalidatePath('/admin/config')
+  revalidatePath('/admin')
 }

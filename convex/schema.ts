@@ -6,6 +6,7 @@ import { historySchema } from './history/d'
 import { leagueSchema } from './leagues/d'
 import { orderSchema } from './orders/d'
 import { paymentMethodSchema } from './paymentMethods/d'
+import { podiumAwardSchema } from './podiumAwards/d'
 import { registrationSchema } from './registrations/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema } from './subscriptions/d'
@@ -20,6 +21,9 @@ export default defineSchema({
   leagues: defineTable(leagueSchema).index('by_userId', ['userId']).index('by_accountId', ['accountId']),
   orders: defineTable(orderSchema).index('by_refNumber', ['refNumber']),
   paymentMethods: defineTable(paymentMethodSchema).index('by_kind', ['kind']).index('by_kind_active', ['kind', 'isActive']),
+  podiumAwards: defineTable(podiumAwardSchema)
+    .index('by_tournamentId', ['tournament_id'])
+    .index('by_tournamentId_awardKey_position', ['tournament_id', 'award_key', 'position']),
   history: defineTable(historySchema)
     .index('by_userId', ['userId'])
     .index('by_accountId', ['accountId'])

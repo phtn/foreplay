@@ -41,11 +41,7 @@ function SelectTrigger({
       <SelectPrimitive.Icon
         render={
           <>
-            <Icon
-              name='arrow-drop-down'
-              strokeWidth={0.5}
-              className='pointer-events-none size-5 text-foreground/35 stroke-0.5'
-            />
+            <Icon name='arrow-drop-down' className='pointer-events-none size-5 text-foreground/35 stroke-0.5' />
           </>
         }
       />

@@ -28,12 +28,12 @@ export function GroupSelect({ disabled, onChange, value }: GroupSelectProps) {
         onValueChange={(nextValue) => {
           onChange((nextValue as GroupOption | null)?.value ?? '')
         }}>
-        <SelectTrigger disabled={disabled}>
+        <SelectTrigger disabled={disabled} className='w-20! pe-0 bg-input/10!'>
           <SelectValue>
             {(item: (typeof statuses)[number]) => (
               <span className='flex items-center gap-3'>
                 {item?.color && <span className={`size-3 shrink-0 rounded-full ${item.color}`} />}
-                <span className='font-poly font-medium'>{item?.label}</span>
+                <span className='font-poly font-medium text-sm md:text-base'>{item?.label}</span>
               </span>
             )}
           </SelectValue>

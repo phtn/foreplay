@@ -24,6 +24,7 @@ export const tournamentSchema = v.object({
   commission_type: v.union(v.string(), v.string()),
   commission_value: v.optional(v.number()),
   ticket_logo_url: v.optional(v.string()),
+  cover_photo_url: v.optional(v.string()),
   ticket_primary_color: v.optional(v.string()),
   ticket_secondary_color: v.optional(v.string()),
   overview_facts: v.optional(

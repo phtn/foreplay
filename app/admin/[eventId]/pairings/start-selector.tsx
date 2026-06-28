@@ -34,7 +34,7 @@ export function StartSelector({ disabled, onChangeAction, value }: StartingHoleP
               variant='default'
               disabled={disabled}
               className={cn(
-                'font-poly font-semibold text-sm tabular-nums bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-foreground',
+                'font-poly font-semibold text-sm md:text-base tabular-nums bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 text-foreground',
                 hasStartingHole && 'bg-primary dark:bg-primary text-white hover:bg-primary/80 border-primary'
               )}
             />

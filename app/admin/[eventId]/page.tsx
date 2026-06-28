@@ -214,7 +214,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
             </p>
           </div>
 
-          <div className='grid grid-cols-5 gap-2 sm:grid-cols-5'>
+          <div className='grid grid-cols-5 gap-2 sm:grid-cols-5 rounded-lg md:rounded-xl border border-border/60 divide-x divide-slate-700/50'>
             {[
               { label: 'Total', value: counts.total },
               { label: 'Pending', value: counts.pending },
@@ -222,9 +222,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
               { label: 'Confirmed', value: counts.confirmed },
               { label: 'Cancelled', value: counts.cancelled }
             ].map((stat) => (
-              <div
-                key={stat.label}
-                className='rounded-lg md:rounded-xl border border-border/60 bg-muted/0 px-1.5 md:px-3 md:py-2 py-1'>
+              <div key={stat.label} className='bg-muted/0 px-1.5 md:px-3 md:py-2 py-1'>
                 <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{stat.label}</p>
                 <p className='mt-1 font-heading text-lg font-semibold'>{stat.value}</p>
               </div>

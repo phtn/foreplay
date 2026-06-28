@@ -1,9 +1,9 @@
 'use client'
 
 import { GroupSelect } from '@/components/examples/c-select-26'
-import { SectionTitle } from '@/components/layouts/title'
+import { LinkTitle, SectionTitle } from '@/components/layouts/title'
 import { Badge } from '@/components/reui/badge'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { useRouter } from 'next/navigation'
@@ -24,6 +24,7 @@ type PairingState = Record<
 type PairingsTableProps = {
   eventId: string
   registrations: Registration[]
+  eventName?: string
 }
 
 function getInitials(name: string) {
@@ -56,7 +57,7 @@ function buildInitialPairingState(registrations: Registration[]): PairingState {
   )
 }
 
-export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
+export function PairingsTable({ eventId, registrations, eventName }: PairingsTableProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [pendingRegistrationId, setPendingRegistrationId] = useState<Id<'registrations'> | null>(null)
@@ -113,12 +114,12 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
   }
 
   return (
-    <div className='mx-auto flex w-full max-w-7xl flex-col'>
-      <div className='flex items-center justify-between py-3 px-3'>
-        <SectionTitle title='Pairings' eyebrow='Event Day' />
-        <Badge variant='secondary' size='xl'>
-          {registrations.length} registered
-        </Badge>
+    <div className='mx-auto flex w-full max-w-7xl flex-col min-h-screen _border border-input'>
+      <div className='flex items-center justify-between py-4 px-3'>
+        <SectionTitle title='Pairings' eyebrow='Game Day' />
+        <h1 className='font-poly text-sm hidden md:flex'>{eventName ?? 'Event Name'}</h1>
+
+        <LinkTitle title='Podium' icon='chevron-right' href={`/admin/${eventId}/podium`} />
       </div>
 
       {errorMessage ? (
@@ -127,10 +128,10 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
         </div>
       ) : null}
 
-      <Table>
+      <Table className='border border-border/80'>
         <TableHeader>
-          <TableRow>
-            <TableHead className='w-12 text-center'>#</TableHead>
+          <TableRow className='bg-slate-100/50 dark:bg-slate-400/35 font-okx'>
+            <TableHead className='w-12 text-center text-indigo-600 dark:text-indigo-300'>{rows.length}</TableHead>
             <TableHead>Player</TableHead>
             <TableHead>Principal</TableHead>
             <TableHead className='text-center'>Handicap</TableHead>
@@ -139,7 +140,8 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
             <TableHead className='text-center'>Group</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+
+        <TableBody className='divide-y divide-slate-200 dark:divide-input/80'>
           {rows.length ? (
             rows.map((registration, index) => {
               const pairing = pairingByRegistrationId[registration._id] ?? {
@@ -149,16 +151,17 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
               const rowPending = isPending && pendingRegistrationId === registration._id
 
               return (
-                <TableRow key={registration._id} className='divide-y divide-slate-300'>
+                <TableRow key={registration._id} className=''>
                   <TableCell className='text-center text-sm font-bold'>{index + 1}</TableCell>
                   <TableCell>
                     <div className='flex items-center gap-3'>
                       <Avatar size='sm'>
+                        <AvatarImage src={registration.player_id} alt={registration.player_name} />
                         <AvatarFallback>{getInitials(registration.player_name)}</AvatarFallback>
                       </Avatar>
                       <div className='flex flex-col'>
-                        <span className='text-sm font-medium'>{registration.player_name}</span>
-                        <span className='text-muted-foreground text-xs'>{registration.player_email ?? 'No email'}</span>
+                        <span className='font-okx font-medium text-sm capitalize'>{registration.player_name}</span>
+                        {/*<span className='text-muted-foreground text-xs'>{registration.player_email ?? 'No email'}</span>*/}
                       </div>
                     </div>
                   </TableCell>
@@ -182,7 +185,7 @@ export function PairingsTable({ eventId, registrations }: PairingsTableProps) {
                       onChangeAction={(startHole) => updatePairing(registration._id, { startHole })}
                     />
                   </TableCell>
-                  <TableCell className='text-right w-32'>
+                  <TableCell className='text-right w-28'>
                     <GroupSelect
                       value={pairing.pairingGroup}
                       disabled={rowPending}

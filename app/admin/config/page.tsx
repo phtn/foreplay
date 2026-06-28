@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
+import { CreateEventContent } from './_contents/create-event'
 import { EventsContent } from './_contents/events'
 import { PaymentsContent } from './_contents/payments'
 import { StaffContent } from './_contents/staff'
+import { UsersContent } from './_contents/users'
 import { Tabs } from './tabs'
 
 export const metadata: Metadata = {
@@ -20,7 +22,9 @@ export const metadata: Metadata = {
 export default async function Page() {
   const tabs = [
     { value: 'events', label: 'Events', content: <EventsContent /> },
+    { value: 'create-event', label: 'Create Event', content: <CreateEventContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
+    { value: 'users', label: 'Users', content: <UsersContent /> },
     { value: 'payments', label: 'Payments', content: <PaymentsContent /> }
   ]
   return (

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import type { Id } from '@/convex/_generated/dataModel'
+import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
 import Image from 'next/image'
 import { type SubmitEvent, useEffect, useRef, useState } from 'react'
@@ -52,14 +53,17 @@ export function PaymentsForm({ paymentMethod }: PaymentsFormProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const objectUrlRef = useRef<string | null>(null)
+  const { convert, terminate } = useImageConverter()
 
   useEffect(() => {
     return () => {
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current)
       }
+
+      terminate()
     }
-  }, [])
+  }, [terminate])
 
   useEffect(() => {
     if (!paymentMethod?.qrCodeImageUrl || paymentMethod.qrCodeContent) {
@@ -140,13 +144,14 @@ export function PaymentsForm({ paymentMethod }: PaymentsFormProps) {
       let qrCodeStorageId: Id<'_storage'> | undefined
 
       if (qrCodeFile) {
+        const convertedQrCode = await convert(qrCodeFile, { format: 'webp', quality: 0.92 })
         const uploadUrl = await generatePaymentMethodQrUploadUrl()
         const uploadResponse = await fetch(uploadUrl, {
           method: 'POST',
           headers: {
-            'Content-Type': qrCodeFile.type || 'application/octet-stream'
+            'Content-Type': convertedQrCode.format || 'image/webp'
           },
-          body: qrCodeFile
+          body: convertedQrCode.blob
         })
 
         if (!uploadResponse.ok) {

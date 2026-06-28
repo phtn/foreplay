@@ -4,6 +4,7 @@ import { useAppForm } from '@/components/form'
 import { createQRCodeSvg, QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
+import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -75,6 +76,7 @@ export const NewEntryForm = ({
   )
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
   const [paymentCodeCopied, setPaymentCodeCopied] = useState(false)
+  const { convert, terminate } = useImageConverter()
   const [entryQuery, setEntryQuery] = useQueryStates(
     {
       formId: parseAsString,
@@ -101,8 +103,10 @@ export const NewEntryForm = ({
       if (receiptPreviewUrlRef.current) {
         URL.revokeObjectURL(receiptPreviewUrlRef.current)
       }
+
+      terminate()
     }
-  }, [])
+  }, [terminate])
 
   const form = useAppForm({
     defaultValues: {
@@ -181,13 +185,21 @@ export const NewEntryForm = ({
     setIsSubmittingReceipt(true)
 
     try {
+      const convertedReceipt = receiptFile.type.startsWith('image/')
+        ? await convert(receiptFile, {
+            format: 'webp',
+            quality: 0.82
+          })
+        : null
+      const uploadBlob = convertedReceipt?.blob ?? receiptFile
+      const uploadContentType = convertedReceipt?.format || receiptFile.type || 'application/octet-stream'
       const uploadUrl = await generateReceiptUploadUrl()
       const uploadResponse = await fetch(uploadUrl, {
         method: 'POST',
         headers: {
-          'Content-Type': receiptFile.type || 'application/octet-stream'
+          'Content-Type': uploadContentType
         },
-        body: receiptFile
+        body: uploadBlob
       })
 
       if (!uploadResponse.ok) {
@@ -208,7 +220,7 @@ export const NewEntryForm = ({
     } finally {
       setIsSubmittingReceipt(false)
     }
-  }, [formId, receiptFile, subscriptionId])
+  }, [convert, formId, receiptFile, subscriptionId])
 
   const router = useRouter()
 

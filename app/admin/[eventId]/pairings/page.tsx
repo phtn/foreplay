@@ -28,9 +28,9 @@ const Page = async ({ params }: PageProps) => {
   })
 
   return (
-    <div>
+    <>
       <PairingsTable eventId={eventId} registrations={registrations} />
-    </div>
+    </>
   )
 }
 export default Page

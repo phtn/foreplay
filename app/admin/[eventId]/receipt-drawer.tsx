@@ -1,5 +1,6 @@
 'use client'
 
+import { Lens } from '@/components/layouts/lens'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
@@ -32,6 +33,7 @@ export function ReceiptDrawer({
 }: ReceiptDrawerProps) {
   const [open, setOpen] = useState(false)
   const [failedPreviewUrl, setFailedPreviewUrl] = useState<string | null>(null)
+  const [isHovering, setIsHovering] = useState(false)
   const imagePreviewFailed = failedPreviewUrl === receiptUrl
 
   useEffect(() => {
@@ -128,30 +130,32 @@ export function ReceiptDrawer({
                     </a>
                   </div>
                 ) : (
-                  <div className='relative size-full min-h-0 max-w-full md:h-[90%] md:w-[90%]'>
-                    <Image
-                      src={receiptUrl}
-                      alt='Payment receipt'
-                      fill
-                      unoptimized
-                      sizes='(min-width: 640px) 32rem, 100vw'
-                      className='_rounded-lg bg-white object-contain'
-                      onError={() => setFailedPreviewUrl(receiptUrl)}
-                    />
-                  </div>
+                  <Lens hovering={isHovering} setHovering={setIsHovering}>
+                    <div className='relative size-full min-h-0 max-w-full md:h-[90%] md:w-[90%]'>
+                      <Image
+                        src={receiptUrl}
+                        alt='Payment receipt'
+                        fill
+                        unoptimized
+                        sizes='(min-width: 640px) 32rem, 100vw'
+                        className='_rounded-lg bg-white object-contain'
+                        onError={() => setFailedPreviewUrl(receiptUrl)}
+                      />
+                    </div>
+                  </Lens>
                 )}
               </div>
             </div>
 
-            <div className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2 sm:p-5'>
+            <div className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2 sm:p-2'>
               <a
                 href={receiptUrl}
                 target='_blank'
                 rel='noreferrer'
-                className='inline-flex h-10 items-center justify-center rounded-lg border border-border/70 px-3 text-sm transition-colors hover:bg-muted'>
+                className='inline-flex h-12 items-center justify-center rounded-lg border border-border/70 px-3 text-sm transition-colors hover:bg-muted'>
                 Open original
               </a>
-              <Button type='button' className='h-10' onClick={() => setOpen(false)}>
+              <Button type='button' className='h-12' onClick={() => setOpen(false)}>
                 Done
               </Button>
             </div>

@@ -55,7 +55,8 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
 const pesoFormatter = new Intl.NumberFormat('en-PH', {
   currency: 'PHP',
   maximumFractionDigits: 0,
-  style: 'currency'
+  style: 'currency',
+  currencyDisplay: 'code'
 })
 
 function formatRegistrationFee(value: number) {
@@ -243,17 +244,10 @@ const EventRow = (row: EventRow) => {
         <div className='min-w-0 space-y-2'>
           <div className='flex items-center gap-3'>
             <p className='truncate font-okx text-base text-[#1d2824]'>{row.title}</p>
-            <span
-              className={cn(
-                'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest',
-                getStatusClass(row.status)
-              )}>
-              {row.status}
-            </span>
           </div>
 
-          <div className='flex items-center gap-2 text-sm text-[#1d2824]/70'>
-            <Icon name='map-pin' className='size-4 text-slate-800/80' />
+          <div className='flex items-center gap-1 text-sm text-[#1d2824]/70'>
+            <Icon name='map-pin' className='size-3.5 opacity-80' />
             <span className='truncate'>{row.place}</span>
           </div>
 
@@ -268,16 +262,16 @@ const EventRow = (row: EventRow) => {
           <p className='mt-1 font-medium text-[#1d2824]'>{row.slotsLabel}</p>
         </div>
 
-        <div className='flex items-center justify-end min-w-24'>
+        <div className='flex items-center justify-end min-w-36'>
           {row.href ? (
             <Link
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
-                'bg-background hover:bg-background/80 text-foreground rounded-full'
+                'bg-background hover:bg-background/80 rounded-full text-sky-700'
               )}
               href={row.href}>
-              Open
-              <Icon name='chevron-right' className='size-4 text-foreground' />
+              <span>Open</span>
+              <Icon name='chevron-right' className='size-4 -mb-0.5 -ml-0.5' />
             </Link>
           ) : (
             <span className='text-sm text-[#1d2824]/45'>n/a</span>
