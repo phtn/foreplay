@@ -62,12 +62,14 @@ const Page = async ({ params, searchParams }: PageProps) => {
         userIds
       })
     : Promise.resolve([])
+  const paymentMethodPromise = fetchQuery(api.paymentMethods.q.getActiveManual)
 
-  const [tournament, users, subscription, currentEntries] = await Promise.all([
+  const [tournament, users, subscription, currentEntries, paymentMethod] = await Promise.all([
     tournamentPromise,
     userPromise,
     subscriptionPromise,
-    currentEntriesPromise
+    currentEntriesPromise,
+    paymentMethodPromise
   ])
   const user = users?.[0]
   const entryFee = tournament?.registration_fee ?? 0
@@ -96,6 +98,16 @@ const Page = async ({ params, searchParams }: PageProps) => {
         initialEmail={user?.email ?? session?.decodedToken.email ?? ''}
         initialPhone={user?.phone ?? session?.decodedToken.phone_number ?? ''}
         initialSubscription={subscription}
+        paymentMethod={
+          paymentMethod
+            ? {
+                bankOrEwallet: paymentMethod.bankOrEwallet,
+                accountName: paymentMethod.accountName,
+                accountNumber: paymentMethod.accountNumber,
+                qrCodeContent: paymentMethod.qrCodeContent ?? null
+              }
+            : null
+        }
         currentEntries={currentEntries}
         tournament={{
           title: tournament?.title ?? tourId,

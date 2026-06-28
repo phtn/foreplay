@@ -5,6 +5,7 @@ import { eventSchema } from './events/d'
 import { historySchema } from './history/d'
 import { leagueSchema } from './leagues/d'
 import { orderSchema } from './orders/d'
+import { paymentMethodSchema } from './paymentMethods/d'
 import { registrationSchema } from './registrations/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema } from './subscriptions/d'
@@ -18,6 +19,7 @@ export default defineSchema({
   accounts: defineTable(accountSchema).index('by_sub', ['sub']),
   leagues: defineTable(leagueSchema).index('by_userId', ['userId']).index('by_accountId', ['accountId']),
   orders: defineTable(orderSchema).index('by_refNumber', ['refNumber']),
+  paymentMethods: defineTable(paymentMethodSchema).index('by_kind', ['kind']).index('by_kind_active', ['kind', 'isActive']),
   history: defineTable(historySchema)
     .index('by_userId', ['userId'])
     .index('by_accountId', ['accountId'])

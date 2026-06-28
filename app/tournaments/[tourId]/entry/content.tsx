@@ -21,6 +21,13 @@ type DivisionOption = {
 type Subscription = Doc<'subscriptions'>
 type EntryStatus = 'pending_payment' | 'payment_review' | 'confirmed' | 'cancelled'
 
+type PaymentMethod = {
+  bankOrEwallet: string
+  accountName: string
+  accountNumber: string
+  qrCodeContent: string | null
+}
+
 interface ContentProps {
   tourId: string
   initialFormId: string
@@ -28,6 +35,7 @@ interface ContentProps {
   initialEmail: string
   initialPhone: string
   initialSubscription: Subscription | null
+  paymentMethod: PaymentMethod | null
   currentEntries: Subscription[]
   tournament: {
     title: string
@@ -131,6 +139,7 @@ export const Content = ({
   initialEmail,
   initialPhone,
   initialSubscription,
+  paymentMethod,
   currentEntries,
   tournament
 }: ContentProps) => {
@@ -306,6 +315,7 @@ export const Content = ({
                 initialEmail={initialEmail}
                 initialPhone={initialPhone}
                 initialSubscription={initialSubscription}
+                paymentMethod={paymentMethod}
                 divisionOptions={tournament.divisionOptions}
                 onPlayersChange={handlePlayersChange}
                 onDivisionChange={handleDivisionChange}

@@ -1,5 +1,7 @@
 'use server'
 
+import { api } from '@/convex/_generated/api'
+import type { Id } from '@/convex/_generated/dataModel'
 import {
   getFirebaseUserByUid,
   mergeFirebaseCustomUserClaims,
@@ -11,6 +13,7 @@ import {
   type FirebaseCustomClaims
 } from '@/lib/firebase/custom-claims'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
+import { fetchMutation } from 'convex/nextjs'
 import { revalidatePath } from 'next/cache'
 
 const claimKeyPattern = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/
@@ -101,4 +104,30 @@ export async function removeCustomClaim(formData: FormData) {
   await setFirebaseCustomUserClaims(uid, Object.keys(nextClaims).length ? nextClaims : null)
 
   revalidatePath('/admin/config')
+}
+
+type SaveManualPaymentMethodInput = {
+  id?: Id<'paymentMethods'>
+  bankOrEwallet: string
+  accountName: string
+  accountNumber: string
+  qrCodeStorageId?: Id<'_storage'>
+  qrCodeContent?: string
+  isActive: boolean
+}
+
+export async function generatePaymentMethodQrUploadUrl() {
+  await requireAdminSession()
+
+  return await fetchMutation(api.paymentMethods.m.generateQrCodeUploadUrl)
+}
+
+export async function saveManualPaymentMethod(input: SaveManualPaymentMethodInput) {
+  await requireAdminSession()
+
+  const paymentMethodId = await fetchMutation(api.paymentMethods.m.upsertManual, input)
+
+  revalidatePath('/admin/config')
+
+  return { paymentMethodId }
 }

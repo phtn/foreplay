@@ -26,7 +26,7 @@ interface AuthenticatedTopbarProps {
   hasAdminClaim: boolean
 }
 
-function getUserAvatarFallback(user: FirebaseSessionUser) {
+export function getUserAvatarFallback(user: FirebaseSessionUser) {
   const fallbackSource = user.displayName ?? user.email ?? user.uid
 
   return fallbackSource.trim().substring(0, 1).toUpperCase()

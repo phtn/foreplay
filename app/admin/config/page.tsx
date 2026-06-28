@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { EventsContent } from './_contents/events'
+import { PaymentsContent } from './_contents/payments'
 import { StaffContent } from './_contents/staff'
 import { Tabs } from './tabs'
 
@@ -20,7 +21,7 @@ export default async function Page() {
   const tabs = [
     { value: 'events', label: 'Events', content: <EventsContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
-    { value: 'payments', label: 'Payments', content: '' }
+    { value: 'payments', label: 'Payments', content: <PaymentsContent /> }
   ]
   return (
     <main className='mx-auto flex w-full max-w-7xl flex-col md:px-4 pt-4 md:pt-0 pb-2'>

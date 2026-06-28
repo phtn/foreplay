@@ -13,9 +13,6 @@ import { createTournamentSubscription, generateReceiptUploadUrl, updateTournamen
 
 const entryControlClassName =
   'h-9 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
-const paymentQRCodeContent =
-  '00020101021127590012com.p2pqrpay0111GOTYPHM2XXX02089996440304120113505139755204601653036085802PH5921MARLON JOAKIM TABLIZO6013Caloocan City6304B9FD'
-const paymentReceiver = 'MARLON JOAKIM TABLIZO'
 
 type DivisionOption = {
   label: string
@@ -23,6 +20,13 @@ type DivisionOption = {
 }
 
 type Subscription = Doc<'subscriptions'>
+
+type PaymentMethod = {
+  bankOrEwallet: string
+  accountName: string
+  accountNumber: string
+  qrCodeContent: string | null
+}
 
 interface NewEntryFormProps {
   tourId: string
@@ -33,6 +37,7 @@ interface NewEntryFormProps {
   initialEmail: string
   initialPhone: string
   initialSubscription: Subscription | null
+  paymentMethod: PaymentMethod | null
   divisionOptions: DivisionOption[]
   onPlayersChange: (nextPlayers: number) => void
   onDivisionChange: (nextDivision: string) => void
@@ -47,6 +52,7 @@ export const NewEntryForm = ({
   initialEmail,
   initialPhone,
   initialSubscription,
+  paymentMethod,
   divisionOptions,
   onPlayersChange,
   onDivisionChange
@@ -133,8 +139,10 @@ export const NewEntryForm = ({
   })
   const isSubmitting = form.state.isSubmitting
   const isSaved = subscriptionId !== null
+  const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
+  const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
   const copyPaymentCode = useCallback(async () => {
-    if (!navigator.clipboard) {
+    if (!navigator.clipboard || !paymentQRCodeContent) {
       return
     }
 
@@ -143,8 +151,12 @@ export const NewEntryForm = ({
     window.setTimeout(() => {
       setPaymentCodeCopied(false)
     }, 1600)
-  }, [])
+  }, [paymentQRCodeContent])
   const downloadPaymentQR = useCallback(() => {
+    if (!paymentQRCodeContent) {
+      return
+    }
+
     const svg = createQRCodeSvg({
       content: paymentQRCodeContent,
       width: 400,
@@ -158,7 +170,7 @@ export const NewEntryForm = ({
     link.download = `${formId}-payment-qr.svg`
     link.click()
     URL.revokeObjectURL(url)
-  }, [formId])
+  }, [formId, paymentQRCodeContent])
   const submitReceipt = useCallback(async () => {
     if (!receiptFile || !subscriptionId) {
       return
@@ -378,7 +390,13 @@ export const NewEntryForm = ({
                   </div>
                   <div>
                     <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Recipient</p>
-                    <p className='font-okx text-sm text-foreground/80'>{paymentReceiver}</p>
+                    <p className='font-okx text-sm text-foreground/80'>{paymentMethod?.accountName ?? 'Unavailable'}</p>
+                  </div>
+                  <div>
+                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Destination</p>
+                    <p className='font-okx text-sm text-foreground/80'>
+                      {paymentMethod ? `${paymentMethod.bankOrEwallet} ${paymentMethod.accountNumber}` : 'Unavailable'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -387,20 +405,33 @@ export const NewEntryForm = ({
                   type='button'
                   variant='outline'
                   className='justify-center'
+                  disabled={!paymentQRCodeContent}
                   onClick={() => {
                     void copyPaymentCode()
                   }}>
                   <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4' />
-                  <span>{paymentCodeCopied ? 'Copied' : 'Copy Reference #'}</span>
+                  <span>{paymentCodeCopied ? 'Copied' : 'Copy QR Code'}</span>
                 </Button>
-                <Button type='button' variant='outline' className='justify-center' onClick={downloadPaymentQR}>
+                <Button
+                  type='button'
+                  variant='outline'
+                  className='justify-center'
+                  disabled={!paymentQRCodeContent}
+                  onClick={downloadPaymentQR}>
                   <Icon name='down-to-line' className='size-4' />
                   <span>Download QR</span>
                 </Button>
               </div>
             </div>
             <div className='flex items-center justify-center border-b border-slate-400 p-4 dark:border-slate-800 md:border-b-0 md:border-r'>
-              <PaymentQR content={paymentQRCodeContent} />
+              {paymentQRCodeContent ? (
+                <PaymentQR content={paymentQRCodeContent} />
+              ) : (
+                <div className='flex min-h-64 flex-col items-center justify-center gap-3 text-center text-muted-foreground'>
+                  <Icon name='file' className='size-8' />
+                  <p className='text-sm'>Payment QR is unavailable.</p>
+                </div>
+              )}
             </div>
             <div className='flex flex-col justify-between gap-6 p-8'>
               <div className='space-y-4'>
@@ -473,7 +504,11 @@ export const NewEntryForm = ({
                 size='xl'
                 variant='default'
                 className='w-full bg-slate-900 text-white/80 dark:bg-background'
-                disabled={(!receiptFile && !receiptSuccessMessage) || !subscriptionId || isSubmittingReceipt}
+                disabled={
+                  receiptSuccessMessage
+                    ? !subscriptionId || isSubmittingReceipt
+                    : !hasActivePaymentDestination || !receiptFile || !subscriptionId || isSubmittingReceipt
+                }
                 onClick={() => {
                   if (receiptSuccessMessage) {
                     router.push(`/subscriptions/${subscriptionId}`)
