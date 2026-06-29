@@ -279,13 +279,9 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
   }
 
   return (
-    <div className='space-y-5'>
+    <div className='space-y-5 px-2'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-        <SectionTitle title='Payment Destinations' eyebrow='Manual Payments' />
-        <Button type='button' className='h-10 justify-center' onClick={startCreate}>
-          <Icon name='add' className='size-4' />
-          <span>Add destination</span>
-        </Button>
+        <SectionTitle title='Destination' eyebrow='Manual Payments' />
       </div>
 
       <div className=''>
@@ -315,7 +311,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
           )}
         </section>
 
-        <aside className='rounded-lg border border-border/70 bg-card p-4 sm:p-5'>
+        <aside className='rounded-lg border border-border/70 bg-card p-4 sm:p-5 hidden'>
           <div className='space-y-4'>
             <div className='flex items-start justify-between gap-4'>
               <div>
@@ -483,6 +479,10 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
           </div>
         </aside>
       </div>
+      <Button type='button' className='h-10 justify-center' onClick={startCreate}>
+        <Icon name='add' className='size-4' />
+        <span>Add destination</span>
+      </Button>
     </div>
   )
 }
