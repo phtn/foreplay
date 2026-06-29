@@ -1,11 +1,13 @@
 import { Doc, Id } from '@/convex/_generated/dataModel'
 
-export type DerivedRegistration = {
+export interface DerivedRegistration {
   id: Id<'registrations'>
   slotLabel: string
   name: string
   email: string
   gatePassPayload: string
+  checkedIn: boolean
+  checkedInAt?: number
   phone: string
   division: string
   handicap: string

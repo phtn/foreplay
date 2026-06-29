@@ -68,6 +68,8 @@ export function RegistrationSection({
             name: registration.player_name,
             email: registration.player_email ?? 'No email',
             gatePassPayload: buildGatePassPayload(registration),
+            checkedIn: registration.checked_in === true,
+            checkedInAt: registration.checked_in_at,
             phone: registration.player_phone ?? 'No phone',
             division: registration.division ?? 'No division',
             handicap: registration.handicap_index ?? 'No handicap',
@@ -173,7 +175,7 @@ export function RegistrationSection({
 
       <CardContent className='space-y-0 py-0 px-0 border-x border-b rounded-b-xl bg-white'>
         {registrationCards.length ? (
-          <div className='grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
+          <div className='min-h-40! grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
               <div key={registration.id} className='relative py-6 px-2'>
                 <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
@@ -230,13 +232,19 @@ export function RegistrationSection({
               </div>
             ))}
           </div>
-        ) : (
+        ) : !isAdding && !isPending ? (
           <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-none border-b border-dashed border-border/70 bg-muted/10 p-5 text-center sm:p-6'>
             <Icon name='person-multiple' className='size-8 text-muted-foreground/60' />
             <div className='space-y-1'>
               <p className='font-okx text-base'>No players registered yet</p>
               <p className='text-sm text-muted-foreground'>Start assigning the entry slots to individual players.</p>
             </div>
+          </div>
+        ) : isAdding ? (
+          <div className=''></div>
+        ) : (
+          <div className='flex items-center justify-center w-full h-40'>
+            <Icon name='spinner-blocks' className='size-8 text-muted-foreground/60' />
           </div>
         )}
 
@@ -309,7 +317,7 @@ export function RegistrationSection({
                 type='button'
                 variant='ghost'
                 size='sm'
-                className='w-full sm:w-auto'
+                className='w-full sm:w-auto h-12'
                 disabled={isPending}
                 onClick={() => {
                   setIsAdding(false)

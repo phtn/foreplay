@@ -71,9 +71,9 @@ function nanoCreatedAt(timestamp: number) {
   return createdAtNano.format(timestamp)
 }
 
-function formatConfirmedAt(timestamp: number | undefined) {
-  return timestamp ? createdAtNano.format(timestamp) : null
-}
+// function formatConfirmedAt(timestamp: number | undefined) {
+//   return timestamp ? createdAtNano.format(timestamp) : null
+// }
 
 function formatRegistrationFee(value: number) {
   if (value <= 0) {
@@ -389,7 +389,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                             name='remarks'
                             defaultValue={subscription.admin_remarks ?? ''}
                             placeholder='Add admin notes'
-                            className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[2px] focus-visible:ring-ring/40'
+                            className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40'
                           />
                           {subscription.admin_remarks && (
                             <button

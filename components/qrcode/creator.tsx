@@ -1,9 +1,11 @@
 'use client'
 
 import { DerivedRegistration } from '@/app/subscriptions/types'
+import { api } from '@/convex/_generated/api'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { ClassName } from '@/types'
+import { useQuery } from 'convex/react'
 import QrCreator from 'qr-creator'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -36,6 +38,13 @@ function QRCanvas({ className, config }: CreateQRProps) {
 
 export const CreateQR = ({ className, config, registration }: CreateQRProps) => {
   const [open, setOpen] = useState(false)
+  const wasCheckedInWhenOpenedRef = useRef(false)
+  const liveCheckInStatus = useQuery(
+    api.registrations.q.getCheckInStatus,
+    registration ? { registrationId: registration.id } : 'skip'
+  )
+  const checkedIn = liveCheckInStatus?.checkedIn ?? registration?.checkedIn ?? false
+  const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration?.checkedInAt
   const fullscreenConfig = useMemo<QrCreator.Config>(
     () => ({
       ...config,
@@ -45,6 +54,20 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
     }),
     [config]
   )
+
+  useEffect(() => {
+    if (!open || !checkedIn || wasCheckedInWhenOpenedRef.current) {
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setOpen(false)
+    }, 1800)
+
+    return () => {
+      window.clearTimeout(timeoutId)
+    }
+  }, [checkedIn, open])
 
   useEffect(() => {
     if (!open) {
@@ -78,8 +101,17 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
           'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-sky-500/30',
           className
         )}
-        onClick={() => setOpen(true)}>
+        onClick={() => {
+          wasCheckedInWhenOpenedRef.current = checkedIn
+          setOpen(true)
+        }}>
         <QRCanvas config={config} className='' />
+        {checkedIn ? (
+          <span className='absolute inset-x-2 bottom-2 inline-flex items-center justify-center gap-1 rounded-md bg-emerald-500 px-2 py-1 font-ios text-[10px] uppercase tracking-widest text-white shadow-sm'>
+            <Icon name='check' className='size-3.5' />
+            Scanned
+          </span>
+        ) : null}
         <span className='absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-sm text-slate-900 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 bg-pink-500'>
           <Icon name='code-scanner' className='size-7 text-white' />
         </span>
@@ -109,13 +141,31 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
           </div>
 
           <div className='flex flex-1 items-center justify-center py-4'>
-            <div className='w-full max-w-[min(88vw,430px)] rounded-3xl bg-white p-4'>
+            <div
+              className={cn(
+                'relative w-full max-w-[min(88vw,430px)] rounded-3xl bg-white p-4 transition-colors',
+                checkedIn && 'ring-4 ring-emerald-500/70'
+              )}>
               <QRCanvas config={fullscreenConfig} className='aspect-square w-full rounded-2xl bg-white' />
+              {checkedIn ? (
+                <div className='absolute inset-4 flex flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-500/92 text-white backdrop-blur-sm'>
+                  <span className='inline-flex size-16 items-center justify-center rounded-full bg-white/20'>
+                    <Icon name='check' className='size-9' />
+                  </span>
+                  <div className='text-center'>
+                    <p className='font-ios text-xs uppercase tracking-widest'>Ticket scanned</p>
+                    <p className='mt-1 font-okx text-lg'>{registration?.name ?? 'Player checked in'}</p>
+                    {checkedInAt ? (
+                      <p className='mt-1 text-xs text-white/80'>{new Date(checkedInAt).toLocaleString()}</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
           <div className='h-2/5 flex justify-center'>
             <div className='max-w-[min(88vw,430px)] h-fit w-full border bg-white p-4 divide-y divide-slate-300 rounded-lg'>
-              <InfoDetail label='Status' value={registration?.slotLabel ?? ''} />
+              <InfoDetail label='Status' value={checkedIn ? 'Scanned' : (registration?.slotLabel ?? '')} />
               <InfoDetail label='Name' value={registration?.name ?? ''} />
               <InfoDetail label='Email' value={registration?.email ?? ''} />
               <InfoDetail label='Entry Id' value={registration?.id ?? ''} />

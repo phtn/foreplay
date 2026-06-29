@@ -229,12 +229,12 @@ export function GateScanner({ operator }: GateScannerProps) {
               </span>
               <span className={cn('opacity-50', { 'opacity-100': active })}>{active ? 'Ready' : 'Scanner Idle'}</span>
             </CardTitle>
-            <span className='font-okx font-semibold'>
-              {result && result.checkedIn
-                ? 'Checked In'
-                : result && result.alreadyCheckedIn
-                  ? 'Already Checked In'
-                  : ''}
+            <span
+              className={cn('font-okx font-semibold', {
+                'text-emerald-600': result?.checkedIn,
+                'text-orange-600': result?.alreadyCheckedIn
+              })}>
+              {result && result.checkedIn ? 'TICKET OK' : result && result.alreadyCheckedIn ? 'TICKET USED' : ''}
             </span>
             <div className='flex items-center space-x-2'>
               <Icon
