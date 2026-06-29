@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { confirmSubscription } from './actions'
+import { confirmSubscription, updateSubscriptionRemarks } from './actions'
 import { ReceiptDrawer } from './receipt-drawer'
 
 interface EventPageProps {
@@ -69,6 +69,10 @@ function formatGateOpenTime(timestamp: number) {
 // }
 function nanoCreatedAt(timestamp: number) {
   return createdAtNano.format(timestamp)
+}
+
+function formatConfirmedAt(timestamp: number | undefined) {
+  return timestamp ? createdAtNano.format(timestamp) : null
 }
 
 function formatRegistrationFee(value: number) {
@@ -240,7 +244,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
       <CardContent className='px-0!  dark:bg-slate-600/10'>
         {subscriptions.length ? (
           <div className='overflow-x-auto'>
-            <table className='w-full min-w-245 text-sm'>
+            <table className='w-full min-w-300 text-sm'>
               <thead>
                 <tr className='border-y border-border/50 bg-slate-400/15 text-left whitespace-nowrap'>
                   {[
@@ -252,6 +256,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                     'Status',
                     'Receipt',
                     'Action',
+                    'Confirmed At',
                     'Remarks'
                   ].map((label) => (
                     <th
@@ -265,6 +270,9 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
               <tbody>
                 {subscriptions.map((subscription) => {
                   const status = subscription.status ?? 'pending_payment'
+                  const confirmer =
+                    subscription.confirmed_by_name ?? subscription.confirmed_by_email ?? subscription.confirmed_by_id
+                  const confirmedAtLabel = subscription.confirmed_at && nanoCreatedAt(subscription.confirmed_at)
 
                   return (
                     <tr key={subscription._id} className='border-b border-border/60 align-top'>
@@ -272,7 +280,9 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                         {nanoCreatedAt(subscription._creationTime)
                           .split(',')
                           .map((part, index) => (
-                            <p key={index}>{part}</p>
+                            <p className='whitespace-nowrap' key={index}>
+                              {part}
+                            </p>
                           ))}
                       </td>
                       <td className='px-6 py-4'>
@@ -315,14 +325,25 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                       </td>
 
                       <td className='px-4 py-4'>
-                        <span
-                          className={cn(
-                            'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest whitespace-nowrap',
-                            subscriptionStatusStyles[status] ?? subscriptionStatusStyles.pending_payment
-                          )}>
-                          {formatStatus(status)}
-                        </span>
+                        <div className='space-y-1.5'>
+                          <span
+                            className={cn(
+                              'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest whitespace-nowrap',
+                              subscriptionStatusStyles[status] ?? subscriptionStatusStyles.pending_payment
+                            )}>
+                            {formatStatus(status)}
+                          </span>
+                          {status === 'confirmed' && confirmer ? (
+                            <div className='max-w-44 space-y-0.5 text-xs text-muted-foreground'>
+                              <p className='truncate'>{confirmer}</p>
+                              {subscription.confirmed_by_email && subscription.confirmed_by_name ? (
+                                <p className='truncate'>{subscription.confirmed_by_email}</p>
+                              ) : null}
+                            </div>
+                          ) : null}
+                        </div>
                       </td>
+
                       <td className='px-6 py-4 text-xs'>
                         <ReceiptDrawer
                           amount={subscription.payment_amount}
@@ -342,13 +363,42 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                             <input type='hidden' name='subscriptionId' value={subscription._id} />
                             <input type='hidden' name='eventId' value={eventId} />
                             <button type='submit' className='text-sky-700 transition-colors hover:text-sky-600'>
-                              Confirm
+                              Update
                             </button>
                           </form>
                         )}
                       </td>
+                      <td className='px-5 py-4 text-xs text-center text-muted-foreground'>
+                        {confirmedAtLabel ? (
+                          confirmedAtLabel.split(',').map((part, index) => (
+                            <p className='whitespace-nowrap' key={index}>
+                              {part}
+                            </p>
+                          ))
+                        ) : status === 'confirmed' ? (
+                          <span>N/A</span>
+                        ) : (
+                          <span>—</span>
+                        )}
+                      </td>
                       <td className='px-6 py-4 text-xs'>
-                        <span className='text-muted-foreground'></span>
+                        <form action={updateSubscriptionRemarks} className='grid min-w-52 gap-2'>
+                          <input type='hidden' name='subscriptionId' value={subscription._id} />
+                          <input type='hidden' name='eventId' value={eventId} />
+                          <textarea
+                            name='remarks'
+                            defaultValue={subscription.admin_remarks ?? ''}
+                            placeholder='Add admin notes'
+                            className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[2px] focus-visible:ring-ring/40'
+                          />
+                          {subscription.admin_remarks && (
+                            <button
+                              type='submit'
+                              className='justify-self-start text-sky-700 transition-colors hover:text-sky-600'>
+                              Save note
+                            </button>
+                          )}
+                        </form>
                       </td>
                     </tr>
                   )

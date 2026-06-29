@@ -152,12 +152,19 @@ export const cancel = mutation({
 
 export const confirmForAdmin = mutation({
   args: {
-    subscriptionId: v.id('subscriptions')
+    subscriptionId: v.id('subscriptions'),
+    confirmedById: v.string(),
+    confirmedByEmail: v.optional(v.string()),
+    confirmedByName: v.optional(v.string())
   },
   returns: v.object({
     subscriptionId: v.id('subscriptions'),
     payment_status: v.literal('paid'),
-    status: v.literal('confirmed')
+    status: v.literal('confirmed'),
+    confirmed_by_id: v.string(),
+    confirmed_by_email: v.optional(v.string()),
+    confirmed_by_name: v.optional(v.string()),
+    confirmed_at: v.number()
   }),
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
@@ -168,7 +175,11 @@ export const confirmForAdmin = mutation({
 
     const nextStatus = {
       payment_status: 'paid' as const,
-      status: 'confirmed' as const
+      status: 'confirmed' as const,
+      confirmed_by_id: args.confirmedById,
+      confirmed_by_email: trimOrUndefined(args.confirmedByEmail),
+      confirmed_by_name: trimOrUndefined(args.confirmedByName),
+      confirmed_at: Date.now()
     }
 
     await ctx.db.patch(args.subscriptionId, nextStatus)
@@ -176,6 +187,35 @@ export const confirmForAdmin = mutation({
     return {
       subscriptionId: args.subscriptionId,
       ...nextStatus
+    }
+  }
+})
+
+export const updateAdminRemarks = mutation({
+  args: {
+    subscriptionId: v.id('subscriptions'),
+    remarks: v.string()
+  },
+  returns: v.object({
+    subscriptionId: v.id('subscriptions'),
+    admin_remarks: v.string()
+  }),
+  handler: async (ctx, args) => {
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    const adminRemarks = args.remarks.trim()
+
+    await ctx.db.patch(args.subscriptionId, {
+      admin_remarks: adminRemarks
+    })
+
+    return {
+      subscriptionId: args.subscriptionId,
+      admin_remarks: adminRemarks
     }
   }
 })

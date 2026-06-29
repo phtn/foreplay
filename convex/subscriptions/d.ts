@@ -19,6 +19,11 @@ export const subscriptionSchema = v.object({
   receipt_image_url: v.optional(v.string()),
   txn_ref_no: v.optional(v.string()),
   payment_qrcode: v.optional(v.string()),
+  admin_remarks: v.optional(v.string()),
+  confirmed_by_id: v.optional(v.string()),
+  confirmed_by_email: v.optional(v.string()),
+  confirmed_by_name: v.optional(v.string()),
+  confirmed_at: v.optional(v.number()),
   status: v.optional(v.string())
 })
 
