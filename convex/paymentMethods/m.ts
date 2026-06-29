@@ -80,20 +80,6 @@ export const upsertManual = mutation({
       return args.id
     }
 
-    const existingManualPaymentMethod = await ctx.db
-      .query('paymentMethods')
-      .withIndex('by_kind', (q) => q.eq('kind', 'manual'))
-      .first()
-
-    if (existingManualPaymentMethod) {
-      await ctx.db.patch(existingManualPaymentMethod._id, {
-        ...payload,
-        ...(args.qrCodeStorageId ? { qrCodeStorageId: args.qrCodeStorageId } : {})
-      })
-
-      return existingManualPaymentMethod._id
-    }
-
     return await ctx.db.insert('paymentMethods', {
       ...payload,
       ...(args.qrCodeStorageId ? { qrCodeStorageId: args.qrCodeStorageId } : {}),

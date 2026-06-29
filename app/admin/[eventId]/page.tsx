@@ -1,5 +1,5 @@
 import { Badge } from '@/components/reui/badge'
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
 import { Doc } from '@/convex/_generated/dataModel'
@@ -336,9 +336,6 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                           {status === 'confirmed' && confirmer ? (
                             <div className='max-w-44 space-y-0.5 text-xs text-muted-foreground'>
                               <p className='truncate'>{confirmer}</p>
-                              {subscription.confirmed_by_email && subscription.confirmed_by_name ? (
-                                <p className='truncate'>{subscription.confirmed_by_email}</p>
-                              ) : null}
                             </div>
                           ) : null}
                         </div>
@@ -355,14 +352,16 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                           uploadedAt={subscription._creationTime}
                         />
                       </td>
-                      <td className='px-6 py-4 text-xs'>
+                      <td className='px-6 py-4 text-xs text-center'>
                         {status === 'confirmed' && subscription.payment_status === 'paid' ? (
                           <span className='text-emerald-700 dark:text-emerald-300'>Confirmed</span>
                         ) : (
                           <form action={confirmSubscription}>
                             <input type='hidden' name='subscriptionId' value={subscription._id} />
                             <input type='hidden' name='eventId' value={eventId} />
-                            <button type='submit' className='text-sky-700 transition-colors hover:text-sky-600'>
+                            <button
+                              type='submit'
+                              className='font-semibold text-sky-600 dark:text-sky-500 transition-colors hover:text-sky-500'>
                               Update
                             </button>
                           </form>
@@ -385,19 +384,20 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                         <form action={updateSubscriptionRemarks} className='grid min-w-52 gap-2'>
                           <input type='hidden' name='subscriptionId' value={subscription._id} />
                           <input type='hidden' name='eventId' value={eventId} />
-                          <textarea
-                            name='remarks'
-                            defaultValue={subscription.admin_remarks ?? ''}
-                            placeholder='Add admin notes'
-                            className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40'
-                          />
-                          {subscription.admin_remarks && (
-                            <button
+                          <div className='flex items-center justify-center space-x-1'>
+                            <textarea
+                              name='remarks'
+                              defaultValue={subscription.admin_remarks ?? ''}
+                              placeholder='Add admin notes'
+                              className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40'
+                            />
+                            <Button
                               type='submit'
-                              className='justify-self-start text-sky-700 transition-colors hover:text-sky-600'>
-                              Save note
-                            </button>
-                          )}
+                              variant={'ghost'}
+                              className='justify-self-start text-xs text-sky-600 transition-colors hover:text-sky-500'>
+                              Save
+                            </Button>
+                          </div>
                         </form>
                       </td>
                     </tr>
