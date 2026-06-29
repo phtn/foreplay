@@ -110,6 +110,10 @@ export const removeForSubscription = mutation({
       throw new ConvexError('Player registration not found.')
     }
 
+    if (registration.checked_in === true) {
+      throw new ConvexError('Scanned registrations cannot be deleted.')
+    }
+
     await ctx.db.delete(args.registrationId)
 
     return { registrationId: args.registrationId }

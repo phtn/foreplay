@@ -5,10 +5,12 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { ClassName } from '@/types'
+import { useQuery } from 'convex/react'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { DerivedRegistration, DraftRegistration, RegistrationSectionProps } from '../types'
@@ -177,59 +179,13 @@ export function RegistrationSection({
         {registrationCards.length ? (
           <div className='min-h-40! grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
-              <div key={registration.id} className='relative py-6 px-2'>
-                <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
-                  <div className='min-w-0 space-y-4'>
-                    <div className='flex items-start justify-between gap-4 sm:block'>
-                      <div className='min-w-0'>
-                        <div className='flex items-center space-x-4'>
-                          <p className='font-ios font-medium text-xs uppercase tracking-widest text-sky-700 w-fit'>
-                            {registration.slotLabel}
-                          </p>
-                          <Button
-                            type='button'
-                            variant='ghost'
-                            size='icon-xs'
-                            className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
-                            disabled={isPending}
-                            aria-label={`Delete ${registration.name}`}
-                            onClick={() => handleDelete(registration.id, registration.name)}>
-                            <Icon
-                              name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
-                              className='size-4'
-                            />
-                          </Button>
-                        </div>
-                        <p className='whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
-                          {registration.name}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className='grid gap-3 grid-cols-1 overflow-hidden'>
-                      <RegistrationField label='Email' value={registration.email} />
-                      <RegistrationField label='Phone' value={registration.phone} />
-                      <RegistrationField
-                        label='Pass'
-                        value={registration.id.split(',').reverse().join(',').substring(22).toUpperCase()}
-                        className='relative z-50 font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white overflow-visible'
-                      />
-                    </div>
-                  </div>
-
-                  <CreateQR
-                    config={{
-                      text: registration.gatePassPayload,
-                      radius: 0.36,
-                      ecLevel: 'M',
-                      fill: 'oklch(27.9% 0.041 260.031)',
-                      background: null,
-                      size: 180
-                    }}
-                    registration={registration}
-                  />
-                </div>
-              </div>
+              <RegistrationTicket
+                key={registration.id}
+                deletingRegistrationId={deletingRegistrationId}
+                isPending={isPending}
+                onDelete={handleDelete}
+                registration={registration}
+              />
             ))}
           </div>
         ) : !isAdding && !isPending ? (
@@ -367,6 +323,103 @@ interface RegistrationFieldProps {
   value: string
   className?: ClassName
 }
+
+interface RegistrationTicketProps {
+  deletingRegistrationId: Id<'registrations'> | null
+  isPending: boolean
+  onDelete: (registrationId: Id<'registrations'>, playerName: string) => void
+  registration: DerivedRegistration
+}
+
+function formatCheckedInAt(timestamp: number | undefined) {
+  return timestamp ? new Date(timestamp).toLocaleString() : 'Scanned'
+}
+
+function RegistrationTicket({ deletingRegistrationId, isPending, onDelete, registration }: RegistrationTicketProps) {
+  const liveCheckInStatus = useQuery(api.registrations.q.getCheckInStatus, { registrationId: registration.id })
+  const checkedIn = liveCheckInStatus?.checkedIn ?? registration.checkedIn
+  const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration.checkedInAt
+
+  return (
+    <div
+      className={cn(
+        'relative py-6 px-2 transition-colors',
+        checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10'
+      )}>
+      <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0 sm:items-start ps-4 pe-2 md:px-2'>
+        <div className='min-w-0 space-y-4'>
+          <div className='flex items-start justify-between gap-4 sm:block'>
+            <div className='min-w-0'>
+              <div className='flex flex-wrap items-center gap-2'>
+                <p className='font-ios font-medium text-xs uppercase tracking-widest text-sky-700 w-fit'>
+                  {registration.slotLabel}
+                </p>
+                {checkedIn ? (
+                  <span className='inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-ios text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300'>
+                    <Icon name='check' className='size-3' />
+                    Scanned
+                  </span>
+                ) : (
+                  <Button
+                    type='button'
+                    variant='ghost'
+                    size='icon-xs'
+                    className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
+                    disabled={isPending}
+                    aria-label={`Delete ${registration.name}`}
+                    onClick={() => onDelete(registration.id, registration.name)}>
+                    <Icon
+                      name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
+                      className='size-4'
+                    />
+                  </Button>
+                )}
+              </div>
+              <p className='whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
+                {registration.name}
+              </p>
+              {checkedIn ? (
+                <p className='mt-1 text-xs text-emerald-700/80 dark:text-emerald-300/80'>
+                  Checked in {formatCheckedInAt(checkedInAt)}
+                </p>
+              ) : null}
+            </div>
+          </div>
+
+          <div className='grid gap-3 grid-cols-1 overflow-hidden'>
+            <RegistrationField label='Email' value={registration.email} />
+            <RegistrationField label='Phone' value={registration.phone} />
+            <RegistrationField
+              label='Pass'
+              value={registration.id.split(',').reverse().join(',').substring(22).toUpperCase()}
+              className={cn(
+                'relative z-50 font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white overflow-visible',
+                checkedIn && 'text-emerald-700 dark:text-emerald-700'
+              )}
+            />
+          </div>
+        </div>
+
+        <CreateQR
+          config={{
+            text: registration.gatePassPayload,
+            radius: 0.36,
+            ecLevel: 'M',
+            fill: checkedIn ? 'oklch(43.2% 0.095 166.913)' : 'oklch(27.9% 0.041 260.031)',
+            background: null,
+            size: 180
+          }}
+          registration={{
+            ...registration,
+            checkedIn,
+            checkedInAt
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
 function RegistrationField({ label, value, className }: RegistrationFieldProps) {
   return (
     <div className='space-y-0.5'>

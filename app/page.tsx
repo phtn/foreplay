@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
+import { GolfCourse } from './course'
 
 const proofPoints = [
   { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
@@ -76,9 +77,9 @@ const gamesList: BookedGames[] = [
 ]
 
 const courseStats = [
-  { label: 'Cash prize purse', value: '450k', unit: 'PHP' },
-  { label: 'Sponsor tiers', value: '4', unit: 'levels' },
-  { label: 'Player field', value: '120', unit: 'slots' }
+  { label: 'HOLES', value: '18', unit: '' },
+  { label: 'PAR', value: '72', unit: '' },
+  { label: 'START', value: '7AM', unit: '' }
 ]
 
 export default function HomePage() {
@@ -94,7 +95,7 @@ export default function HomePage() {
 
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
-      <div className='mx-auto max-w-410 overflow-hidden rounded-b-md md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0.34)]'>
+      <div className='mx-auto max-w-410 overflow-hidden md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0,0)]'>
         <Topbar />
         <main className=' dark:bg-slate-400/90'>
           <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
@@ -159,7 +160,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className='grid gap-8 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-12 lg:py-10'>
+          <section className='grid gap-8 px-2 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-12 lg:py-10'>
             <div className='md:block hidden'>
               <div className='mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='flex items-center gap-4 md:gap-8'>
@@ -199,8 +200,8 @@ export default function HomePage() {
               </div>
               <GamesList data={gamesList} />
             </div>
-
             <aside className='rounded-[28px] bg-white/62 p-5 shadow-[0_24px_70px_rgba(31,62,46,0.12)] backdrop-blur-xl sm:p-6'>
+              {' '}
               <div className='flex items-center justify-between gap-4'>
                 <h2 className='font-poly text-3xl leading-none'>Pinatubo Course</h2>
                 <button
@@ -210,31 +211,11 @@ export default function HomePage() {
                   <Icon name='golf-flag' className='size-5' />
                 </button>
               </div>
-
-              <div className='mt-6 grid gap-5 sm:grid-cols-[minmax(0,1fr)_128px] lg:grid-cols-[minmax(0,1fr)_132px]'>
-                <div className='relative min-h-97.5 overflow-hidden rounded-[24px] bg-[#edf4ef] shadow-inner'>
-                  <div
-                    className='absolute inset-x-9 bottom-8 top-5 rotate-[-5deg] bg-[radial-gradient(circle_at_42%_28%,#eef5c8_0_4%,transparent_5%),radial-gradient(circle_at_62%_36%,#f3e6c8_0_5%,transparent_6%),radial-gradient(circle_at_44%_56%,#edf4c6_0_4%,transparent_5%),linear-gradient(145deg,#8fbf69,#4f8f55_45%,#2d6b43)] shadow-[inset_0_0_32px_rgba(19,63,35,0.35),0_18px_38px_rgba(34,75,45,0.28)]'
-                    style={{ borderRadius: '46% 54% 48% 52% / 34% 38% 62% 66%' }}
-                  />
-                  <div
-                    className='absolute inset-x-16 bottom-14 top-12 rotate-[-8deg] border-2 border-dashed border-white/75'
-                    style={{ borderRadius: '50% 48% 52% 46% / 36% 44% 58% 64%' }}
-                  />
-                  <span className='absolute left-[49%] top-[28%] size-3 rounded-full bg-white shadow' />
-                  <span className='absolute left-[57%] top-[46%] size-3 rounded-full bg-white shadow' />
-                  <span className='absolute left-[45%] top-[64%] size-3 rounded-full bg-white shadow' />
-                  <span className='absolute right-[19%] top-[32%] flex size-9 items-center justify-center rounded-full bg-[#ef4b20] text-white shadow-lg'>
-                    <Icon name='flag-fill' className='size-4' />
-                  </span>
-                  <span className='absolute bottom-11 left-[48%] flex size-10 items-center justify-center rounded-full bg-white text-sm font-semibold text-[#1d2824] shadow-lg'>
-                    SM
-                  </span>
-                </div>
-
-                <div className='grid gap-4'>
+              <div className='md:flex items-center'>
+                <GolfCourse />
+                <div className='grid grid-cols-3 md:grid-cols-1 gap-4'>
                   {courseStats.map((stat) => (
-                    <div key={stat.label} className='border-b border-[#1d2824]/10 pb-4 last:border-b-0'>
+                    <div key={stat.label} className='pb-4 text-center'>
                       <p className='text-sm leading-5 text-[#1d2824]/45'>{stat.label}</p>
                       <p className='mt-2 font-poly text-3xl leading-none'>
                         {stat.value}
@@ -244,7 +225,20 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
-
+              <div className='hidden _grid gap-5 sm:grid-cols-[minmax(0,1fr)_128px] lg:grid-cols-[minmax(0,1fr)_132px]'>
+                <div className='relative size-97.5 overflow-hidden rounded-[24px] bg-[#edf4ef] shadow-inner'>
+                  {/*<div
+                    className='absolute inset-x-9 bottom-8 top-5 rotate-[-5deg] bg-[radial-gradient(circle_at_42%_28%,#eef5c8_0_4%,transparent_5%),radial-gradient(circle_at_62%_36%,#f3e6c8_0_5%,transparent_6%),radial-gradient(circle_at_44%_56%,#edf4c6_0_4%,transparent_5%),linear-gradient(145deg,#8fbf69,#4f8f55_45%,#2d6b43)] shadow-[inset_0_0_32px_rgba(19,63,35,0.35),0_18px_38px_rgba(34,75,45,0.28)] size-80'
+                    style={{ borderRadius: '46% 54% 48% 52% / 34% 38% 62% 66%' }}
+                  />*/}
+                  <span className='absolute left-[49%] top-[28%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute left-[57%] top-[46%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute left-[45%] top-[64%] size-3 rounded-full bg-white shadow' />
+                  <span className='absolute right-[19%] top-[32%] flex size-9 items-center justify-center rounded-full bg-[#ef4b20] text-white shadow-lg'>
+                    <Icon name='flag-fill' className='size-4' />
+                  </span>
+                </div>
+              </div>
               <div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
                 <span className='flex size-12 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold'>
                   SM

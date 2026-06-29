@@ -1,0 +1,67 @@
+<svg
+      viewBox='0 0 520 600'
+      className='absolute inset-0 h-full w-full p-5 drop-shadow-[0_18px_38px_rgba(34,75,45,0.28)]'>
+      <defs>
+        <linearGradient id='courseGreen' x1='0' y1='0' x2='1' y2='1'>
+          <stop offset='0%' stopColor='#7fbd62' />
+          <stop offset='55%' stopColor='#4f9656' />
+          <stop offset='100%' stopColor='#2f7447' />
+        </linearGradient>
+
+        <clipPath id='courseClip'>
+          <path d='M248 12C318 21 385 72 443 137C497 198 522 259 492 314C461 370 425 387 396 463C369 535 327 603 268 579C214 557 205 484 151 451C106 424 36 433 16 379C-4 325 28 260 77 217C132 169 167 151 196 94C215 58 215 8 248 12Z' />
+        </clipPath>
+      </defs>
+
+      <path
+        d='M248 12C318 21 385 72 443 137C497 198 522 259 492 314C461 370 425 387 396 463C369 535 327 603 268 579C214 557 205 484 151 451C106 424 36 433 16 379C-4 325 28 260 77 217C132 169 167 151 196 94C215 58 215 8 248 12Z'
+        fill='url(#courseGreen)'
+        stroke='white'
+        strokeWidth='5'
+      />
+
+      <g clipPath='url(#courseClip)'>
+        <ellipse cx='300' cy='300' rx='48' ry='190' fill='#a5d87e' opacity='.45' transform='rotate(8 300 300)' />
+        <ellipse cx='360' cy='330' rx='42' ry='210' fill='#9bd973' opacity='.35' transform='rotate(23 360 330)' />
+        <ellipse cx='180' cy='375' rx='160' ry='52' fill='#a9df82' opacity='.35' transform='rotate(23 180 375)' />
+        <ellipse cx='230' cy='455' rx='40' ry='120' fill='#9bd973' opacity='.35' transform='rotate(-15 230 455)' />
+
+        <path
+          d='M303 260C298 325 235 331 274 410C295 454 302 492 260 535'
+          fill='none'
+          stroke='white'
+          strokeWidth='4'
+          strokeDasharray='12 13'
+          opacity='.85'
+        />
+
+        {[
+          [185, 235, 28],
+          [235, 255, 23],
+          [420, 175, 34],
+          [80, 385, 38],
+          [255, 485, 20],
+          [350, 525, 35]
+        ].map(([cx, cy, r], i) => (
+          <circle key={i} cx={cx} cy={cy} r={r} fill='#078d8f' stroke='white' strokeWidth='4' opacity='.95' />
+        ))}
+
+        {[
+          [235, 45, 16, 10],
+          [405, 250, 36, 13],
+          [330, 390, 24, 16],
+          [72, 335, 42, 12],
+          [135, 315, 18, 9],
+          [365, 470, 21, 11],
+          [378, 205, 12, 8],
+          [410, 385, 13, 8],
+          [170, 405, 14, 9]
+        ].map(([cx, cy, rx, ry], i) => (
+          <ellipse key={i} cx={cx} cy={cy} rx={rx} ry={ry} fill='#efe8c9' transform={`rotate(${i * 27} ${cx} ${cy})`} />
+        ))}
+
+        {Array.from({ length: 45 }).map((_, i) => (
+          <circle key={i} cx={((i * 73) % 455) + 30} cy={((i * 113) % 520) + 30} r='2.6' fill='#2f6d42' opacity='.45' />
+        ))}
+      </g>
+    </svg>
