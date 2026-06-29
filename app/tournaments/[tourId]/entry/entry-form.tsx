@@ -13,7 +13,7 @@ import { Activity, useCallback, useEffect, useRef, useState } from 'react'
 import { createTournamentSubscription, generateReceiptUploadUrl, updateTournamentSubscriptionReceipt } from './actions'
 
 const entryControlClassName =
-  'h-9 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
+  'h-12 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
 
 type DivisionOption = {
   label: string
@@ -274,7 +274,7 @@ export const NewEntryForm = ({
           </div>
 
           <div className='bg-sky-500/0 p-8 md:border-r border-slate-400 dark:border-slate-800'>
-            <form.AppField name='fullName'>
+            {/*<form.AppField name='fullName'>
               {({ TextField }) => (
                 <TextField
                   id='name'
@@ -290,16 +290,16 @@ export const NewEntryForm = ({
                     void setEntryQuery({ teamName: event.currentTarget.value || null })
                   }}></TextField>
               )}
-            </form.AppField>
+            </form.AppField>*/}
             <form.AppField name='playerCount'>
               {({ TextField }) => (
                 <TextField
                   id='book-players'
-                  label='Number of Entries'
+                  label='Number of Players'
                   type='number'
                   icon='person-multiple'
                   min='1'
-                  max='4'
+                  max='20'
                   required
                   containerClassName='mb-4'
                   className={entryControlClassName}
@@ -361,7 +361,8 @@ export const NewEntryForm = ({
             ) : null}
             {successMessage ? (
               <p role='status' className='hidden rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'>
-                {successMessage}
+                <Icon name='check' className='size-4' />
+                <span>{successMessage}</span>
               </p>
             ) : null}
             <div className='flex items-center justify-center w-full px-8 mb-8 md:mb-0'>
@@ -382,17 +383,14 @@ export const NewEntryForm = ({
         {/* PAYMENTS */}
         <Activity mode={isSaved ? 'visible' : 'hidden'}>
           <div className='grid min-h-80 border-t border-slate-400 dark:border-slate-800 md:grid-cols-3'>
-            <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-8 dark:border-slate-800 md:border-b-0 md:border-r'>
+            <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-6 dark:border-slate-800 md:border-b-0 md:border-r'>
               <div className='space-y-5'>
                 <div className='flex items-center gap-3'>
                   <div className='flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'>
                     <Icon name='lock' className='size-5' />
                   </div>
                   <div>
-                    <p className='font-okx text-lg text-foreground'>Secure Payment</p>
-                    <p className='font-okx text-xs tracking-widest text-muted-foreground'>
-                      Scan QR Code to make a payment
-                    </p>
+                    <p className='font-okx text-lg text-foreground'>Scan QR to Pay</p>
                   </div>
                 </div>
                 <div className='flex justify-start space-x-6 md:space-x-0 md:flex-col space-y-3 text-left'>
@@ -422,7 +420,7 @@ export const NewEntryForm = ({
                     void copyPaymentCode()
                   }}>
                   <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4' />
-                  <span>{paymentCodeCopied ? 'Copied' : 'Copy QR Code'}</span>
+                  <span>{paymentCodeCopied ? 'Copied' : 'Copy QR'}</span>
                 </Button>
                 <Button
                   type='button'

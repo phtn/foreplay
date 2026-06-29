@@ -14,7 +14,7 @@ import { useMemo, useState, useTransition } from 'react'
 import { DerivedRegistration, DraftRegistration, RegistrationSectionProps } from '../types'
 import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
 
-const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
+// const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 const formControlClassName =
   'h-10 border-border/70 bg-background/70 text-sm shadow-none focus-visible:border-primary focus-visible:ring-primary/15'
@@ -176,7 +176,7 @@ export function RegistrationSection({
           <div className='grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
               <div key={registration.id} className='relative py-6 px-2'>
-                <div className='grid gap-4 grid-cols-[1fr_auto] divide-x divide-slate-800/40 divide-dashed md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
+                <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0  sm:items-start ps-4 pe-2 md:px-2'>
                   <div className='min-w-0 space-y-4'>
                     <div className='flex items-start justify-between gap-4 sm:block'>
                       <div className='min-w-0'>
@@ -198,7 +198,7 @@ export function RegistrationSection({
                             />
                           </Button>
                         </div>
-                        <p className='mt-4 whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
+                        <p className='whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
                           {registration.name}
                         </p>
                       </div>
@@ -210,12 +210,10 @@ export function RegistrationSection({
                       <RegistrationField
                         label='Pass'
                         value={registration.id.split(',').reverse().join(',').substring(22).toUpperCase()}
-                        className='font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white'
+                        className='relative z-50 font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white overflow-visible'
                       />
                     </div>
                   </div>
-
-                  {/*<p>{registration.gatePassPayload}</p>*/}
 
                   <CreateQR
                     config={{
@@ -224,21 +222,16 @@ export function RegistrationSection({
                       ecLevel: 'M',
                       fill: 'oklch(27.9% 0.041 260.031)',
                       background: null,
-                      size: 200
+                      size: 180
                     }}
                     registration={registration}
                   />
-                  {/*<GatePassQRCode
-                    content={registration.gatePassPayload}
-                    label={registration.slotLabel}
-                    shirtSize={registration.shirtSize}
-                  />*/}
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border/70 bg-muted/10 p-5 text-center sm:p-6'>
+          <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-none border-b border-dashed border-border/70 bg-muted/10 p-5 text-center sm:p-6'>
             <Icon name='person-multiple' className='size-8 text-muted-foreground/60' />
             <div className='space-y-1'>
               <p className='font-okx text-base'>No players registered yet</p>
@@ -254,7 +247,7 @@ export function RegistrationSection({
         ) : null}
 
         {isAdding ? (
-          <div className='rounded-xl border border-border/70 bg-muted/10 p-4 sm:p-5'>
+          <div className='rounded-none _border border-border/70 bg-muted/10 p-4 sm:p-5'>
             <div className='grid gap-4 md:grid-cols-2'>
               <RegistrationInput
                 id='player-name'
@@ -277,7 +270,7 @@ export function RegistrationSection({
                 value={draft.playerPhone}
                 onChange={(value) => setDraft((current) => ({ ...current, playerPhone: value }))}
               />
-              <RegistrationInput
+              {/*<RegistrationInput
                 id='player-handicap'
                 label='Handicap'
                 value={draft.handicapIndex}
@@ -308,7 +301,7 @@ export function RegistrationSection({
                     </option>
                   ))}
                 </select>
-              </div>
+              </div>*/}
             </div>
 
             <div className='mt-5 grid gap-3 sm:flex sm:flex-wrap sm:justify-end'>
@@ -325,25 +318,35 @@ export function RegistrationSection({
                 }}>
                 Cancel
               </Button>
-              <Button type='button' size='sm' className='w-full sm:w-auto' disabled={isPending} onClick={handleSubmit}>
+              <Button
+                type='button'
+                size='sm'
+                className='w-full sm:w-auto h-12'
+                disabled={isPending}
+                onClick={handleSubmit}>
                 {isPending ? 'Saving...' : 'Save player'}
               </Button>
             </div>
           </div>
         ) : canAddMore ? (
-          <button
+          <Button
+            size='xl'
             type='button'
-            className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'w-full justify-center gap-2 hidden')}
+            className={cn(
+              buttonVariants({ variant: 'default', size: 'sm' }),
+              'w-full justify-center gap-2 bg-foreground h-12 mt-4'
+            )}
             onClick={() => {
               setErrorMessage(null)
               setIsAdding(true)
             }}>
             <Icon name='add' className='size-4' />
             Add player
-          </button>
+          </Button>
         ) : (
-          <div className='rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300'>
-            All entry slots already have player registrations.
+          <div className='flex items-center space-x-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300'>
+            <Icon name='check' className='size-4.5' />
+            <span>All entry slots already have player registrations.</span>
           </div>
         )}
       </CardContent>

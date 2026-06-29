@@ -10,7 +10,7 @@ import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
 import { NewEntryForm } from './entry-form'
 
-const defaultPlayers = 2
+const defaultPlayers = 1
 
 type DivisionOption = {
   label: string
@@ -231,7 +231,7 @@ export const Content = ({
               text={tournament.title}
               speed={15}
               showCursor={false}
-              className='font-light text-slate-900 dark:text-foreground capitalize'
+              className='font-light text-slate-900 dark:text-foreground capitalize text-ellipsis whitespace-nowrap'
               initialDelay={250}
             />
             <Icon name='chevron-right' className='size-5 text-slate-500 hidden md:flex' />
@@ -250,7 +250,7 @@ export const Content = ({
             href='/subscriptions'
             prefetch='auto'
             className={cn(
-              'flex h-12 items-center space-x-3 rounded-md border px-4 py-2 transition-colors hover:bg-muted/40',
+              'hidden md:flex h-12 items-center space-x-3 rounded-md border px-4 py-2 transition-colors hover:bg-muted/40',
               statusStyles[currentEntriesStatus]
             )}>
             <div className='flex flex-col'>
@@ -269,11 +269,8 @@ export const Content = ({
             <>
               <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 border-b'>
                 <div className='space-y-1'>
-                  <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>
-                    {tournament.venue.split(',').pop()}
-                  </p>
-                  <h2 id='book-now-title' className='font-heading text-xl font-semibold tracking-tight sm:text-xl'>
-                    {tournament.venue.split(',').shift()}
+                  <h2 id='book-now-title' className='font-heading text-lg font-semibold tracking-tight sm:text-base'>
+                    {tournament.venue}
                   </h2>
                 </div>
 
@@ -294,10 +291,10 @@ export const Content = ({
                   </div>
                 </div>
                 {/* Countdown */}
-                <div className='flex items-start h-10 bg-slate-200/60 dark:bg-transparent'>
+                <div className='hidden md:flex items-start h-10 bg-slate-200/40 dark:bg-transparent'>
                   <div className='min-w-24 bg-sky-200/5 rounded-md px-4 py-2'>
-                    <div className='flex items-center space-x-2 font-ios text-foreground dark:text-sky-500 text-base md:text-lg tracking-wide leading-none whitespace-nowrap'>
-                      <span className='font-poly font-bold text-slate-400/80 text-base mt-0.5 tracking-widest'>T-</span>
+                    <div className='flex items-center space-x-2 font-ios text-foreground dark:text-sky-500 text-base tracking-wide leading-none whitespace-nowrap'>
+                      <span className='font-poly text-slate-400/70 text-base mt-0.5 tracking-widest'>T-</span>
                       <span aria-live='polite'>{countdownLabel}</span>
                     </div>
                   </div>

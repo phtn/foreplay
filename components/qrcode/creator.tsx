@@ -74,12 +74,12 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
         type='button'
         aria-label='Open gate pass QR code'
         className={cn(
-          'group relative size-54 overflow-hidden rounded-lg p-2 transition-transform active:scale-[0.98]',
+          'group relative size-64 overflow-hidden rounded-lg p-2 transition-transform active:scale-[0.98]',
           'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-sky-500/30',
           className
         )}
         onClick={() => setOpen(true)}>
-        <QRCanvas config={config} className='size-full' />
+        <QRCanvas config={config} className='' />
         <span className='absolute right-2 top-2 inline-flex size-8 items-center justify-center rounded-sm text-slate-900 opacity-0 shadow-sm transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100 bg-pink-500'>
           <Icon name='code-scanner' className='size-7 text-white' />
         </span>

@@ -87,18 +87,6 @@ function getStatus(event: Tournament) {
   return 'Published'
 }
 
-function getStatusClass(status: string) {
-  if (status === 'Draft') {
-    return 'bg-amber-500/10 text-amber-700 ring-1 ring-inset ring-amber-500/20 dark:text-amber-300'
-  }
-
-  if (status === 'Full') {
-    return 'bg-slate-900 text-white shadow-sm dark:bg-slate-100 dark:text-slate-900'
-  }
-
-  return 'bg-sky-500/10 text-sky-700 ring-1 ring-inset ring-sky-500/20 dark:bg-sky-600 dark:text-white'
-}
-
 function getSummary(event: Tournament) {
   if (event.divisions?.length) {
     return event.divisions.join(' • ')

@@ -33,8 +33,12 @@ const timeFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: 'Asia/Manila'
 })
 
-const createdAtFormatter = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'medium',
+// const createdAtFormatter = new Intl.DateTimeFormat('en-US', {
+//   dateStyle: 'medium',
+//   timeStyle: 'short'
+// })
+const createdAtNano = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'short',
   timeStyle: 'short'
 })
 
@@ -60,8 +64,11 @@ function formatGateOpenTime(timestamp: number) {
   return timeFormatter.format(new Date(timestamp))
 }
 
-function formatCreatedAt(timestamp: number) {
-  return createdAtFormatter.format(timestamp)
+// function formatCreatedAt(timestamp: number) {
+//   return createdAtFormatter.format(timestamp)
+// }
+function nanoCreatedAt(timestamp: number) {
+  return createdAtNano.format(timestamp)
 }
 
 function formatRegistrationFee(value: number) {
@@ -214,7 +221,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
             </p>
           </div>
 
-          <div className='grid grid-cols-5 gap-2 sm:grid-cols-5 rounded-lg md:rounded-xl border border-border/60 divide-x divide-slate-700/50'>
+          <div className='grid grid-cols-5 sm:grid-cols-5 rounded-lg md:rounded-xl border border-border/60 divide-x divide-slate-700/50'>
             {[
               { label: 'Total', value: counts.total },
               { label: 'Pending', value: counts.pending },
@@ -237,19 +244,19 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
               <thead>
                 <tr className='border-y border-border/50 bg-slate-400/15 text-left whitespace-nowrap'>
                   {[
-                    'Reference',
-                    'Team',
-                    'Entries',
-                    'Amount (₱)',
-                    'Payment',
-                    'Receipt',
-                    'Status',
                     'Created',
-                    'Action'
+                    'Reference',
+                    'Entries',
+                    'Amount(₱)',
+                    'Payment',
+                    'Status',
+                    'Receipt',
+                    'Action',
+                    'Remarks'
                   ].map((label) => (
                     <th
                       key={label}
-                      className='px-6 py-3 font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>
+                      className='px-5 py-3 font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>
                       {label}
                     </th>
                   ))}
@@ -261,6 +268,13 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
 
                   return (
                     <tr key={subscription._id} className='border-b border-border/60 align-top'>
+                      <td className='font-okx px-6 py-4 text-muted-foreground text-xs block'>
+                        {nanoCreatedAt(subscription._creationTime)
+                          .split(',')
+                          .map((part, index) => (
+                            <p key={index}>{part}</p>
+                          ))}
+                      </td>
                       <td className='px-6 py-4'>
                         <div className='space-y-1'>
                           <p className='font-okx text-foreground/90'>
@@ -269,12 +283,12 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                           <p className='text-xs text-muted-foreground'>{subscription.contact_email ?? 'No email'}</p>
                         </div>
                       </td>
-                      <td className='px-4 py-4'>
+                      {/*<td className='px-4 py-4'>
                         <div className='space-y-1'>
                           <p className='font-okx text-foreground/90'>{subscription.team_name ?? 'Team pending'}</p>
                           <p className='text-xs text-muted-foreground'>{subscription.contact_phone ?? 'No phone'}</p>
                         </div>
-                      </td>
+                      </td>*/}
                       <td className='px-4 py-4'>
                         <div className='space-y-1'>
                           <p className='text-foreground/85'>
@@ -300,6 +314,15 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                         </div>
                       </td>
 
+                      <td className='px-4 py-4'>
+                        <span
+                          className={cn(
+                            'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest whitespace-nowrap',
+                            subscriptionStatusStyles[status] ?? subscriptionStatusStyles.pending_payment
+                          )}>
+                          {formatStatus(status)}
+                        </span>
+                      </td>
                       <td className='px-6 py-4 text-xs'>
                         <ReceiptDrawer
                           amount={subscription.payment_amount}
@@ -310,19 +333,6 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                           teamName={subscription.team_name ?? 'Team pending'}
                           uploadedAt={subscription._creationTime}
                         />
-                      </td>
-
-                      <td className='px-4 py-4'>
-                        <span
-                          className={cn(
-                            'inline-flex rounded-sm px-1.5 py-1 font-ios text-[10px] uppercase tracking-widest whitespace-nowrap',
-                            subscriptionStatusStyles[status] ?? subscriptionStatusStyles.pending_payment
-                          )}>
-                          {formatStatus(status)}
-                        </span>
-                      </td>
-                      <td className='px-6 py-4 text-muted-foreground text-xs'>
-                        {formatCreatedAt(subscription._creationTime)}
                       </td>
                       <td className='px-6 py-4 text-xs'>
                         {status === 'confirmed' && subscription.payment_status === 'paid' ? (
@@ -336,6 +346,9 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
                             </button>
                           </form>
                         )}
+                      </td>
+                      <td className='px-6 py-4 text-xs'>
+                        <span className='text-muted-foreground'></span>
                       </td>
                     </tr>
                   )
