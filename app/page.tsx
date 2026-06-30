@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 
 import { useAppForm } from '@/components/form'
 import { EventViewer } from '@/components/landing/cards'
@@ -15,7 +16,11 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
-import { GolfCourse } from './course'
+
+const GolfCourse = dynamic(() => import('./course').then((mod) => mod.GolfCourse), {
+  ssr: false,
+  loading: () => <div className='h-[520px] w-full' aria-hidden='true' />
+})
 
 const proofPoints = [
   { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
