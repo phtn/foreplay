@@ -1,12 +1,10 @@
 import { Icon } from '@/lib/icons'
+import { courseDrawing } from '@/public/pinatubo-complete'
 import { CourseMap, type CourseDrawingExport } from 'foreway'
 import Image from 'next/image'
 
-import course from './pinatubo-complete.json'
-const drawing = course as CourseDrawingExport
-
 export function GolfCourse() {
-  return <CourseMap drawing={drawing} height={520} />
+  return <CourseMap drawing={courseDrawing as CourseDrawingExport} height={520} />
 }
 
 export const Course = () => (
