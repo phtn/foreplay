@@ -104,10 +104,6 @@ export default async function RootLayout({
       className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', figtree.variable)}>
       <body className='min-h-full flex flex-col'>
         <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
-        <div className='h-24 w-full flex items-center justify-center text-xs opacity-50 tracking-wider'>
-          <span className='font-okx'>&copy;{new Date().getFullYear()}</span>{' '}
-          <span className='font-poly tracking-wider text-[11px] px-2'>foreplay.pro</span>
-        </div>
       </body>
     </html>
   )

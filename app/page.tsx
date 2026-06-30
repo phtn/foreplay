@@ -1,8 +1,8 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 
 import { useAppForm } from '@/components/form'
 import { EventViewer } from '@/components/landing/cards'
@@ -19,7 +19,7 @@ import { useMemo } from 'react'
 
 const GolfCourse = dynamic(() => import('./course').then((mod) => mod.GolfCourse), {
   ssr: false,
-  loading: () => <div className='h-[520px] w-full' aria-hidden='true' />
+  loading: () => <div className='h-100 w-full' aria-hidden='true' />
 })
 
 const proofPoints = [
@@ -165,7 +165,7 @@ export default function HomePage() {
             </div>
           </section>
 
-          <section className='grid gap-8 px-2 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-12 lg:py-10'>
+          <section className='grid gap-8 px-2 py-8 sm:px-8 lg:grid-cols-[1.3fr_0.65fr] lg:px-12 lg:py-10'>
             <div className='md:block hidden'>
               <div className='mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
                 <div className='flex items-center gap-4 md:gap-8'>
@@ -206,9 +206,8 @@ export default function HomePage() {
               <GamesList data={gamesList} />
             </div>
             <aside className='rounded-[28px] bg-white/62 p-5 shadow-[0_24px_70px_rgba(31,62,46,0.12)] backdrop-blur-xl sm:p-6'>
-              {' '}
               <div className='flex items-center justify-between gap-4'>
-                <h2 className='font-poly text-3xl leading-none'>Pinatubo Course</h2>
+                <h2 className='font-poly text-2xl leading-none'>Pinatubo Course</h2>
                 <button
                   className='flex size-12 items-center justify-center rounded-full bg-white/85 text-[#1d2824]'
                   type='button'
@@ -230,6 +229,7 @@ export default function HomePage() {
                   ))}
                 </div>
               </div>
+
               <div className='hidden _grid gap-5 sm:grid-cols-[minmax(0,1fr)_128px] lg:grid-cols-[minmax(0,1fr)_132px]'>
                 <div className='relative size-97.5 overflow-hidden rounded-[24px] bg-[#edf4ef] shadow-inner'>
                   {/*<div
@@ -244,7 +244,8 @@ export default function HomePage() {
                   </span>
                 </div>
               </div>
-              <div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
+
+              {/*<div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
                 <span className='flex size-12 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold'>
                   SM
                 </span>
@@ -260,10 +261,14 @@ export default function HomePage() {
                   <p className='font-semibold'>4</p>
                   <p className='text-xs text-[#1d2824]/45'>Tiers</p>
                 </div>
-              </div>
+              </div>*/}
             </aside>
           </section>
         </main>
+      </div>
+      <div className='bg-[#1f2b27] dark:bg-background h-24 w-full flex items-end justify-center text-xs tracking-wider text-white/50'>
+        <span className='font-ios'>&copy;{new Date().getFullYear()}</span>{' '}
+        <span className='font-ios tracking-wider text-[11px] px-2'>foreplay.pro</span>
       </div>
     </div>
   )

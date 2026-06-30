@@ -9,7 +9,6 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
 const tournamentFilters = ['All events', 'Open fields', 'Championships', 'This month']
-
 export default function TournamentsPage() {
   return (
     <ProtectedLayout>
