@@ -233,7 +233,7 @@ export const NewEntryForm = ({
           void form.handleSubmit()
         }}>
         <div className='grid md:grid-cols-3'>
-          <div className='md:border-r border-slate-400 dark:border-slate-800 p-4 md:p-8'>
+          <div className='md:border-r border-slate-400 dark:border-slate-900 p-4 md:p-8'>
             <form.AppField name='email'>
               {({ TextField }) => (
                 <TextField
@@ -272,8 +272,7 @@ export const NewEntryForm = ({
               )}
             </form.AppField>
           </div>
-
-          <div className='bg-sky-500/0 md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-800'>
+          <div className='bg-sky-500/0 md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-900'>
             <form.AppField name='fullName'>
               {({ TextField }) => (
                 <TextField
@@ -382,35 +381,39 @@ export const NewEntryForm = ({
 
         {/* PAYMENTS */}
         <Activity mode={isSaved ? 'visible' : 'hidden'}>
-          <div className='grid min-h-80 border-t border-slate-400 dark:border-slate-800 md:grid-cols-3'>
-            <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-6 dark:border-slate-800 md:border-b-0 md:border-r'>
-              <div className='space-y-5'>
-                <div className='flex items-center gap-3'>
-                  <div className='flex size-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'>
-                    <Icon name='lock' className='size-5' />
+          <div className='grid min-h-80 border-t border-slate-400 dark:border-slate-900 md:grid-cols-3'>
+            <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-6 dark:border-slate-900 md:border-b-0 md:border-r'>
+              <div className='space-y-6'>
+                <div className='flex items-center gap-4'>
+                  <div className='flex size-9 items-center justify-center rounded-lg bg-emerald-100/10 dark:text-emerald-100'>
+                    <Icon name='bank-transfer-in' className='size-6' />
                   </div>
                   <div>
-                    <p className='font-okx text-lg text-foreground'>Scan QR to Pay</p>
+                    <p className='font-okx text-lg text-foreground'>Pay with QR</p>
                   </div>
                 </div>
-                <div className='md:flex justify-start space-x-6 md:space-x-0 md:flex-col space-y-3 text-left'>
-                  <div>
-                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300'>
-                      Reference
+                <div className='md:flex justify-start space-y-6 md:space-x-0 md:flex-col text-left'>
+                  <div className='space-y-1'>
+                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80'>
+                      Reference Number
                     </p>
-                    <p className='font-okx text-sm uppercase text-foreground/80'>{formId}</p>
+                    <p className='font-okx font-medium text-sm md:text-base uppercase text-foreground tracking-wide'>
+                      {formId}
+                    </p>
                   </div>
-                  <div>
-                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300 whitespace-nowrap'>
-                      Recipient
+                  <div className='space-y-1'>
+                    <p className='font-ios font-light text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80 whitespace-nowrap'>
+                      Account Name
                     </p>
-                    <p className='font-okx text-sm text-foreground/80'>{paymentMethod?.accountName ?? 'Unavailable'}</p>
+                    <p className='font-okx font-medium text-sm md:text-base text-foreground tracking-wide'>
+                      {paymentMethod?.accountName ?? 'Unavailable'}
+                    </p>
                   </div>
-                  <div>
-                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300 whitespace-nowrap'>
-                      Destination
+                  <div className='space-y-1'>
+                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80 whitespace-nowrap'>
+                      Account Number
                     </p>
-                    <p className='font-okx text-sm text-foreground/80'>
+                    <p className='font-okx font-medium text-sm md:text-base text-foreground tracking-wide'>
                       {paymentMethod ? `${paymentMethod.bankOrEwallet} ${paymentMethod.accountNumber}` : 'Unavailable'}
                     </p>
                   </div>
@@ -439,7 +442,7 @@ export const NewEntryForm = ({
                 </Button>
               </div>
             </div>
-            <div className='flex items-center justify-center border-b border-slate-400 p-4 dark:border-slate-800 md:border-b-0 md:border-r'>
+            <div className='flex items-center justify-center border-b border-slate-400 p-4 dark:border-slate-900 md:border-b-0 md:border-r'>
               {paymentQRCodeContent ? (
                 <PaymentQR content={paymentQRCodeContent} />
               ) : (
@@ -451,7 +454,10 @@ export const NewEntryForm = ({
             </div>
             <div className='flex flex-col justify-between gap-6 p-8'>
               <div className='space-y-4'>
-                <div>
+                <div className='flex items-center space-x-4'>
+                  <div className='flex size-9 items-center justify-center rounded-lg bg-sky-100/10 dark:text-sky-100'>
+                    <Icon name='upload' className='size-5' />
+                  </div>
                   <p className='font-okx text-lg text-foreground'>Upload your proof of payment.</p>
                   {/*<p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Proof of transfer</p>*/}
                 </div>
@@ -468,11 +474,11 @@ export const NewEntryForm = ({
                     />
                   ) : (
                     <div className='flex size-full flex-col items-center justify-center gap-3 px-4'>
-                      <Icon name={receiptFile ? 'check' : 'receipt-plus'} className='size-10 text-foreground/50' />
-                      <span className='max-w-full truncate font-okx text-xs text-foreground/80'>
+                      <Icon name={receiptFile ? 'check' : 'receipt-plus'} className='size-10 text-foreground' />
+                      <span className='max-w-full truncate font-okx dark:text-sky-400 text-sm text-foreground tracking-wide'>
                         {receiptFile ? receiptFile.name : 'Browse receipt file'}
                       </span>
-                      <span className='font-ios text-[10px] md:text-xs dark:text-slate-300'>
+                      <span className='font-ios text-[9px] md:text-xs dark:text-slate-300'>
                         PNG, JPG, WEBP, AVIF, TIFF
                       </span>
                     </div>

@@ -53,27 +53,34 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
     <header
       className={cn('sticky top-0 z-50 overflow-visible bg-background/10 backdrop-blur-2xl dark:backdrop-blur-none', {
         'border-sky-950/20': pathname.includes('entry'),
-        ' max-w-7xl mx-auto bg-transparent': pathname !== '/',
-        ' max-w-7xl mx-auto bg-background/10 dark:bg-background/30 backdrop-blur-3xl dark:backdrop-blur-3xl':
-          pathname !== '/'
+        'mx-auto bg-transparent': pathname === '/',
+        'mx-auto bg-background/10 dark:bg-background/50 backdrop-blur-3xl dark:backdrop-blur-3xl': pathname !== '/'
       })}>
       <div className='relative z-50'>
-        <div className='mx-auto flex min-h-16 _max-w-7xl md:mt-3 items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6'>
+        <div
+          className={cn(
+            'flex w-full h-16 md:h-20 _max-w-7xl items-center justify-between gap-3 px-3 py-2 sm:px-4 md:px-6',
+            { 'mt-2': pathname === '/' }
+          )}>
           <Brand className='dark:text-foreground' />
           <Navbar pathname={pathname} items={navItems} />
 
-          <div className='flex items-center gap-2'>
-            <div className='hidden sm:block'>
-              <ThemeToggle />
-            </div>
-            <div className='relative z-60 flex items-center gap-4'>
+          <div className='flex items-center gap-2 md:gap-5'>
+            <ThemeToggle />
+            <div className='relative z-60 flex items-center gap-4 px-2'>
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
                     <Button variant='ghost' size='icon-sm' className='w-auto shrink-0 aspect-square rounded-full'>
-                      <div className='flex size-5 items-center justify-center rounded-full bg-primary/10'>
-                        <Avatar size='sm'>
-                          {user.photoURL ? <AvatarImage src={user.photoURL} alt={avatarLabel} /> : null}
+                      <div className='flex size-5 items-center justify-center rounded-full bg-primary'>
+                        <Avatar className='size-8 md:size-10'>
+                          {user.photoURL ? (
+                            <AvatarImage
+                              src={user.photoURL}
+                              alt={avatarLabel}
+                              className='p-0.5 border border-primary'
+                            />
+                          ) : null}
                           <AvatarFallback>{avatarFallback}</AvatarFallback>
                         </Avatar>
                       </div>
@@ -86,9 +93,6 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
                       <AdminButton />
                     </DropdownMenuItem>
                   ) : null}
-                  <DropdownMenuItem className='rounded-sm rounded-t-xl'>
-                    <ThemeToggle withLabel />
-                  </DropdownMenuItem>
                   <DropdownMenuItem className='rounded-sm rounded-b-xl'>
                     <SignOutButton withLabel />
                   </DropdownMenuItem>

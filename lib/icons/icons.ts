@@ -451,6 +451,17 @@ export const icons = {
       '<path fill="currentColor" d="M12 4a4 4 0 0 1 4 4a4 4 0 0 1-4 4a4 4 0 0 1-4-4a4 4 0 0 1 4-4m0 10c4.42 0 8 1.79 8 4v2H4v-2c0-2.21 3.58-4 8-4"/>',
     viewBox: '0 0 24 24',
     set: 'mdi'
+  },
+  'bank-transfer-in': {
+    symbol:
+      '<path fill="currentColor" d="M2 15v-3h3v-2l4 3.5L5 17v-2zm20-6.3V10H10V8.7L16 5zM10 17h12v2H10zm5-6h2v5h-2zm-4 0h2v5h-2zm8 0h2v5h-2z"/>',
+    viewBox: '0 0 24 24',
+    set: 'mdi'
+  },
+  upload: {
+    symbol: '<path fill="currentColor" d="M9 10v6h6v-6h4l-7-7l-7 7zm3-4.2L14.2 8H13v6h-2V8H9.8zM19 18H5v2h14z"/>',
+    viewBox: '0 0 24 24',
+    set: 'mdi'
   }
 }
 /*

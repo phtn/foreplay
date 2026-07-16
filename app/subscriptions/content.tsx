@@ -123,7 +123,7 @@ export const Content = ({ subscriptions }: ContentProps) => {
                       </span>
                     </div>
 
-                    <div className='mt-8 py-3 grid grid-cols-3 md:grid-cols-4 gap-4 dark:bg-slate-500/10 md:mt-0 md:bg-transparent md:p-0 rounded-lg w-full whitespace-nowrap'>
+                    <div className='mt-8 py-3 grid grid-cols-3 md:grid-cols-4 gap-4 dark:bg-slate-500/10 md:dark:bg-transparent md:mt-0 md:bg-transparent md:p-0 rounded-lg w-full whitespace-nowrap'>
                       <div className='hidden md:flex flex-col items-center justify-center w-full'>
                         <span
                           className={`inline-flex shrink-0 rounded-md px-2 py-1 font-ios text-sm uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>

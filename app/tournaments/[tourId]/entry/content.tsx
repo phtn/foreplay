@@ -239,7 +239,7 @@ export const Content = ({
               text={formId}
               speed={15}
               showCursor={false}
-              className='hidden md:flex text-slate-500/50 uppercase font-light'
+              className='hidden md:flex text-slate-500/80 uppercase font-light'
               initialDelay={1500}
             />
           </div>
@@ -263,11 +263,11 @@ export const Content = ({
           </Link>
         ) : null}
       </div>
-      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-background dark:bg-slate-700 bg-slate-200/20 shadow-md shadow-slate-100 dark:shadow-none p-0'>
+      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-slate-900 dark:bg-slate-800 bg-slate-200/20 shadow-xs shadow-slate-100 dark:shadow-none p-0'>
         <CardContent className='p-0'>
           {tourId ? (
             <>
-              <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 border-b'>
+              <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 border-b dark:border-slate-900'>
                 <div className='space-y-1'>
                   <h2
                     id='book-now-title'
@@ -297,8 +297,8 @@ export const Content = ({
                   </div>
                 </div>
                 {/* Countdown */}
-                <div className='hidden md:flex items-start h-10 bg-slate-200/40 dark:bg-transparent'>
-                  <div className='min-w-24 bg-sky-200/5 rounded-md px-4 py-2'>
+                <div className='hidden md:flex items-start h-10 bg-slate-200/40 dark:bg-slate-800'>
+                  <div className='min-w-24 bg-sky-200/5 dark:bg-transparent rounded-md px-4 py-2'>
                     <div className='flex items-center space-x-2 font-ios text-foreground dark:text-sky-500 text-base tracking-wide leading-none whitespace-nowrap'>
                       <span className='font-poly text-slate-400/70 text-base mt-0.5 tracking-widest'>T-</span>
                       <span aria-live='polite'>{countdownLabel}</span>
@@ -307,7 +307,7 @@ export const Content = ({
                 </div>
               </div>
 
-              <div className='h-2 rounded-xs border-y border-slate-300 dark:border-slate-800 bg-slate-200 dark:bg-slate-800 -mx-4 sm:-mx-5' />
+              <div className='h-2 rounded-xs border-y border-slate-300 dark:border-slate-900 bg-slate-200 dark:bg-slate-800 -mx-4 sm:-mx-5' />
               <NewEntryForm
                 key={formId}
                 tourId={tourId}
