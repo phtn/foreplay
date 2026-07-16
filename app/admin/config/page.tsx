@@ -21,20 +21,14 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const tabs = [
+    { value: 'create-event', label: 'Create', content: <CreateEventContent /> },
     { value: 'events', label: 'Events', content: <EventsContent /> },
-    { value: 'create-event', label: 'Create Event', content: <CreateEventContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
     { value: 'payments', label: 'Payments', content: <PaymentsContent /> }
   ]
   return (
     <main className='mx-auto flex w-full max-w-7xl flex-col md:px-4 pt-4 md:pt-0 pb-2'>
-      {/*<div className='flex gap-4 items-start justify-between'>
-        <div>
-          <p className='font-ios text-xs uppercase tracking-wider text-sky-600 dark:text-sky-500'>Settings</p>
-          <h1 className='font-okx font-semibold tracking-wide text-xl'>Admin</h1>
-        </div>
-      </div>*/}
       <Tabs tabs={tabs} />
     </main>
   )

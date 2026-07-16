@@ -1,9 +1,9 @@
 'use client'
 
-import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { GolfCourse } from './course'
 import { useAppForm } from '@/components/form'
 import { EventViewer } from '@/components/landing/cards'
 import { GamesList } from '@/components/landing/games-list'
@@ -16,11 +16,6 @@ import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
 import { useMemo } from 'react'
-
-const GolfCourse = dynamic(() => import('./course').then((mod) => mod.GolfCourse), {
-  ssr: false,
-  loading: () => <div className='h-100 w-full' aria-hidden='true' />
-})
 
 const proofPoints = [
   { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
@@ -244,24 +239,6 @@ export default function HomePage() {
                   </span>
                 </div>
               </div>
-
-              {/*<div className='mt-5 grid grid-cols-[auto_1fr_auto_auto] items-center gap-4 rounded-[18px] bg-white/86 p-4 shadow-sm'>
-                <span className='flex size-12 items-center justify-center rounded-full bg-[#c6e2d6] text-sm font-semibold'>
-                  SM
-                </span>
-                <div className='min-w-0'>
-                  <p className='truncate text-base font-semibold'>Seoul of Manila</p>
-                  <p className='truncate text-sm text-[#1d2824]/50'>Sponsor flight</p>
-                </div>
-                <div className='text-center'>
-                  <p className='font-semibold'>36</p>
-                  <p className='text-xs text-[#1d2824]/45'>Format</p>
-                </div>
-                <div className='text-center'>
-                  <p className='font-semibold'>4</p>
-                  <p className='text-xs text-[#1d2824]/45'>Tiers</p>
-                </div>
-              </div>*/}
             </aside>
           </section>
         </main>

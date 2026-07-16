@@ -280,7 +280,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
 
   return (
     <div className='space-y-5 px-2'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-2'>
         <SectionTitle title='Destination' eyebrow='Manual Payments' />
       </div>
 

@@ -9,7 +9,7 @@ import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
-import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, RefObject, SubmitEvent, useEffect, useMemo, useRef, useState } from 'react'
 import { createTournamentEvent, generateEventAssetUploadUrl } from '../actions'
 
 const imageAccept = 'image/png,image/jpeg,image/webp,image/avif'
@@ -185,7 +185,7 @@ export function CreateEventForm() {
     options: {
       setFile: (file: File | null) => void
       setPreviewUrl: (url: string | null) => void
-      previewUrlRef: React.MutableRefObject<string | null>
+      previewUrlRef: RefObject<string | null>
     }
   ) => {
     if (options.previewUrlRef.current) {
@@ -226,7 +226,7 @@ export function CreateEventForm() {
     }
   }
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     setErrorMessage(null)
     setSuccessMessage(null)
@@ -267,11 +267,11 @@ export function CreateEventForm() {
     <form ref={formRef} onSubmit={handleSubmit} className='grid gap-5 xl:grid-cols-[minmax(360px,0.82fr)_1.18fr]'>
       <section className='grid content-start gap-4'>
         <div className='overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm'>
-          <div className='relative min-h-72 bg-neutral-950'>
+          <div className='relative min-h-72 bg-neutral-400'>
             {coverPreviewUrl ? (
               <Image src={coverPreviewUrl} alt='' fill unoptimized className='object-cover opacity-85' sizes='520px' />
             ) : (
-              <div className='absolute inset-0 bg-[linear-gradient(135deg,#111827,#14532d_52%,#0e7490)]' />
+              <div className='absolute inset-0 bg-[linear-gradient(135deg,#e9e6de,#d18ee2_52%,#ff7759)]' />
             )}
             <div className='absolute inset-0 bg-black/28' />
             <div className='relative flex min-h-72 flex-col justify-between p-5 text-white'>
@@ -279,7 +279,14 @@ export function CreateEventForm() {
                 <div className='flex items-center gap-3'>
                   <div className='relative flex size-14 items-center justify-center overflow-hidden rounded-lg border border-white/25 bg-white/15'>
                     {logoPreviewUrl ? (
-                      <Image src={logoPreviewUrl} alt='' fill unoptimized className='object-contain p-1.5' sizes='56px' />
+                      <Image
+                        src={logoPreviewUrl}
+                        alt=''
+                        fill
+                        unoptimized
+                        className='object-contain p-1.5'
+                        sizes='56px'
+                      />
                     ) : (
                       <span className='font-okx text-xl'>{previewTitle.slice(0, 1).toUpperCase()}</span>
                     )}
@@ -496,7 +503,12 @@ export function CreateEventForm() {
           ) : null}
 
           <div className='flex flex-col-reverse gap-2 border-t border-border/70 pt-5 sm:flex-row sm:justify-end'>
-            <Button type='button' variant='outline' className='h-11 justify-center' disabled={isSubmitting} onClick={resetForm}>
+            <Button
+              type='button'
+              variant='outline'
+              className='h-11 justify-center'
+              disabled={isSubmitting}
+              onClick={resetForm}>
               Reset
             </Button>
             <Button type='submit' className='h-11 justify-center' disabled={isSubmitting}>
@@ -552,7 +564,13 @@ function EventInput({
   return (
     <div className='grid gap-2'>
       <Label htmlFor={id}>{label}</Label>
-      <Input id={id} value={value} onChange={(event) => onChange(event.currentTarget.value)} className='h-11' {...props} />
+      <Input
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.currentTarget.value)}
+        className='h-11'
+        {...props}
+      />
     </div>
   )
 }
