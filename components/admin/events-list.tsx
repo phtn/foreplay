@@ -254,12 +254,11 @@ const EventRow = (row: EventRow) => {
           {row.href ? (
             <Link
               className={cn(
-                buttonVariants({ variant: 'default', size: 'sm' }),
-                'bg-background hover:bg-background/80 rounded-full text-sky-700'
+                buttonVariants({ variant: 'default', size: 'default' }),
+                'bg-background hover:bg-background/80 rounded-full text-sky-400'
               )}
               href={row.href}>
-              <span>Open</span>
-              <Icon name='chevron-right' className='size-4 -mb-0.5 -ml-0.5' />
+              <span className='font-poly'>Open</span>
             </Link>
           ) : (
             <span className='text-sm text-[#1d2824]/45'>n/a</span>
