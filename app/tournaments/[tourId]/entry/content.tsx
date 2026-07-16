@@ -225,13 +225,13 @@ export const Content = ({
         <div className='relative flex items-center gap-2 text-base md:text-xl font-poly'>
           <Icon name='tag-arrow' className='size-6 text-sky-500 mb-0.5 hidden md:flex' />
           <div className='flex items-center space-x-2 md:space-x-4'>
-            <Typewrite text='New Entry' speed={20} showCursor={false} className='text-sky-500 whitespace-nowrap' />
+            <Typewrite text='New' speed={20} showCursor={false} className='text-sky-500 whitespace-nowrap' />
             <Icon name='chevron-right' className='size-4 md:size-5 text-slate-500' />
             <Typewrite
               text={tournament.title}
               speed={15}
               showCursor={false}
-              className='font-light text-slate-900 dark:text-foreground capitalize text-ellipsis whitespace-nowrap'
+              className='font-semibold text-slate-900 dark:text-foreground capitalize text-ellipsis whitespace-nowrap'
               initialDelay={250}
             />
             <Icon name='chevron-right' className='size-5 text-slate-500 hidden md:flex' />
@@ -269,25 +269,31 @@ export const Content = ({
             <>
               <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between p-4 border-b'>
                 <div className='space-y-1'>
-                  <h2 id='book-now-title' className='font-heading text-lg font-semibold tracking-tight sm:text-base'>
-                    {tournament.venue}
+                  <h2
+                    id='book-now-title'
+                    className='font-heading text-base md:text-lg md:font-semibold tracking-tight sm:text-base'>
+                    {tournament.venue.split(',').shift()}
                   </h2>
                 </div>
 
                 <div className='grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-12'>
                   <div className='p-0 space-y-1.5'>
-                    <p className='font-ios text-xs uppercase tracking-widest dark:text-slate-400'>Price</p>
-                    <p className='font-okx font-medium mt-1 text-base'>
+                    <p className='font-ios md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>
+                      Price
+                    </p>
+                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>
                       {price > 0 ? currencyFormatter.format(price) : tournament.entryFeeLabel}
                     </p>
                   </div>
                   <div className='p-0 space-y-1.5'>
-                    <p className='text-xs uppercase tracking-widest dark:text-slate-400'>Total</p>
-                    <p className='font-okx font-medium mt-1 text-base'>{currencyFormatter.format(total)}</p>
+                    <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Total</p>
+                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>
+                      {currencyFormatter.format(total)}
+                    </p>
                   </div>
                   <div className='p-0 space-y-1.5'>
-                    <p className='text-xs uppercase tracking-widest dark:text-slate-400'>Entries</p>
-                    <p className='font-okx font-medium mt-1 text-base'>{players}</p>
+                    <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Entries</p>
+                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>{players}</p>
                   </div>
                 </div>
                 {/* Countdown */}

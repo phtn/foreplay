@@ -44,7 +44,7 @@ export function TextField({
     <div className={cn('mb-4 space-y-2 w-full', containerClassName)}>
       {label && (
         <div className='flex items-center justify-between'>
-          <Label htmlFor={id} className='capitalize opacity-80 text-xs'>
+          <Label htmlFor={id} className='capitalize opacity-80 font-okx text-xs'>
             {label}
           </Label>
 
@@ -77,7 +77,7 @@ export function TextField({
             onChange?.(event)
           }}
           className={cn(
-            'h-14 bg-foreground/4 hover:bg-white dark:bg-background/20 border-white/80 dark:border-white/40 dark:focus-visible:bg-background/30 focus-visible:bg-white dark:focus-visible:ring-primary focus-visible:ring-primary/15 focus-visible:border-primary dark:placeholder:text-white/60 shadow-xs',
+            'h-14 bg-foreground/4 hover:bg-white dark:bg-background/20 border-white/80 dark:border-white/40 dark:focus-visible:bg-background/30 focus-visible:bg-white dark:focus-visible:ring-primary focus-visible:ring-primary/15 focus-visible:border-primary dark:placeholder:text-white/60 shadow-xs md:text-base text-sm',
             !!icon ? 'pl-12' : 'px-3',
             className
           )}

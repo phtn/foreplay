@@ -284,7 +284,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
         <SectionTitle title='Destination' eyebrow='Manual Payments' />
       </div>
 
-      <div className=''>
+      <div className='space-y-4'>
         <section className='grid gap-4 md:grid-cols-2 w-full'>
           {paymentMethods.length ? (
             paymentMethods.map((paymentMethod) => (
@@ -311,7 +311,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
           )}
         </section>
 
-        <aside className='rounded-lg border border-border/70 bg-card p-4 sm:p-5 hidden'>
+        <aside className='rounded-lg border border-border/70 bg-card p-4 sm:p-5'>
           <div className='space-y-4'>
             <div className='flex items-start justify-between gap-4'>
               <div>

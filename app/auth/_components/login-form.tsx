@@ -51,7 +51,7 @@ export function LoginForm() {
 
   const isSubmitting = submissionKind !== null || form.state.isSubmitting
   const googleButtonLabel =
-    submissionKind === 'google' ? (user ? 'Granting' : 'Connecting') : user ? 'Dashboard' : 'Google'
+    submissionKind === 'google' ? (user ? 'Authenticating' : 'Connecting') : user ? 'Dashboard' : 'Google'
 
   async function handleGoogle() {
     setErrorMessage(null)
@@ -73,7 +73,7 @@ export function LoginForm() {
         <Button
           type='button'
           className={cn(
-            'col-span-2 h-12 w-auto gap-3 rounded-md border border-foreground/40 bg-white/80 px-4 text-sm font-medium transition-colors hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 disabled:pointer-events-none disabled:opacity-70 sm:col-span-1',
+            'h-12 w-full gap-3 rounded-md border border-foreground/40 bg-white/80 px-4 text-sm font-medium transition-colors hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 disabled:pointer-events-none disabled:opacity-70 sm:col-span-1',
             { 'disabled:opacity-100': isAuthLoading }
           )}
           onClick={handleGoogle}
@@ -86,19 +86,19 @@ export function LoginForm() {
         </Button>
         <Button
           type='button'
-          className='size-12 aspect-square flex-1 gap-2 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='hidden size-12 aspect-square flex-1 gap-2 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'x'} className='size-4.5 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='size-12 aspect-square flex-1 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='hidden size-12 aspect-square flex-1 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'github'} className='size-8 text-foreground' />
         </Button>
         <Button
           type='button'
-          className='size-12 aspect-square flex-1 gap-3 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
+          className='hidden size-12 aspect-square flex-1 gap-3 rounded-md border border-white/55 bg-white/80 px-4 text-sm font-medium hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 dark:disabled:border-white/30 dark:disabled:bg-transparent disabled:pointer-events-none disabled:opacity-60'
           disabled>
           <Icon name={'msft'} className='size-4.5 text-foreground' />
         </Button>
@@ -143,8 +143,8 @@ export function LoginForm() {
             <div className='flex w-full items-center gap-0'>
               <Link
                 href='/auth/recovery'
-                className='flex items-center space-x-1 text-sm text-emerald-800 dark:text-foreground/80 hover:underline decoration-primary underline-offset-4 focus-visible:outline outline-primary rounded'>
-                <Icon name='key' className='size-4.5' />
+                className='flex items-center space-x-1 text-xs md:text-sm text-emerald-800 dark:text-foreground/80 hover:underline decoration-primary underline-offset-4 focus-visible:outline outline-primary rounded'>
+                <Icon name='key' className='md:size-3.5 size-3' />
                 <span>Account Recovery</span>
               </Link>
             </div>

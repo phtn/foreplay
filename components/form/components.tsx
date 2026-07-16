@@ -17,7 +17,7 @@ export function SubmitButton({ label, kind = 'default' }: SubmitButtonProps) {
         <Button
           type='submit'
           size='xl'
-          className='relative z-2 w-full rounded-sm bg-linear-to-r from-primary/5 via-primary to-emerald-800/20 font-medium text-white sm:w-1/2'
+          className='relative z-2 w-full rounded-sm bg-linear-to-r from-primary/5 via-primary to-emerald-800/20 font-poly font-medium text-white sm:w-1/2'
           disabled={isSubmitting}>
           {kind === 'email' ? (
             <>

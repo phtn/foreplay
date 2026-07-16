@@ -273,15 +273,15 @@ export const NewEntryForm = ({
             </form.AppField>
           </div>
 
-          <div className='bg-sky-500/0 p-8 md:border-r border-slate-400 dark:border-slate-800'>
-            {/*<form.AppField name='fullName'>
+          <div className='bg-sky-500/0 md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-800'>
+            <form.AppField name='fullName'>
               {({ TextField }) => (
                 <TextField
                   id='name'
                   type='text'
-                  label='Team Name (Optional)'
-                  icon={'pentagon'}
-                  placeholder='Team A'
+                  label='Full Name'
+                  icon={'user'}
+                  placeholder='Your first and last name'
                   autoComplete='organization'
                   containerClassName='mb-4'
                   className={entryControlClassName}
@@ -290,7 +290,7 @@ export const NewEntryForm = ({
                     void setEntryQuery({ teamName: event.currentTarget.value || null })
                   }}></TextField>
               )}
-            </form.AppField>*/}
+            </form.AppField>
             <form.AppField name='playerCount'>
               {({ TextField }) => (
                 <TextField
@@ -350,7 +350,7 @@ export const NewEntryForm = ({
           </div>
 
           <div className='h-full flex flex-col gap-4 md:gap-8 md:pt-4 text-center md:justify-center bg-sky-500/0'>
-            <p className='font-okx text-foreground/80 text-base text-balance text-center'>
+            <p className='font-okx text-foreground/80 text-xs md:text-base text-balance text-center'>
               By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
               follows payment review.
             </p>
@@ -393,17 +393,23 @@ export const NewEntryForm = ({
                     <p className='font-okx text-lg text-foreground'>Scan QR to Pay</p>
                   </div>
                 </div>
-                <div className='flex justify-start space-x-6 md:space-x-0 md:flex-col space-y-3 text-left'>
+                <div className='md:flex justify-start space-x-6 md:space-x-0 md:flex-col space-y-3 text-left'>
                   <div>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Reference</p>
+                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300'>
+                      Reference
+                    </p>
                     <p className='font-okx text-sm uppercase text-foreground/80'>{formId}</p>
                   </div>
                   <div>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Recipient</p>
+                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300 whitespace-nowrap'>
+                      Recipient
+                    </p>
                     <p className='font-okx text-sm text-foreground/80'>{paymentMethod?.accountName ?? 'Unavailable'}</p>
                   </div>
                   <div>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Destination</p>
+                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300 whitespace-nowrap'>
+                      Destination
+                    </p>
                     <p className='font-okx text-sm text-foreground/80'>
                       {paymentMethod ? `${paymentMethod.bankOrEwallet} ${paymentMethod.accountNumber}` : 'Unavailable'}
                     </p>
@@ -446,8 +452,8 @@ export const NewEntryForm = ({
             <div className='flex flex-col justify-between gap-6 p-8'>
               <div className='space-y-4'>
                 <div>
-                  <p className='font-okx text-lg text-foreground'>Upload Receipt</p>
-                  <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Proof of transfer</p>
+                  <p className='font-okx text-lg text-foreground'>Upload your proof of payment.</p>
+                  {/*<p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Proof of transfer</p>*/}
                 </div>
                 <label
                   htmlFor='payment-receipt'
@@ -462,12 +468,12 @@ export const NewEntryForm = ({
                     />
                   ) : (
                     <div className='flex size-full flex-col items-center justify-center gap-3 px-4'>
-                      <Icon name={receiptFile ? 'check' : 'file'} className='size-8 text-foreground/50' />
-                      <span className='max-w-full truncate font-okx text-sm text-foreground/80'>
-                        {receiptFile ? receiptFile.name : 'Choose receipt file'}
+                      <Icon name={receiptFile ? 'check' : 'receipt-plus'} className='size-10 text-foreground/50' />
+                      <span className='max-w-full truncate font-okx text-xs text-foreground/80'>
+                        {receiptFile ? receiptFile.name : 'Browse receipt file'}
                       </span>
-                      <span className='font-ios text-xs text-muted-foreground'>
-                        PNG, JPG, WEBP, AVIF, TIFF, GIF, BMP, PDF
+                      <span className='font-ios text-[10px] md:text-xs dark:text-slate-300'>
+                        PNG, JPG, WEBP, AVIF, TIFF
                       </span>
                     </div>
                   )}

@@ -212,7 +212,7 @@ export default function HomePage() {
                   className='flex size-12 items-center justify-center rounded-full bg-white/85 text-[#1d2824]'
                   type='button'
                   aria-label='Open course map'>
-                  <Icon name='golf-flag' className='size-5' />
+                  <Icon name='compass-fill' className='size-6 -rotate-112 text-[#934040]' />
                 </button>
               </div>
               <div className='md:flex items-center'>
