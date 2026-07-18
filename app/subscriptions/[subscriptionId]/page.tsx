@@ -2,7 +2,6 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
-import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { Icon } from '@/lib/icons'
@@ -43,11 +42,29 @@ const DetailRow = ({ label, value }: { label: string; value: string | undefined 
   </div>
 )
 
+const SessionRequired = () => (
+  <section className='mx-auto flex min-h-[55vh] max-w-xl flex-col items-center justify-center gap-5 px-4 text-center'>
+    <div className='flex size-12 items-center justify-center rounded-full bg-muted text-muted-foreground'>
+      <Icon name='lock' className='size-5' />
+    </div>
+    <div className='space-y-2'>
+      <h1 className='font-poly text-2xl text-foreground'>Sign in required</h1>
+      <p className='text-sm leading-6 text-muted-foreground'>
+        Your session is no longer valid. Sign in again to view this entry.
+      </p>
+    </div>
+    <Link href='/auth/login' className={cn(buttonVariants({ variant: 'default' }), 'gap-2')}>
+      Sign in
+      <Icon name='chevron-right' className='size-4' />
+    </Link>
+  </section>
+)
+
 const Page = async ({ params }: PageProps) => {
   const [{ subscriptionId }, session] = await Promise.all([params, getVerifiedFirebaseSession()])
 
   if (!session) {
-    notFound()
+    return <SessionRequired />
   }
 
   const userIds = buildFirebaseSubscriptionUserIds(session.decodedToken)
@@ -76,8 +93,7 @@ const Page = async ({ params }: PageProps) => {
     subscription.status !== 'payment_review'
 
   return (
-    <ProtectedLayout>
-      <main className='space-y-4 md:space-y-8'>
+    <div className='space-y-4 md:space-y-8'>
         <div className='flex gap-4 items-end sm:items-start sm:justify-between'>
           <div className='min-w-0 space-y-2 md:space-y-6 w-full'>
             <Link
@@ -211,8 +227,7 @@ const Page = async ({ params }: PageProps) => {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </ProtectedLayout>
+    </div>
   )
 }
 

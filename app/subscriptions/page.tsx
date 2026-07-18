@@ -1,5 +1,4 @@
 import { api } from '@/convex/_generated/api'
-import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { fetchQuery } from 'convex/nextjs'
@@ -24,10 +23,6 @@ const Page = async () => {
   const userIds = session ? buildFirebaseSubscriptionUserIds(session.decodedToken) : []
   const subscriptions = userIds.length ? await fetchQuery(api.subscriptions.q.listByUserIds, { userIds }) : []
 
-  return (
-    <ProtectedLayout>
-      <Content subscriptions={subscriptions} />
-    </ProtectedLayout>
-  )
+  return <Content subscriptions={subscriptions} />
 }
 export default Page
