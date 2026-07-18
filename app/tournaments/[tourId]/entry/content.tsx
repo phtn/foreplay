@@ -3,6 +3,7 @@
 import { Typewrite } from '@/components/text/typewriter'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
+import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -160,13 +161,18 @@ export const Content = ({
 
   const subscriptionPlayers = Number.parseInt(initialSubscription?.total_players ?? '', 10)
   const initialPlayers = Number.isFinite(subscriptionPlayers) ? Math.max(1, subscriptionPlayers) : defaultPlayers
+  const initialEntryLocked = isSubscriptionEntryLocked(initialSubscription)
   const formId = initialFormId
-  const players = initialSubscription ? initialPlayers : (query.players ?? defaultPlayers)
-  const division = initialSubscription
-    ? (initialSubscription.division ?? initialDivision)
+  const requestedPlayers = query.players ?? initialPlayers
+  const players = initialSubscription && initialEntryLocked
+    ? initialPlayers
+    : Math.max(1, Math.min(20, requestedPlayers))
+  const savedDivision = initialSubscription?.division ?? initialDivision
+  const division = initialSubscription && initialEntryLocked
+    ? savedDivision
     : query.division && validDivisionValues.has(query.division)
       ? query.division
-      : initialDivision
+      : savedDivision
   // const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
   const price = tournament.entryFee
   const total = players * price
@@ -186,17 +192,21 @@ export const Content = ({
         next.formId = initialFormId
       }
 
-      if (current.players == null || (initialSubscription && current.players !== initialPlayers)) {
+      if (current.players == null || (initialEntryLocked && current.players !== initialPlayers)) {
         next.players = initialPlayers
       }
 
-      if (!current.division || !validDivisionValues.has(current.division) || initialSubscription) {
+      if (
+        !current.division ||
+        !validDivisionValues.has(current.division) ||
+        (initialEntryLocked && current.division !== division)
+      ) {
         next.division = division
       }
 
       return Object.keys(next).length ? next : null
     })
-  }, [division, initialFormId, initialPlayers, initialSubscription, setQuery, tourId, validDivisionValues])
+  }, [division, initialEntryLocked, initialFormId, initialPlayers, setQuery, tourId, validDivisionValues])
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -212,7 +222,7 @@ export const Content = ({
   }, [tournament.gateOpenAt])
 
   const handlePlayersChange = (nextPlayers: number) => {
-    void setQuery({ players: Math.max(1, nextPlayers) })
+    void setQuery({ players: Math.max(1, Math.min(20, nextPlayers)) })
   }
 
   const handleDivisionChange = (nextDivision: string) => {

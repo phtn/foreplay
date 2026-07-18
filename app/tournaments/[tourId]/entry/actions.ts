@@ -5,6 +5,7 @@ import type { Id } from '@/convex/_generated/dataModel'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds, buildFirebaseUserId } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
+import { ConvexError } from 'convex/values'
 
 type CreateTournamentSubscriptionInput = {
   tourId: string
@@ -24,9 +25,31 @@ type UpdateTournamentSubscriptionReceiptInput = {
   storageId: Id<'_storage'>
 }
 
+type ReceiptTargetInput = {
+  subscriptionId: Id<'subscriptions'>
+  formId: string
+}
+
 const trimOrUndefined = (value: string | undefined) => {
   const trimmed = value?.trim()
   return trimmed ? trimmed : undefined
+}
+
+const actionError = (error: unknown, fallback: string, operation: string) => {
+  if (error instanceof ConvexError) {
+    const data = error.data
+
+    if (typeof data === 'string' && data.trim()) {
+      return { ok: false, error: data.trim() } as const
+    }
+
+    if (data && typeof data === 'object' && 'message' in data && typeof data.message === 'string') {
+      return { ok: false, error: data.message } as const
+    }
+  }
+
+  console.error(`[tournament-entry] ${operation} failed`, error)
+  return { ok: false, error: fallback } as const
 }
 
 export async function createTournamentSubscription(input: CreateTournamentSubscriptionInput) {
@@ -36,47 +59,83 @@ export async function createTournamentSubscription(input: CreateTournamentSubscr
   const paymentAmount = Math.max(0, Math.round(input.paymentAmount))
 
   if (!email) {
-    throw new Error('Contact email is required.')
+    return { ok: false, error: 'Contact email is required.' } as const
   }
 
   if (!Number.isFinite(totalPlayers) || totalPlayers < 1) {
-    throw new Error('Enter at least one player.')
+    return { ok: false, error: 'Enter at least one player.' } as const
+  }
+
+  if (totalPlayers > 20) {
+    return { ok: false, error: 'You can add up to 20 players per entry.' } as const
   }
 
   if (!Number.isFinite(paymentAmount)) {
-    throw new Error('Payment amount is invalid.')
+    return { ok: false, error: 'Payment amount is invalid.' } as const
   }
 
-  const session = await getVerifiedFirebaseSession()
-  if (!session) {
-    throw new Error('You must be signed in to create an entry.')
+  try {
+    const session = await getVerifiedFirebaseSession()
+    if (!session) {
+      return { ok: false, error: 'You must be signed in to create an entry.' } as const
+    }
+
+    const userId = buildFirebaseUserId(session.decodedToken)
+    const result = await fetchMutation(api.subscriptions.m.create, {
+      userId,
+      ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken),
+      tournamentId: input.tourId,
+      formId: input.formId,
+      teamName: trimOrUndefined(input.teamName),
+      contactEmail: email,
+      contactPhone: trimOrUndefined(phone),
+      totalPlayers,
+      paymentAmount,
+      handicapIndex: trimOrUndefined(input.handicapIndex),
+      division: trimOrUndefined(input.division)
+    })
+
+    return { ok: true, value: result } as const
+  } catch (error) {
+    return actionError(error, 'Unable to save this entry request.', 'save entry')
   }
-
-  const userId = buildFirebaseUserId(session.decodedToken)
-
-  return await fetchMutation(api.subscriptions.m.create, {
-    userId,
-    ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken),
-    tournamentId: input.tourId,
-    formId: input.formId,
-    teamName: trimOrUndefined(input.teamName),
-    contactEmail: email,
-    contactPhone: trimOrUndefined(phone),
-    totalPlayers,
-    paymentAmount,
-    handicapIndex: trimOrUndefined(input.handicapIndex),
-    division: trimOrUndefined(input.division)
-  })
 }
 
-export async function generateReceiptUploadUrl() {
-  return await fetchMutation(api.subscriptions.m.generateReceiptUploadUrl)
+export async function generateReceiptUploadUrl(input: ReceiptTargetInput) {
+  try {
+    const session = await getVerifiedFirebaseSession()
+    if (!session) {
+      return { ok: false, error: 'You must be signed in to upload a receipt.' } as const
+    }
+
+    const uploadUrl = await fetchMutation(api.subscriptions.m.generateReceiptUploadUrl, {
+      subscriptionId: input.subscriptionId,
+      formId: input.formId,
+      ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
+    })
+
+    return { ok: true, value: uploadUrl } as const
+  } catch (error) {
+    return actionError(error, 'Unable to prepare this receipt upload.', 'generate receipt upload URL')
+  }
 }
 
 export async function updateTournamentSubscriptionReceipt(input: UpdateTournamentSubscriptionReceiptInput) {
-  return await fetchMutation(api.subscriptions.m.updateReceipt, {
-    subscriptionId: input.subscriptionId,
-    formId: input.formId,
-    storageId: input.storageId
-  })
+  try {
+    const session = await getVerifiedFirebaseSession()
+    if (!session) {
+      return { ok: false, error: 'You must be signed in to submit a receipt.' } as const
+    }
+
+    const result = await fetchMutation(api.subscriptions.m.updateReceipt, {
+      subscriptionId: input.subscriptionId,
+      formId: input.formId,
+      storageId: input.storageId,
+      ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
+    })
+
+    return { ok: true, value: result } as const
+  } catch (error) {
+    return actionError(error, 'Unable to submit this receipt.', 'submit receipt')
+  }
 }

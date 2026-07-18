@@ -4,6 +4,7 @@ import { useAppForm } from '@/components/form'
 import { createQRCodeSvg, QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
+import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
 import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
 import Image from 'next/image'
@@ -58,20 +59,25 @@ export const NewEntryForm = ({
   onPlayersChange,
   onDivisionChange
 }: NewEntryFormProps) => {
+  const initiallyLocked = isSubscriptionEntryLocked(initialSubscription)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(() =>
-    initialSubscription
-      ? `Entry request saved. Subscription ${initialSubscription._id} is pending payment review.`
+    initialSubscription && !initiallyLocked
+      ? 'Entry request saved. You can update it until proof of payment is submitted.'
       : null
   )
   const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(initialSubscription?._id ?? null)
+  const [didSubmitReceipt, setDidSubmitReceipt] = useState(false)
+  const isEntryLocked = initiallyLocked || didSubmitReceipt
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
   const receiptPreviewUrlRef = useRef<string | null>(null)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
   const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(() =>
-    initialSubscription?.receipt_image_url || initialSubscription?.status === 'payment_review'
-      ? 'Receipt uploaded. Payment is pending review.'
+    initiallyLocked
+      ? initialSubscription?.status === 'cancelled'
+        ? 'This entry is cancelled and can no longer be changed.'
+        : 'Receipt uploaded. Payment is pending review.'
       : null
   )
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
@@ -110,16 +116,31 @@ export const NewEntryForm = ({
 
   const form = useAppForm({
     defaultValues: {
-      fullName: initialSubscription?.team_name ?? entryQuery.teamName ?? '',
-      email: initialSubscription?.contact_email ?? entryQuery.email ?? initialEmail,
-      phone: initialSubscription?.contact_phone ?? entryQuery.phone ?? initialPhone,
-      division: initialSubscription?.division ?? division,
-      playerCount: String(initialSubscription?.total_players ?? entryQuery.players ?? players),
-      handicapIndex: initialSubscription?.handicap_index ?? entryQuery.handicapIndex ?? ''
+      fullName: initiallyLocked
+        ? (initialSubscription?.team_name ?? '')
+        : (entryQuery.teamName ?? initialSubscription?.team_name ?? ''),
+      email: initiallyLocked
+        ? (initialSubscription?.contact_email ?? initialEmail)
+        : (entryQuery.email ?? initialSubscription?.contact_email ?? initialEmail),
+      phone: initiallyLocked
+        ? (initialSubscription?.contact_phone ?? initialPhone)
+        : (entryQuery.phone ?? initialSubscription?.contact_phone ?? initialPhone),
+      division: initiallyLocked
+        ? (initialSubscription?.division ?? division)
+        : (entryQuery.division ?? initialSubscription?.division ?? division),
+      playerCount: String(
+        initiallyLocked
+          ? (initialSubscription?.total_players ?? players)
+          : (entryQuery.players ?? initialSubscription?.total_players ?? players)
+      ),
+      handicapIndex: initiallyLocked
+        ? (initialSubscription?.handicap_index ?? '')
+        : (entryQuery.handicapIndex ?? initialSubscription?.handicap_index ?? '')
     },
     onSubmit: async ({ value }) => {
       setErrorMessage(null)
       setSuccessMessage(null)
+      const wasSaved = subscriptionId !== null
 
       try {
         const result = await createTournamentSubscription({
@@ -134,15 +155,25 @@ export const NewEntryForm = ({
           division: value.division
         })
 
-        setSubscriptionId(result.subscriptionId)
-        setSuccessMessage(`Entry request saved. Subscription ${result.subscriptionId} is pending payment review.`)
-      } catch (error) {
-        setErrorMessage(error instanceof Error ? error.message : 'Unable to save this entry request.')
+        if (!result.ok) {
+          setErrorMessage(result.error)
+          return
+        }
+
+        setSubscriptionId(result.value.subscriptionId)
+        setSuccessMessage(
+          wasSaved
+            ? 'Entry changes saved. You can continue editing until proof of payment is submitted.'
+            : 'Entry request saved. You can update it until proof of payment is submitted.'
+        )
+      } catch {
+        setErrorMessage('Unable to save this entry request.')
       }
     }
   })
   const isSubmitting = form.state.isSubmitting
   const isSaved = subscriptionId !== null
+  const isDraftBusy = isSubmitting || isSubmittingReceipt
   const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
   const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
   const copyPaymentCode = useCallback(async () => {
@@ -176,7 +207,7 @@ export const NewEntryForm = ({
     URL.revokeObjectURL(url)
   }, [formId, paymentQRCodeContent])
   const submitReceipt = useCallback(async () => {
-    if (!receiptFile || !subscriptionId) {
+    if (!receiptFile || !subscriptionId || isEntryLocked) {
       return
     }
 
@@ -193,8 +224,13 @@ export const NewEntryForm = ({
         : null
       const uploadBlob = convertedReceipt?.blob ?? receiptFile
       const uploadContentType = convertedReceipt?.format || receiptFile.type || 'application/octet-stream'
-      const uploadUrl = await generateReceiptUploadUrl()
-      const uploadResponse = await fetch(uploadUrl, {
+      const uploadUrlResult = await generateReceiptUploadUrl({ subscriptionId, formId })
+
+      if (!uploadUrlResult.ok) {
+        throw new Error(uploadUrlResult.error)
+      }
+
+      const uploadResponse = await fetch(uploadUrlResult.value, {
         method: 'POST',
         headers: {
           'Content-Type': uploadContentType
@@ -208,26 +244,32 @@ export const NewEntryForm = ({
 
       const { storageId } = (await uploadResponse.json()) as { storageId: Id<'_storage'> }
 
-      await updateTournamentSubscriptionReceipt({
+      const updateResult = await updateTournamentSubscriptionReceipt({
         subscriptionId,
         formId,
         storageId
       })
 
+      if (!updateResult.ok) {
+        throw new Error(updateResult.error)
+      }
+
+      setDidSubmitReceipt(true)
+      setSuccessMessage(null)
       setReceiptSuccessMessage('Receipt uploaded. Payment is pending review.')
     } catch (error) {
       setReceiptErrorMessage(error instanceof Error ? error.message : 'Unable to submit this receipt.')
     } finally {
       setIsSubmittingReceipt(false)
     }
-  }, [convert, formId, receiptFile, subscriptionId])
+  }, [convert, formId, isEntryLocked, receiptFile, subscriptionId])
 
   const router = useRouter()
 
   return (
     <form.AppForm>
       <form
-        aria-busy={isSubmitting}
+        aria-busy={isDraftBusy}
         onSubmit={(event) => {
           event.preventDefault()
           void form.handleSubmit()
@@ -246,7 +288,7 @@ export const NewEntryForm = ({
                   required
                   containerClassName='mb-4'
                   className={entryControlClassName}
-                  disabled={isSubmitting || isSaved}
+                  disabled={isDraftBusy || isEntryLocked}
                   onChange={(event) => {
                     void setEntryQuery({ email: event.currentTarget.value || null })
                   }}></TextField>
@@ -264,7 +306,7 @@ export const NewEntryForm = ({
                   required={false}
                   containerClassName='mb-0'
                   className={entryControlClassName}
-                  disabled={isSubmitting || isSaved}
+                  disabled={isDraftBusy || isEntryLocked}
                   onChange={(event) => {
                     void setEntryQuery({ phone: event.currentTarget.value || null })
                   }}
@@ -284,7 +326,7 @@ export const NewEntryForm = ({
                   autoComplete='organization'
                   containerClassName='mb-4'
                   className={entryControlClassName}
-                  disabled={isSubmitting || isSaved}
+                  disabled={isDraftBusy || isEntryLocked}
                   onChange={(event) => {
                     void setEntryQuery({ teamName: event.currentTarget.value || null })
                   }}></TextField>
@@ -302,7 +344,7 @@ export const NewEntryForm = ({
                   required
                   containerClassName='mb-4'
                   className={entryControlClassName}
-                  disabled={isSubmitting || isSaved}
+                  disabled={isDraftBusy || isEntryLocked}
                   onChange={(event) => {
                     const nextPlayers = Number.parseInt(event.currentTarget.value, 10)
                     const playerCount = Number.isNaN(nextPlayers) ? players : nextPlayers
@@ -319,7 +361,7 @@ export const NewEntryForm = ({
                     label='Division'
                     options={divisionOptions}
                     containerClassName='mb-0'
-                    disabled={isSubmitting || isSaved}
+                    disabled={isDraftBusy || isEntryLocked}
                     onChange={(event) => {
                       const nextDivision = event.currentTarget.value
                       onDivisionChange(nextDivision)
@@ -338,7 +380,7 @@ export const NewEntryForm = ({
                     placeholder='Optional'
                     containerClassName='mb-0'
                     className={entryControlClassName}
-                    disabled={isSubmitting || isSaved}
+                    disabled={isDraftBusy || isEntryLocked}
                     onChange={(event) => {
                       void setEntryQuery({ handicapIndex: event.currentTarget.value || null })
                     }}
@@ -359,10 +401,12 @@ export const NewEntryForm = ({
               </p>
             ) : null}
             {successMessage ? (
-              <p role='status' className='hidden rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'>
+              <div
+                role='status'
+                className='flex items-center justify-center gap-2 rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'>
                 <Icon name='check' className='size-4' />
                 <span>{successMessage}</span>
-              </p>
+              </div>
             ) : null}
             <div className='flex items-center justify-center w-full px-8 mb-8 md:mb-0'>
               <Button
@@ -370,10 +414,12 @@ export const NewEntryForm = ({
                 type='submit'
                 variant='default'
                 className='w-full bg-slate-900 dark:bg-background text-white/80 md:min-w-64'
-                disabled={isSubmitting || isSaved}>
+                disabled={isDraftBusy || isEntryLocked}>
                 {isSubmitting ? <Icon name='spinner-ring' className='size-4' /> : null}
-                <span className='px-2 font-poly capitalize'>{isSaved ? 'Submitted' : 'Submit Entries'}</span>
-                {isSaved && <Icon name='check' className='size-4' />}
+                <span className='px-2 font-poly capitalize'>
+                  {isEntryLocked ? 'Entry Locked' : isSaved ? 'Save Changes' : 'Submit Entries'}
+                </span>
+                {isEntryLocked ? <Icon name='check' className='size-4' /> : null}
               </Button>
             </div>
           </div>
@@ -463,7 +509,10 @@ export const NewEntryForm = ({
                 </div>
                 <label
                   htmlFor='payment-receipt'
-                  className='flex h-40 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-400 bg-input/20 text-center transition-colors hover:bg-input/30 dark:border-slate-700'>
+                  aria-disabled={isEntryLocked}
+                  className={`flex h-40 flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-400 bg-input/20 text-center transition-colors dark:border-slate-700 ${
+                    isEntryLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-input/30'
+                  }`}>
                   {receiptPreviewUrl ? (
                     <Image
                       src={receiptPreviewUrl}
@@ -474,9 +523,12 @@ export const NewEntryForm = ({
                     />
                   ) : (
                     <div className='flex size-full flex-col items-center justify-center gap-3 px-4'>
-                      <Icon name={receiptFile ? 'check' : 'receipt-plus'} className='size-10 text-foreground' />
+                      <Icon
+                        name={isEntryLocked || receiptFile ? 'check' : 'receipt-plus'}
+                        className='size-10 text-foreground'
+                      />
                       <span className='max-w-full truncate font-okx dark:text-sky-400 text-sm text-foreground tracking-wide'>
-                        {receiptFile ? receiptFile.name : 'Browse receipt file'}
+                        {isEntryLocked ? 'Receipt submitted' : receiptFile ? receiptFile.name : 'Browse receipt file'}
                       </span>
                       <span className='font-ios text-[9px] md:text-xs dark:text-slate-300'>
                         PNG, JPG, WEBP, AVIF, TIFF
@@ -489,6 +541,7 @@ export const NewEntryForm = ({
                   type='file'
                   accept='image/png,image/jpeg,image/webp,image/avif,image/tiff,image/gif,image/bmp,application/pdf'
                   className='sr-only'
+                  disabled={isEntryLocked || isDraftBusy}
                   onChange={(event) => {
                     const nextReceiptFile = event.currentTarget.files?.[0] ?? null
 
@@ -527,12 +580,12 @@ export const NewEntryForm = ({
                 variant='default'
                 className='w-full bg-slate-900 text-white/80 dark:bg-background'
                 disabled={
-                  receiptSuccessMessage
-                    ? !subscriptionId || isSubmittingReceipt
-                    : !hasActivePaymentDestination || !receiptFile || !subscriptionId || isSubmittingReceipt
+                  isEntryLocked
+                    ? !subscriptionId
+                    : !hasActivePaymentDestination || !receiptFile || !subscriptionId || isDraftBusy
                 }
                 onClick={() => {
-                  if (receiptSuccessMessage) {
+                  if (isEntryLocked && subscriptionId) {
                     router.push(`/subscriptions/${subscriptionId}`)
                   } else {
                     void submitReceipt()
@@ -540,7 +593,7 @@ export const NewEntryForm = ({
                 }}>
                 {isSubmittingReceipt ? <Icon name='spinner-ring' className='size-4' /> : null}
                 <span className='font-poly capitalize'>
-                  {receiptSuccessMessage ? 'View Entry' : receiptFile ? 'Submit Receipt' : 'Receipt Required'}
+                  {isEntryLocked ? 'View Entry' : receiptFile ? 'Submit Receipt' : 'Receipt Required'}
                 </span>
               </Button>
             </div>

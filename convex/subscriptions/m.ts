@@ -1,5 +1,6 @@
 import { ConvexError, v } from 'convex/values'
 import { mutation } from '../_generated/server'
+import { isSubscriptionEntryLocked } from './policy'
 
 const trimOrUndefined = (value: string | undefined) => {
   const trimmed = value?.trim()
@@ -26,7 +27,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const contactEmail = args.contactEmail.trim().toLowerCase()
     const contactPhone = trimOrUndefined(args.contactPhone)
-    const totalPlayers = Math.max(1, Math.min(4, Math.round(args.totalPlayers)))
+    const totalPlayers = Math.max(1, Math.min(20, Math.round(args.totalPlayers)))
     const paymentAmount = Math.max(0, Math.round(args.paymentAmount))
 
     if (!contactEmail) {
@@ -50,6 +51,22 @@ export const create = mutation({
       if (!args.ownerUserIds.includes(existingSubscription.user_id)) {
         throw new ConvexError('Entry reference already exists.')
       }
+
+      if (isSubscriptionEntryLocked(existingSubscription)) {
+        throw new ConvexError('Payment proof has already been submitted. This entry can no longer be edited.')
+      }
+
+      await ctx.db.patch(existingSubscription._id, {
+        team_name: trimOrUndefined(args.teamName),
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
+        total_players: String(totalPlayers),
+        handicap_index: trimOrUndefined(args.handicapIndex),
+        division: trimOrUndefined(args.division),
+        payment_amount: paymentAmount,
+        txn_ref_no: args.formId,
+        status: 'pending_payment'
+      })
 
       return { subscriptionId: existingSubscription._id }
     }
@@ -77,9 +94,27 @@ export const create = mutation({
 })
 
 export const generateReceiptUploadUrl = mutation({
-  args: {},
+  args: {
+    subscriptionId: v.id('subscriptions'),
+    formId: v.string(),
+    ownerUserIds: v.array(v.string())
+  },
   returns: v.string(),
-  handler: async (ctx) => {
+  handler: async (ctx, args) => {
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    if (subscription.form_id !== args.formId) {
+      throw new ConvexError('Receipt does not match this entry request.')
+    }
+
+    if (isSubscriptionEntryLocked(subscription)) {
+      throw new ConvexError('Payment proof has already been submitted for this entry.')
+    }
+
     return await ctx.storage.generateUploadUrl()
   }
 })
@@ -88,7 +123,8 @@ export const updateReceipt = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
     formId: v.string(),
-    storageId: v.id('_storage')
+    storageId: v.id('_storage'),
+    ownerUserIds: v.array(v.string())
   },
   returns: v.object({
     subscriptionId: v.id('subscriptions'),
@@ -97,12 +133,16 @@ export const updateReceipt = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription) {
+    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
     if (subscription.form_id !== args.formId) {
       throw new ConvexError('Receipt does not match this entry request.')
+    }
+
+    if (isSubscriptionEntryLocked(subscription)) {
+      throw new ConvexError('Payment proof has already been submitted for this entry.')
     }
 
     await ctx.db.patch(args.subscriptionId, {

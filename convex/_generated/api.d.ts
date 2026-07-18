@@ -36,6 +36,7 @@ import type * as sponsorLeads_m from "../sponsorLeads/m.js";
 import type * as sponsorLeads_q from "../sponsorLeads/q.js";
 import type * as subscriptions_d from "../subscriptions/d.js";
 import type * as subscriptions_m from "../subscriptions/m.js";
+import type * as subscriptions_policy from "../subscriptions/policy.js";
 import type * as subscriptions_q from "../subscriptions/q.js";
 import type * as tournaments_d from "../tournaments/d.js";
 import type * as tournaments_m from "../tournaments/m.js";
@@ -83,6 +84,7 @@ declare const fullApi: ApiFromModules<{
   "sponsorLeads/q": typeof sponsorLeads_q;
   "subscriptions/d": typeof subscriptions_d;
   "subscriptions/m": typeof subscriptions_m;
+  "subscriptions/policy": typeof subscriptions_policy;
   "subscriptions/q": typeof subscriptions_q;
   "tournaments/d": typeof tournaments_d;
   "tournaments/m": typeof tournaments_m;

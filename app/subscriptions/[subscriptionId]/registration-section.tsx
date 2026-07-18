@@ -234,38 +234,6 @@ export function RegistrationSection({
                 value={draft.playerPhone}
                 onChange={(value) => setDraft((current) => ({ ...current, playerPhone: value }))}
               />
-              {/*<RegistrationInput
-                id='player-handicap'
-                label='Handicap'
-                value={draft.handicapIndex}
-                onChange={(value) => setDraft((current) => ({ ...current, handicapIndex: value }))}
-              />
-              <RegistrationInput
-                id='player-division'
-                label='Division'
-                value={draft.division}
-                onChange={(value) => setDraft((current) => ({ ...current, division: value }))}
-              />
-              <div className='space-y-2'>
-                <Label htmlFor='player-shirt-size' className='text-xs uppercase tracking-widest text-muted-foreground'>
-                  Shirt size
-                </Label>
-                <select
-                  id='player-shirt-size'
-                  value={draft.shirtSize}
-                  onChange={(event) => setDraft((current) => ({ ...current, shirtSize: event.target.value }))}
-                  disabled={isPending}
-                  className={cn(
-                    'h-10 w-full rounded-lg border border-border/70 bg-background/70 px-3 text-sm outline-none transition-colors',
-                    'focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/15 disabled:opacity-60'
-                  )}>
-                  {shirtSizeOptions.map((size) => (
-                    <option key={size} value={size}>
-                      {size}
-                    </option>
-                  ))}
-                </select>
-              </div>*/}
             </div>
 
             <div className='mt-5 grid gap-3 sm:flex sm:flex-wrap sm:justify-end'>
@@ -341,11 +309,7 @@ function RegistrationTicket({ deletingRegistrationId, isPending, onDelete, regis
   const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration.checkedInAt
 
   return (
-    <div
-      className={cn(
-        'relative py-6 px-2 transition-colors',
-        checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10'
-      )}>
+    <div className={cn('relative py-6 px-2 transition-colors', checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10')}>
       <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0 sm:items-start ps-4 pe-2 md:px-2'>
         <div className='min-w-0 space-y-4'>
           <div className='flex items-start justify-between gap-4 sm:block'>
