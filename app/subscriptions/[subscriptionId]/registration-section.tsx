@@ -195,7 +195,7 @@ export function RegistrationSection({
               {canAddMore ? (
                 <Button
                   size='icon-xs'
-                  className='rounded-full bg-foreground dark:bg-sky-500'
+                  className='rounded-full bg-foreground dark:bg-sky-400'
                   disabled={isAdding || isPending}
                   aria-label='Add player'
                   onClick={() => {
@@ -255,10 +255,10 @@ export function RegistrationSection({
           </div>
         ) : !isAdding && !isPending ? (
           <div className='flex min-h-40 flex-col items-center justify-center gap-3 rounded-none border-b border-dashed border-border/70 bg-muted/10 p-5 text-center sm:p-6'>
-            <Icon name='person-multiple' className='size-8 text-muted-foreground/60' />
+            <Icon name='ticket' className='size-10 text-sky-500/60 -rotate-10' />
             <div className='space-y-1'>
-              <p className='font-okx text-base'>No players registered yet</p>
-              <p className='text-sm text-muted-foreground'>Start assigning the entry slots to individual players.</p>
+              <p className='font-okx text-neutral-600 text-base'>Register and print your entry ticket.</p>
+              <p className='text-sm text-neutral-500'>Start assigning the entry slots to individual players.</p>
             </div>
           </div>
         ) : isAdding ? (
@@ -292,6 +292,7 @@ export function RegistrationSection({
                 required
                 value={draft.playerName}
                 onChange={(value) => setDraft((current) => ({ ...current, playerName: value }))}
+                className='dark:bg-neutral-300 dark:focus-within:bg-neutral-200 dark:border-neutral-400'
               />
               <RegistrationInput
                 id='player-email'
@@ -299,13 +300,15 @@ export function RegistrationSection({
                 type='email'
                 value={draft.playerEmail}
                 onChange={(value) => setDraft((current) => ({ ...current, playerEmail: value }))}
+                className='dark:bg-neutral-300 dark:focus-within:bg-neutral-200 dark:border-neutral-400'
               />
               <RegistrationInput
                 id='player-phone'
-                label='Phone'
+                label='Phone (optional)'
                 type='tel'
                 value={draft.playerPhone}
                 onChange={(value) => setDraft((current) => ({ ...current, playerPhone: value }))}
+                className='dark:bg-neutral-300 dark:focus-within:bg-neutral-200 dark:border-neutral-400'
               />
             </div>
 
@@ -314,7 +317,7 @@ export function RegistrationSection({
                 type='button'
                 variant='ghost'
                 size='sm'
-                className='w-full sm:w-auto h-12'
+                className='w-full sm:w-auto h-10 dark:bg-neutral-300 font-poly text-neutral-500'
                 disabled={isPending}
                 onClick={() => {
                   setIsAdding(false)
@@ -326,7 +329,7 @@ export function RegistrationSection({
               <Button
                 type='button'
                 size='sm'
-                className='w-full sm:w-auto h-12'
+                className='w-full sm:w-auto h-10 font-poly text-white bg-neutral-900'
                 disabled={isPending}
                 onClick={handleSubmit}>
                 {isPending ? 'Saving...' : 'Save player'}
@@ -339,7 +342,7 @@ export function RegistrationSection({
             type='button'
             className={cn(
               buttonVariants({ variant: 'default', size: 'sm' }),
-              'w-full justify-center gap-2 bg-foreground h-12 mt-4'
+              'w-full justify-center gap-2 bg-neutral-900 text-white h-12 mt-0 rounded-xl'
             )}
             onClick={() => {
               setErrorMessage(null)
@@ -394,10 +397,7 @@ function RegistrationTicket({
   return (
     <div
       ref={ticketRef}
-      className={cn(
-        'relative py-6 px-2 transition-colors',
-        checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10'
-      )}>
+      className={cn('relative py-6 px-2 transition-colors', checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10')}>
       <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0 sm:items-start ps-4 pe-2 md:px-2'>
         <div className='min-w-0 space-y-4'>
           <div className='flex items-start justify-between gap-4 sm:block'>
@@ -412,12 +412,12 @@ function RegistrationTicket({
                     Scanned
                   </span>
                 ) : null}
-                <div data-ticket-export-ignore className='inline-flex items-center gap-0.5'>
+                <div data-ticket-export-ignore className='inline-flex items-center gap-1.5'>
                   <Button
                     type='button'
                     variant='ghost'
                     size='icon-xs'
-                    className='shrink-0 rounded-full text-foreground/70 hover:bg-sky-500/10 hover:text-sky-700'
+                    className='shrink-0 rounded-full text-foreground/70 hover:bg-sky-500/10 dark:hover:bg-neutral-200 hover:text-sky-700'
                     disabled={isPending || exportingTicketId !== null}
                     aria-label={`Download ${registration.name}'s ticket as PNG`}
                     title='Download ticket as PNG'
@@ -428,7 +428,7 @@ function RegistrationTicket({
                     }}>
                     <Icon
                       name={exportingTicketId === registration.id ? 'spinner-ring' : 'down-to-line'}
-                      className='size-4'
+                      className='size-4 text-neutral-500'
                     />
                   </Button>
                   {!checkedIn ? (
@@ -436,13 +436,13 @@ function RegistrationTicket({
                       type='button'
                       variant='ghost'
                       size='icon-xs'
-                      className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
+                      className='shrink-0 rounded-full text-foreground/70 hover:text-destructive dark:hover:bg-neutral-200 hover:bg-destructive/10'
                       disabled={isPending || exportingTicketId !== null}
                       aria-label={`Delete ${registration.name}`}
                       onClick={() => onDelete(registration.id, registration.name)}>
                       <Icon
                         name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
-                        className='size-4'
+                        className='size-4 text-neutral-500'
                       />
                     </Button>
                   ) : null}
@@ -535,7 +535,8 @@ function RegistrationInput({
   onChange,
   required = false,
   type = 'text',
-  value
+  value,
+  className
 }: {
   id: string
   label: string
@@ -543,6 +544,7 @@ function RegistrationInput({
   required?: boolean
   type?: React.ComponentProps<typeof Input>['type']
   value: string
+  className?: ClassName
 }) {
   return (
     <div className='space-y-2'>
@@ -555,7 +557,7 @@ function RegistrationInput({
         required={required}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={formControlClassName}
+        className={cn(formControlClassName, className)}
       />
     </div>
   )
