@@ -121,7 +121,7 @@ function GuestTopbar() {
 
   return (
     <header
-      className={cn('flex items-center justify-between py-5 px-6', {
+      className={cn('relative z-50 flex items-center justify-between py-5 px-6', {
         'max-w-7xl mx-auto': pathname !== '/'
       })}>
       <Brand className='dark:text-foreground' />

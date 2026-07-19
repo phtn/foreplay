@@ -8,11 +8,12 @@ import { Label } from '@/components/ui/label'
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
+import { createPngFilename, downloadElementAsPng } from '@/lib/tickets/download-ticket-png'
 import { cn } from '@/lib/utils'
 import { ClassName } from '@/types'
 import { useQuery } from 'convex/react'
 import { useRouter } from 'next/navigation'
-import { useMemo, useState, useTransition } from 'react'
+import { useCallback, useMemo, useRef, useState, useTransition } from 'react'
 import { DerivedRegistration, DraftRegistration, RegistrationSectionProps } from '../types'
 import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
 
@@ -53,8 +54,11 @@ export function RegistrationSection({
   const [isPending, startTransition] = useTransition()
   const [isAdding, setIsAdding] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [exportErrorMessage, setExportErrorMessage] = useState<string | null>(null)
+  const [exportingTicketId, setExportingTicketId] = useState<Id<'registrations'> | 'all' | null>(null)
   const [deletingRegistrationId, setDeletingRegistrationId] = useState<Id<'registrations'> | null>(null)
   const [draft, setDraft] = useState<DraftRegistration>(() => buildInitialDraft(defaultDivision))
+  const ticketsRef = useRef<HTMLDivElement>(null)
 
   const registrationLimit = Math.max(1, maxEntries)
   const remainingSlots = Math.max(0, registrationLimit - registrations.length)
@@ -84,6 +88,47 @@ export function RegistrationSection({
   const resetDraft = () => {
     setDraft(buildInitialDraft(defaultDivision))
   }
+
+  const handleDownloadTicket = useCallback(async (registration: DerivedRegistration, element: HTMLElement) => {
+    setExportErrorMessage(null)
+    setExportingTicketId(registration.id)
+
+    try {
+      await downloadElementAsPng(
+        element,
+        createPngFilename(
+          `foreplay-${registration.slotLabel}-${registration.name}`,
+          `foreplay-ticket-${registration.id}`
+        )
+      )
+    } catch (error) {
+      console.error('Unable to export ticket PNG.', error)
+      setExportErrorMessage('Unable to download this ticket. Please try again.')
+    } finally {
+      setExportingTicketId(null)
+    }
+  }, [])
+
+  const handleDownloadAllTickets = useCallback(async () => {
+    if (!ticketsRef.current) {
+      return
+    }
+
+    setExportErrorMessage(null)
+    setExportingTicketId('all')
+
+    try {
+      await downloadElementAsPng(
+        ticketsRef.current,
+        createPngFilename(`foreplay-tickets-${subscriptionId}`, 'foreplay-tickets')
+      )
+    } catch (error) {
+      console.error('Unable to export all ticket PNGs.', error)
+      setExportErrorMessage('Unable to download the tickets. Please try again.')
+    } finally {
+      setExportingTicketId(null)
+    }
+  }, [subscriptionId])
 
   const handleSubmit = () => {
     if (!draft.playerName.trim()) {
@@ -164,6 +209,22 @@ export function RegistrationSection({
           </div>
 
           <div className='flex items-center gap-1 md:gap-2'>
+            {registrationCards.length ? (
+              <Button
+                type='button'
+                variant='outline'
+                size='sm'
+                className='size-8 px-0 sm:w-auto sm:px-3'
+                disabled={exportingTicketId !== null}
+                aria-label='Download all tickets as PNG'
+                title='Download all tickets as PNG'
+                onClick={() => {
+                  void handleDownloadAllTickets()
+                }}>
+                <Icon name={exportingTicketId === 'all' ? 'spinner-ring' : 'down-to-line'} className='size-4' />
+                <span className='hidden sm:inline'>Download all</span>
+              </Button>
+            ) : null}
             <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-foreground whitespace-nowrap'>
               {registrations.length}/{registrationLimit} saved
             </span>
@@ -177,13 +238,17 @@ export function RegistrationSection({
 
       <CardContent className='space-y-0 py-0 px-0 border-x border-b rounded-b-xl bg-white'>
         {registrationCards.length ? (
-          <div className='min-h-40! grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
+          <div
+            ref={ticketsRef}
+            className='min-h-40! grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
               <RegistrationTicket
                 key={registration.id}
                 deletingRegistrationId={deletingRegistrationId}
+                exportingTicketId={exportingTicketId}
                 isPending={isPending}
                 onDelete={handleDelete}
+                onDownload={handleDownloadTicket}
                 registration={registration}
               />
             ))}
@@ -207,6 +272,14 @@ export function RegistrationSection({
         {errorMessage ? (
           <div className='rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
             {errorMessage}
+          </div>
+        ) : null}
+
+        {exportErrorMessage ? (
+          <div
+            role='alert'
+            className='rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
+            {exportErrorMessage}
           </div>
         ) : null}
 
@@ -294,8 +367,10 @@ interface RegistrationFieldProps {
 
 interface RegistrationTicketProps {
   deletingRegistrationId: Id<'registrations'> | null
+  exportingTicketId: Id<'registrations'> | 'all' | null
   isPending: boolean
   onDelete: (registrationId: Id<'registrations'>, playerName: string) => void
+  onDownload: (registration: DerivedRegistration, element: HTMLElement) => void
   registration: DerivedRegistration
 }
 
@@ -303,13 +378,26 @@ function formatCheckedInAt(timestamp: number | undefined) {
   return timestamp ? new Date(timestamp).toLocaleString() : 'Scanned'
 }
 
-function RegistrationTicket({ deletingRegistrationId, isPending, onDelete, registration }: RegistrationTicketProps) {
+function RegistrationTicket({
+  deletingRegistrationId,
+  exportingTicketId,
+  isPending,
+  onDelete,
+  onDownload,
+  registration
+}: RegistrationTicketProps) {
   const liveCheckInStatus = useQuery(api.registrations.q.getCheckInStatus, { registrationId: registration.id })
   const checkedIn = liveCheckInStatus?.checkedIn ?? registration.checkedIn
   const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration.checkedInAt
+  const ticketRef = useRef<HTMLDivElement>(null)
 
   return (
-    <div className={cn('relative py-6 px-2 transition-colors', checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10')}>
+    <div
+      ref={ticketRef}
+      className={cn(
+        'relative py-6 px-2 transition-colors',
+        checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10'
+      )}>
       <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0 sm:items-start ps-4 pe-2 md:px-2'>
         <div className='min-w-0 space-y-4'>
           <div className='flex items-start justify-between gap-4 sm:block'>
@@ -323,21 +411,42 @@ function RegistrationTicket({ deletingRegistrationId, isPending, onDelete, regis
                     <Icon name='check' className='size-3' />
                     Scanned
                   </span>
-                ) : (
+                ) : null}
+                <div data-ticket-export-ignore className='inline-flex items-center gap-0.5'>
                   <Button
                     type='button'
                     variant='ghost'
                     size='icon-xs'
-                    className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
-                    disabled={isPending}
-                    aria-label={`Delete ${registration.name}`}
-                    onClick={() => onDelete(registration.id, registration.name)}>
+                    className='shrink-0 rounded-full text-foreground/70 hover:bg-sky-500/10 hover:text-sky-700'
+                    disabled={isPending || exportingTicketId !== null}
+                    aria-label={`Download ${registration.name}'s ticket as PNG`}
+                    title='Download ticket as PNG'
+                    onClick={() => {
+                      if (ticketRef.current) {
+                        onDownload(registration, ticketRef.current)
+                      }
+                    }}>
                     <Icon
-                      name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
+                      name={exportingTicketId === registration.id ? 'spinner-ring' : 'down-to-line'}
                       className='size-4'
                     />
                   </Button>
-                )}
+                  {!checkedIn ? (
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon-xs'
+                      className='shrink-0 rounded-full text-foreground/70 hover:text-destructive hover:bg-destructive/10'
+                      disabled={isPending || exportingTicketId !== null}
+                      aria-label={`Delete ${registration.name}`}
+                      onClick={() => onDelete(registration.id, registration.name)}>
+                      <Icon
+                        name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
+                        className='size-4'
+                      />
+                    </Button>
+                  ) : null}
+                </div>
               </div>
               <p className='whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
                 {registration.name}

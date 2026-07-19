@@ -1,6 +1,5 @@
 'use client'
 
-import { useToggle } from '@/hooks/use-toggle'
 import {
   THEME_MEDIA_QUERY,
   THEME_STORAGE_KEY,
@@ -10,7 +9,7 @@ import {
   type ResolvedTheme,
   type Theme
 } from '@/lib/theme'
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 interface ThemeContextValue {
   theme: Theme
@@ -35,6 +34,11 @@ function getPreferredTheme(): ResolvedTheme {
   return resolveTheme('system', typeof window.matchMedia === 'function' && window.matchMedia(THEME_MEDIA_QUERY).matches)
 }
 
+interface ThemeState {
+  theme: Theme
+  resolvedTheme: ResolvedTheme
+}
+
 function applyTheme(theme: Theme): ResolvedTheme {
   const resolvedTheme = resolveTheme(theme, getPreferredTheme() === 'dark')
   const root = document.documentElement
@@ -54,30 +58,28 @@ function persistTheme(theme: Theme) {
   } catch {}
 }
 
-function getInitialTheme(): Theme {
+function getInitialThemeState(): ThemeState {
   if (typeof document === 'undefined') {
-    return 'light'
+    return { theme: 'light', resolvedTheme: 'light' }
   }
 
-  return isTheme(document.documentElement.dataset.themePreference)
+  const theme = isTheme(document.documentElement.dataset.themePreference)
     ? document.documentElement.dataset.themePreference
     : readStoredTheme()
-}
+  const expectedResolvedTheme = resolveTheme(theme, getPreferredTheme() === 'dark')
+  const resolvedTheme = isResolvedTheme(document.documentElement.dataset.theme)
+    ? document.documentElement.dataset.theme
+    : expectedResolvedTheme
 
-function getInitialResolvedTheme(): ResolvedTheme {
-  if (typeof document === 'undefined') {
-    return 'light'
+  if (resolvedTheme !== expectedResolvedTheme) {
+    return { theme, resolvedTheme: applyTheme(theme) }
   }
 
-  return isResolvedTheme(document.documentElement.dataset.theme)
-    ? document.documentElement.dataset.theme
-    : applyTheme(getInitialTheme())
+  return { theme, resolvedTheme }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(getInitialTheme)
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(getInitialResolvedTheme)
-  const { on: darkTheme, toggle } = useToggle(resolvedTheme === 'dark')
+  const [{ theme, resolvedTheme }, setThemeState] = useState<ThemeState>(getInitialThemeState)
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') {
@@ -91,8 +93,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      setResolvedTheme(applyTheme('system'))
-      setThemeState('system')
+      setThemeState({ theme: 'system', resolvedTheme: applyTheme('system') })
     }
 
     mediaQuery.addEventListener('change', syncSystemTheme)
@@ -100,17 +101,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => mediaQuery.removeEventListener('change', syncSystemTheme)
   }, [])
 
-  function setTheme(theme: Theme) {
-    persistTheme(theme)
-    setThemeState(theme)
-    setResolvedTheme(applyTheme(theme))
-  }
+  const setTheme = useCallback((nextTheme: Theme) => {
+    persistTheme(nextTheme)
+    setThemeState({ theme: nextTheme, resolvedTheme: applyTheme(nextTheme) })
+  }, [])
 
-  return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggle, darkTheme }}>
-      {children}
-    </ThemeContext.Provider>
+  const darkTheme = resolvedTheme === 'dark'
+  const toggle = useCallback(() => {
+    setTheme(darkTheme ? 'light' : 'dark')
+  }, [darkTheme, setTheme])
+  const value = useMemo(
+    () => ({ theme, resolvedTheme, setTheme, toggle, darkTheme }),
+    [darkTheme, resolvedTheme, setTheme, theme, toggle]
   )
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
 export function useTheme() {

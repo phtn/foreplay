@@ -20,16 +20,6 @@ type ThemeTransitionAnimationOptions = KeyframeAnimationOptions & {
   pseudoElement?: string
 }
 
-const themeLabels: Record<ResolvedTheme, string> = {
-  light: 'Light',
-  dark: 'Dark'
-}
-
-const themeShortLabels: Record<ResolvedTheme, string> = {
-  light: 'Li',
-  dark: 'Da'
-}
-
 interface ThemeToggleProps {
   label?: string
   withLabel?: boolean
@@ -111,24 +101,26 @@ export const ThemeToggle = ({ label, withLabel = false }: ThemeToggleProps) => {
   return (
     <button
       type='button'
-      aria-label={`Switch theme from ${themeLabels[currentTheme]} to ${themeLabels[nextTheme]}`}
-      suppressHydrationWarning
-      title={`Theme: ${themeLabels[currentTheme]}. Next: ${themeLabels[nextTheme]}`}
+      aria-label='Toggle color theme'
+      title='Toggle color theme'
       className={cn('inline-flex h-8 aspect-square items-center justify-center rounded-full group cursor-pointer', {
         'w-full justify-start space-x-4 capitalize': withLabel
       })}
       onClick={handleThemeChange}>
       <Icon
         name='theme'
-        className={cn(
-          'size-4 opacity-80 group-active:scale-80 transition-all duration-250 ease-in text-slate-600 dark:text-slate-200',
-          {
-            'rotate-90': themeShortLabels[currentTheme] === 'Da',
-            '-rotate-90': themeShortLabels[currentTheme] === 'Li'
-          }
-        )}
+        className='size-4 -rotate-90 opacity-80 transition-all duration-250 ease-in text-slate-600 group-active:scale-80 dark:rotate-90 dark:text-slate-200'
       />
-      {withLabel && <p className='capitalize'>{(label ?? currentTheme === 'dark') ? 'light' : 'dark'}</p>}
+      {withLabel ? (
+        <p className='capitalize'>
+          {label ?? (
+            <>
+              <span className='dark:hidden'>dark</span>
+              <span className='hidden dark:inline'>light</span>
+            </>
+          )}
+        </p>
+      ) : null}
     </button>
   )
 }

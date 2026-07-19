@@ -1,5 +1,6 @@
 import { RootProviders } from '@/ctx/root'
 import { getInitialFirebaseAuthState } from '@/lib/firebase/server-auth'
+import { THEME_SCRIPT } from '@/lib/theme'
 import { cn } from '@/lib/utils'
 import type { Metadata, Viewport } from 'next'
 import { Figtree, Geist, Geist_Mono } from 'next/font/google'
@@ -111,7 +112,22 @@ export default async function RootLayout({
   return (
     <html
       lang='en'
-      className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', figtree.variable)}>
+      data-theme='light'
+      data-theme-preference='light'
+      suppressHydrationWarning
+      style={{ colorScheme: 'light' }}
+      className={cn(
+        'h-full',
+        'light',
+        'antialiased',
+        geistSans.variable,
+        geistMono.variable,
+        'font-sans',
+        figtree.variable
+      )}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body className='min-h-full flex flex-col'>
         <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
       </body>
