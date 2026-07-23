@@ -12,11 +12,9 @@ import { toRegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import type { ClassName } from '@/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useMemo, useRef, useState, useTransition } from 'react'
+import { Activity, useCallback, useMemo, useRef, useState, useTransition } from 'react'
 import type { DraftRegistration, RegistrationSectionProps } from '../types'
 import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
-
-// const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
 
 const formControlClassName =
   'h-10 border-border/70 bg-background/70 text-sm shadow-none focus-visible:border-primary focus-visible:ring-primary/15'
@@ -147,7 +145,7 @@ export function RegistrationSection({
           <div className='space-y-1.5 w-full'>
             <CardTitle className='flex items-center gap-3 font-okx text-lg'>
               <span>Ticket Registry</span>
-              {canAddMore ? (
+              <Activity mode={canAddMore ? 'visible' : 'hidden'}>
                 <Button
                   size='icon-xs'
                   className='rounded-full bg-foreground dark:bg-sky-400'
@@ -159,12 +157,12 @@ export function RegistrationSection({
                   }}>
                   <Icon name={isPending ? 'spinner-ring' : 'add'} className='size-4' />
                 </Button>
-              ) : null}
+              </Activity>
             </CardTitle>
           </div>
 
           <div className='flex items-center gap-1 md:gap-2'>
-            {registrationCards.length ? (
+            <Activity mode={registrationCards.length ? 'visible' : 'hidden'}>
               <Button
                 type='button'
                 variant='outline'
@@ -179,15 +177,15 @@ export function RegistrationSection({
                 <Icon name={isExportingAll ? 'spinner-ring' : 'down-to-line'} className='size-4' />
                 <span className='hidden sm:inline'>download</span>
               </Button>
-            ) : null}
+            </Activity>
             <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-foreground whitespace-nowrap'>
               {registrations.length}/{registrationLimit} saved
             </span>
-            {remainingSlots > 0 && (
+            <Activity mode={remainingSlots > 0 ? 'visible' : 'hidden'}>
               <span className='inline-flex rounded-md bg-sky-500/5 dark:bg-sky-100/10 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 dark:text-sky-200 whitespace-nowrap'>
                 {remainingSlots} open
               </span>
-            )}
+            </Activity>
           </div>
         </div>
         <p className='text-sm text-foreground/60'>Add player&apos;s details to register and secure the slot.</p>
@@ -223,19 +221,19 @@ export function RegistrationSection({
           </div>
         )}
 
-        {errorMessage ? (
+        <Activity mode={errorMessage ? 'visible' : 'hidden'}>
           <div className='rounded-xs border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
             {errorMessage}
           </div>
-        ) : null}
+        </Activity>
 
-        {exportErrorMessage ? (
+        <Activity mode={exportErrorMessage ? 'visible' : 'hidden'}>
           <div
             role='alert'
             className='rounded-xs border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
             {exportErrorMessage}
           </div>
-        ) : null}
+        </Activity>
 
         {isAdding ? (
           <div className='rounded-none _border border-border/70 bg-muted/10 p-4 sm:p-5'>
