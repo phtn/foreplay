@@ -41,7 +41,7 @@ export function LoginForm() {
       try {
         const credential = await signInWithEmailPassword(value.email, value.password)
         await syncFirebaseSession(credential.user)
-        router.replace('/')
+        router.replace('/tournaments/som-2026')
       } catch (error) {
         setErrorMessage(getFirebaseAuthErrorMessage(error))
         setSubmissionKind(null)
@@ -51,7 +51,13 @@ export function LoginForm() {
 
   const isSubmitting = submissionKind !== null || form.state.isSubmitting
   const googleButtonLabel =
-    submissionKind === 'google' ? (user ? 'Authenticating' : 'Connecting') : user ? 'Dashboard' : 'Google'
+    submissionKind === 'google'
+      ? user
+        ? 'Authenticating'
+        : 'Connecting'
+      : user
+        ? 'Go to Dashboard'
+        : ' Continue with Google'
 
   async function handleGoogle() {
     setErrorMessage(null)
@@ -80,7 +86,7 @@ export function LoginForm() {
           disabled={isSubmitting || isAuthLoading}>
           <Icon
             name={submissionKind === 'google' ? 'spinner-ring' : 'goog'}
-            className={cn('size-4.5 text-foreground', { 'size-4': isAuthLoading })}
+            className={cn('size-4 text-foreground', { 'size-4': isAuthLoading })}
           />
           <span className='dark:text-white text-foreground/60 font-sans'>{googleButtonLabel}</span>
         </Button>

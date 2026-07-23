@@ -44,7 +44,7 @@ export function TextField({
     <div className={cn('mb-4 space-y-2 w-full', containerClassName)}>
       {label && (
         <div className='flex items-center justify-between'>
-          <Label htmlFor={id} className='capitalize opacity-80 font-okx text-xs'>
+          <Label htmlFor={id} className='capitalize opacity-90 font-okx text-xs'>
             {label}
           </Label>
 

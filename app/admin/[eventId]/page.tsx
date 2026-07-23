@@ -140,26 +140,27 @@ export default async function EventPage({ params }: EventPageProps) {
 
   return (
     <main className='space-y-0 md:space-y-4'>
-      <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between px-2 pb-2 md:pb-0'>
+      <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between px-4 pb-2 md:pb-0'>
         <div className='space-y-4 mt-4 md:mt-0 w-full'>
           <Link
             href='/admin'
-            className='font-okx inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground'>
-            <Icon name='arrow-left' className='size-4' />
+            prefetch='auto'
+            className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dashed md:tracking-wider hover:text-sky-600'>
+            <Icon name='chevron-down' className='size-4 rotate-45 text-sky-500 group-hover:text-sky-600' />
             Events
           </Link>
 
           <div className='space-y-2 w-full flex items-center justify-between'>
-            <h1 className='font-okx font-semibold text-xl md:text-3xl'>{event.title}</h1>
+            <h1 className='font-poly font-medium text-xl md:text-xl'>{event.title}</h1>
             <Link href={`/admin/${eventId}/pairings`} className='flex items-center space-x-1 md:space-x-2'>
-              <span className='flex items-center gap-1'>Pairings</span>
+              <span className='font-poly flex items-center gap-1'>Pairings</span>
               <Icon name='document' className='size-4 opacity-80' />
             </Link>
           </div>
         </div>
       </div>
 
-      <div className='grid gap-0 md:gap-4 grid-cols-4'>
+      <div className='grid gap-0 md:gap-4 grid-cols-4 px-4'>
         {[
           { label: 'Date', value: eventDateLabel },
           { label: 'Gate open', value: gateOpenTimeLabel },
@@ -171,7 +172,7 @@ export default async function EventPage({ params }: EventPageProps) {
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
               </p>
-              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
+              <p className='font-heading text-base font-bold'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -215,7 +216,7 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
   )
 
   return (
-    <Card className='rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 md:p-4 p-0'>
+    <Card className='rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 p-0'>
       <CardHeader className='px-2 pt-4'>
         <div className='flex flex-col md:gap-4 lg:flex-row lg:items-start lg:justify-between'>
           <div className='space-y-1'>

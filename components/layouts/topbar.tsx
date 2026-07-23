@@ -67,6 +67,7 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
 
           <div className='flex items-center gap-2 md:gap-5'>
             <ThemeToggle />
+            <MobileNav items={navItems} onNavigate={() => setMobileOpen(false)} open={mobileOpen} />
             <div className='relative z-60 flex items-center gap-4 px-2'>
               <DropdownMenu>
                 <DropdownMenuTrigger
@@ -110,8 +111,6 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
           </div>
         </div>
       </div>
-
-      <MobileNav items={navItems} onNavigate={() => setMobileOpen(false)} open={mobileOpen} />
     </header>
   )
 }
@@ -153,7 +152,7 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
         'origin-top transition-[opacity,transform,visibility] duration-200 ease-out',
         open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 pointer-events-none'
       )}>
-      <div className='mx-3 mt-2 rounded-2xl border border-border/60 bg-card px-2 pt-2 pb-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:mx-4'>
+      <div className='mx-3 mt-0 rounded-2xl border border-border/60 bg-card px-2 pt-2 pb-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:mx-4'>
         <div className='space-y-2'>
           {items.map((item) => {
             const active = isNavItemActive(pathname, item.value)
@@ -166,7 +165,7 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
                   active ? 'bg-hermes text-white' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                 }`}>
                 <Icon name={item.icon} className='size-4' />
-                <span className='font-okx'>{item.label}</span>
+                <span className='font-okx whitespace-nowrap'>{item.label}</span>
               </Link>
             )
           })}

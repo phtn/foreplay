@@ -6,15 +6,17 @@ export default function Register() {
   return (
     <AuthLayout
       icon='golf-tee'
-      title='Create your account'
-      subtitle='Sign up to get started'
+      title='Foreplay'
+      subtitle='Create new account'
       footer={
-        <>
-          Already have an account?{' '}
-          <Link href='/auth/login' className='text-primary font-medium hover:underline'>
+        <div className='px-4'>
+          <span className='mr-2 text-foreground/90'>Already have an account?</span>
+          <Link
+            href='/auth/login'
+            className='font-poly text-xs md:text-sm text-emerald-800 dark:text-primary underline hover:text-foreground hover:decoration-primary underline-offset-4 focus-visible:text-foreground/80 outline-primary'>
             Log in
           </Link>
-        </>
+        </div>
       }>
       <RegisterForm />
     </AuthLayout>

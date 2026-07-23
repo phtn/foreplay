@@ -10,6 +10,7 @@ import {
 } from '@/lib/firebase/auth'
 import { createFirebaseSession } from '@/lib/firebase/session'
 import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
 import type { User } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -47,7 +48,7 @@ export function RegisterForm() {
       try {
         const credential = await registerWithEmailPassword(value.email, value.password)
         await syncFirebaseSession(credential.user)
-        router.replace('/')
+        router.replace('/tournaments/som-2026')
       } catch (error) {
         setErrorMessage(getFirebaseAuthErrorMessage(error))
         setSubmissionKind(null)
@@ -62,7 +63,7 @@ export function RegisterForm() {
         ? 'Checking session...'
         : 'Connecting...'
       : user
-        ? 'Continue to dashboard'
+        ? 'Go to Dashboard'
         : 'Continue with Google'
 
   async function handleGoogle() {
@@ -72,7 +73,7 @@ export function RegisterForm() {
     try {
       const nextUser = user ?? (await signInWithGoogle()).user
       await syncFirebaseSession(nextUser)
-      router.replace('/')
+      router.replace('/tournaments/som-2026')
     } catch (error) {
       setErrorMessage(getFirebaseAuthErrorMessage(error))
       setSubmissionKind(null)
@@ -81,19 +82,24 @@ export function RegisterForm() {
 
   return (
     <>
-      <Button
-        variant='outline'
-        className='mb-5 h-12 w-full gap-4 text-sm font-medium xl:mb-6'
-        onClick={handleGoogle}
-        disabled={isSubmitting || isAuthLoading}>
-        <Icon name={submissionKind === 'google' ? 'spinner-ring' : 'goog'} className='size-3.5' />
-        <span>{googleButtonLabel}</span>
-      </Button>
-
+      <div className='flex items-center gap-2 md:gap-4 mb-6'>
+        <Button
+          type='button'
+          className={cn(
+            'h-12 w-full gap-3 rounded-md border border-foreground/40 bg-white/80 px-4 text-sm font-medium transition-colors hover:border-primary hover:bg-white dark:border-white/55 dark:bg-white/30 dark:hover:border-white dark:hover:bg-white/25 disabled:pointer-events-none disabled:opacity-70 sm:col-span-1',
+            { 'disabled:opacity-100': isAuthLoading }
+          )}
+          onClick={handleGoogle}
+          disabled={isSubmitting || isAuthLoading}>
+          <Icon
+            name={submissionKind === 'google' ? 'spinner-ring' : 'goog'}
+            className={cn('size-4 text-foreground', { 'size-4': isAuthLoading })}
+          />
+          <span className='dark:text-white text-foreground/60 font-sans'>{googleButtonLabel}</span>
+        </Button>
+      </div>
       <AuthDivider />
-
       <AuthErrorMessage message={errorMessage} />
-
       <form.AppForm>
         <form
           aria-busy={isSubmitting}
@@ -146,7 +152,7 @@ export function RegisterForm() {
               />
             )}
           </form.AppField>
-          <Button type='submit' className='h-12 w-full font-medium' disabled={isSubmitting || isAuthLoading}>
+          <Button type='submit' className='h-12 w-full font-medium text-white' disabled={isSubmitting || isAuthLoading}>
             {submissionKind === 'email' ? (
               <>
                 <Icon name='spinner-ring' className='mr-2 size-4' />

@@ -26,10 +26,13 @@ const Page = async ({ params }: PageProps) => {
   const registrations = await fetchQuery(api.registrations.q.listByTournamentId, {
     tournamentId: eventId
   })
+  const event = await fetchQuery(api.tournaments.q.getByTournamentId, {
+    id: eventId
+  })
 
   return (
     <>
-      <PairingsTable eventId={eventId} registrations={registrations} />
+      <PairingsTable eventId={eventId} registrations={registrations} eventName={event?.title} />
     </>
   )
 }

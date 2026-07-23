@@ -416,8 +416,8 @@ export function TournamentHero({
               {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
             </div>
             <div className='md:space-y-4 flex md:flex-col md:items-start items-end h-full md:h-fit'>
-              <div className=' bg-slate-300/30 backdrop-blur-3xl md:backdrop-blur-none md:bg-transparent md:max-w-2xl p-4'>
-                <h1 className='max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+              <div className=' bg-slate-300/30 backdrop-blur-xl md:backdrop-blur-none md:bg-transparent w-full md:max-w-2xl p-4'>
+                <h1 className='w-full md:max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
                   {title}
                 </h1>
               </div>

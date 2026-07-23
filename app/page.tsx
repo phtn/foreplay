@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 
-import { GolfCourse } from './course'
 import { useAppForm } from '@/components/form'
 import { EventViewer } from '@/components/landing/cards'
 import { GamesList } from '@/components/landing/games-list'
@@ -13,6 +12,7 @@ import { featuredTournament } from '@/components/protected/tournament-experience
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
+import { GolfCourse } from './course'
 
 const proofPoints = [
   { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
@@ -95,7 +95,7 @@ export default function HomePage() {
         <main className=' dark:bg-slate-400/90'>
           <section className='relative -mt-22 min-h-100 overflow-hidden rounded-b-[3rem] px-5 pb-8 pt-24 sm:px-8 lg:min-h-120 lg:px-12'>
             <div
-              className="absolute inset-0 scale-110 bg-[url('/fairway-smooth.webp')] bg-cover bg-[position:60%_55%] bg-blend-color dark:bg-[url('/fairway-midnight.webp')]"
+              className="absolute inset-0 scale-110 bg-[url('/fairway-smooth.webp')] bg-cover bg-position-[60%_55%] bg-blend-color dark:bg-[url('/fairway-midnight.webp')]"
               aria-hidden='true'
             />
             <div className='dark:hidden absolute inset-0 bg-[linear-gradient(180deg,rgba(224,244,239,0.98)_10%,rgba(209,229,221,0.4)_64%,rgba(32,95,51,0.64)_100%)]' />

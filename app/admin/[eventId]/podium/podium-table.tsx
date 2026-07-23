@@ -126,10 +126,10 @@ export function PodiumTable({ eventId, podiumAwards, registrations, eventName }:
   return (
     <div className='mx-auto flex min-h-screen w-full max-w-7xl flex-col border border-input'>
       <div className='flex items-center justify-between px-3 py-4'>
-        <SectionTitle title='Podium' eyebrow='Awards' />
-        <h1 className='hidden font-poly text-sm md:flex'>{eventName ?? 'Event Name'}</h1>
+        <SectionTitle title='Pairings' eyebrow='back' href={`/admin/${eventId}/pairings`} />
+        <h1 className='hidden font-poly text-sm md:flex'>{'Podium'}</h1>
 
-        <LinkTitle title='Pairings' icon='chevron-right' href={`/admin/${eventId}/pairings`} />
+        <LinkTitle title={eventName ?? 'Event Name'} icon='chevron-right' href={`/admin/${eventId}/pairings`} />
       </div>
 
       <div className='grid grid-cols-3 border-y border-border/80 bg-slate-100/50 dark:bg-slate-400/20'>
