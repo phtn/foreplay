@@ -29,7 +29,7 @@ export default async function Page() {
   ]
   return (
     <main className='mx-auto flex w-full max-w-7xl flex-col md:px-4 pt-4 md:pt-0 pb-2'>
-      <Tabs tabs={tabs} />
+      <Tabs tabs={tabs} className='font-okx' />
     </main>
   )
 }

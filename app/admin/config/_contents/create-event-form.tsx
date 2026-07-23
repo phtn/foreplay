@@ -149,7 +149,7 @@ export function CreateEventForm() {
   const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null)
-  const [published, setPublished] = useState(true)
+  const [published, setPublished] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -288,23 +288,23 @@ export function CreateEventForm() {
                         sizes='56px'
                       />
                     ) : (
-                      <span className='font-okx text-xl'>{previewTitle.slice(0, 1).toUpperCase()}</span>
+                      <span className='font-poly text-2xl'>{previewTitle.slice(0, 1).toUpperCase()}</span>
                     )}
                   </div>
                   <div>
-                    <p className='font-ios text-[10px] uppercase tracking-widest text-white/65'>
+                    <p className='font-ios text-xs uppercase tracking-widest text-white'>
                       {published ? 'Published' : 'Draft'}
                     </p>
-                    <p className='mt-1 font-mono text-xs text-white/80'>/{previewSlug}</p>
+                    <p className='mt-1 font-ios text-xs text-white'>/{previewSlug}</p>
                   </div>
                 </div>
-                <span className='rounded-full bg-white/15 px-3 py-1 font-ios text-[10px] uppercase tracking-widest text-white/80'>
+                <span className='rounded-full bg-white/15 px-3 py-1 font-ios text-[10px] uppercase tracking-widest text-white'>
                   {previewFee}
                 </span>
               </div>
 
               <div className='max-w-md'>
-                <h2 className='font-okx text-3xl font-semibold leading-tight'>{previewTitle}</h2>
+                <h2 className='font-poly font-medium text-lg md:text-2xl leading-tight capitalize'>{previewTitle}</h2>
                 <p className='mt-3 text-sm leading-6 text-white/78'>{draft.description || previewVenue}</p>
               </div>
             </div>

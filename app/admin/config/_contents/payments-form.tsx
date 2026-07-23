@@ -311,7 +311,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
           )}
         </section>
 
-        <aside className='rounded-lg border border-border/70 bg-card p-4 sm:p-5'>
+        <aside className=' rounded-lg border border-border/70 bg-card p-4 sm:p-5'>
           <div className='space-y-4'>
             <div className='flex items-start justify-between gap-4'>
               <div>

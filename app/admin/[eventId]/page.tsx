@@ -41,13 +41,20 @@ export default async function EventPage({ params }: EventPageProps) {
     if (!registration.subscription_id) continue
 
     const tickets = ticketsBySubscription.get(registration.subscription_id) ?? []
-    tickets.push(toRegistrationTicketData(registration, `Player ${tickets.length + 1}`))
+    tickets.push(
+      toRegistrationTicketData(registration, `Player ${tickets.length + 1}`, {
+        eventDate: eventDateLabel,
+        eventName: event.title,
+        venue: event.venue
+      })
+    )
     ticketsBySubscription.set(registration.subscription_id, tickets)
   }
 
   const playerRows: EventSubscriptionTableRow[] = subscriptions.map((subscription) => ({
     subscriptionId: subscription._id,
     createdAt: subscription._creationTime,
+    userId: subscription.user_id,
     reference: subscription.txn_ref_no ?? subscription.form_id ?? subscription._id,
     contactEmail: subscription.contact_email ?? null,
     teamName: subscription.team_name ?? 'Team pending',

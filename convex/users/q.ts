@@ -9,6 +9,16 @@ export const listUsers = query({
   }
 })
 
+export const getUserBySubject = query({
+  args: { subject: v.string() },
+  handler: async (ctx, { subject }) => {
+    return await ctx.db
+      .query('users')
+      .withIndex('by_subject', (q) => q.eq('subject', subject))
+      .unique()
+  }
+})
+
 export const getUserByTokenId = query({
   args: { tokenIdentifier: v.string() },
   handler: async ({ db }, { tokenIdentifier }) => {

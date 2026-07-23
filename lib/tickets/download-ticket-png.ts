@@ -1,5 +1,4 @@
-const MODERN_COLOR_FUNCTION =
-  /(?:color(?:-mix)?|lab|lch|oklab|oklch)\(/i
+const MODERN_COLOR_FUNCTION = /(?:color(?:-mix)?|lab|lch|oklab|oklch)\(/i
 const MAX_CANVAS_DIMENSION = 16_000
 const MAX_CANVAS_AREA = 64_000_000
 const MAX_TICKET_EXPORT_SCALE = 4
@@ -70,11 +69,7 @@ function normalizeExportColors(root: HTMLElement, clonedDocument: Document) {
     for (const property of colorProperties) {
       const value = computedStyle.getPropertyValue(property)
       if (hasModernColorFunction(value)) {
-        inlineStyle.setProperty(
-          property,
-          resolveColor(value),
-          'important'
-        )
+        inlineStyle.setProperty(property, resolveColor(value), 'important')
       }
     }
 
@@ -102,9 +97,7 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
 async function waitForExportSurface(element: HTMLElement) {
   await document.fonts?.ready
 
-  const images = Array.from(
-    element.querySelectorAll<HTMLImageElement>('img')
-  )
+  const images = Array.from(element.querySelectorAll<HTMLImageElement>('img'))
   await Promise.all(
     images.map(async (image) => {
       if (image.complete) return
@@ -117,38 +110,24 @@ async function waitForExportSurface(element: HTMLElement) {
     })
   )
 
-  await new Promise<void>((resolve) =>
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => resolve())
-    )
-  )
+  await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
 }
 
 export function hasModernColorFunction(value: string) {
   return MODERN_COLOR_FUNCTION.test(value)
 }
 
-export function getTicketExportScale(
-  width: number,
-  height: number,
-  requestedScale = MAX_TICKET_EXPORT_SCALE
-) {
+export function getTicketExportScale(width: number, height: number, requestedScale = MAX_TICKET_EXPORT_SCALE) {
   const safeWidth = Math.max(Math.ceil(width), 1)
   const safeHeight = Math.max(Math.ceil(height), 1)
   const safeRequestedScale =
     Number.isFinite(requestedScale) && requestedScale > 0
       ? Math.min(requestedScale, MAX_TICKET_EXPORT_SCALE)
       : MAX_TICKET_EXPORT_SCALE
-  const dimensionScale =
-    MAX_CANVAS_DIMENSION / Math.max(safeWidth, safeHeight)
-  const areaScale = Math.sqrt(
-    MAX_CANVAS_AREA / (safeWidth * safeHeight)
-  )
+  const dimensionScale = MAX_CANVAS_DIMENSION / Math.max(safeWidth, safeHeight)
+  const areaScale = Math.sqrt(MAX_CANVAS_AREA / (safeWidth * safeHeight))
 
-  return Math.max(
-    Number.EPSILON,
-    Math.min(safeRequestedScale, dimensionScale, areaScale)
-  )
+  return Math.max(Number.EPSILON, Math.min(safeRequestedScale, dimensionScale, areaScale))
 }
 
 export function createPngFilename(label: string, fallback = 'ticket') {
@@ -158,7 +137,10 @@ export function createPngFilename(label: string, fallback = 'ticket') {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  const normalizedFallback = fallback.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  const normalizedFallback = fallback
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
 
   return `${normalized || normalizedFallback || 'ticket'}.png`
 }
@@ -169,10 +151,7 @@ export async function downloadElementAsPng(element: HTMLElement, filename: strin
   const { default: html2canvas } = await import('html2canvas')
   const exportWidth = Math.max(element.scrollWidth, 1)
   const exportHeight = Math.max(element.scrollHeight, 1)
-  const exportScale = getTicketExportScale(
-    exportWidth,
-    exportHeight
-  )
+  const exportScale = getTicketExportScale(exportWidth, exportHeight)
   const canvas = await html2canvas(element, {
     allowTaint: false,
     backgroundColor: '#ffffff',
@@ -182,16 +161,8 @@ export async function downloadElementAsPng(element: HTMLElement, filename: strin
       // html2canvas parses the cloned document backgrounds separately from
       // the requested element. Tailwind's modern theme colors can serialize
       // as lab()/oklab() here, which html2canvas 1.x cannot parse.
-      clonedDocument.documentElement.style.setProperty(
-        'background-color',
-        '#ffffff',
-        'important'
-      )
-      clonedDocument.body.style.setProperty(
-        'background-color',
-        '#ffffff',
-        'important'
-      )
+      clonedDocument.documentElement.style.setProperty('background-color', '#ffffff', 'important')
+      clonedDocument.body.style.setProperty('background-color', '#ffffff', 'important')
 
       const exportStyles = clonedDocument.createElement('style')
       exportStyles.textContent = `

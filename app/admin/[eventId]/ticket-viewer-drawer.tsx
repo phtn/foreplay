@@ -45,7 +45,7 @@ export function TicketViewerDrawer({ active, onOpenChange, open, reference, tick
           </Button>
         </DrawerHeader>
 
-        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto bg-muted/20 p-3 sm:p-4'>
+        <div className='min-h-0 flex-1 space-y-4 overflow-y-auto bg-neutral-200 dark:bg-neutral-600 p-3 sm:p-4'>
           {!active ? (
             <div className='flex items-start gap-2 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200'>
               <Icon name='lock' className='mt-0.5 size-4 shrink-0' />
@@ -64,7 +64,6 @@ export function TicketViewerDrawer({ active, onOpenChange, open, reference, tick
           {tickets.map((ticket) => (
             <RegistrationTicketCard
               key={ticket.id}
-              className='overflow-hidden rounded-xl border border-border/70 bg-white shadow-sm'
               isActive={active}
               onExportError={setExportError}
               registration={ticket}

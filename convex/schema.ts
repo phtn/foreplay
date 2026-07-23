@@ -19,7 +19,10 @@ import { userSchema } from './users/d'
 
 export default defineSchema({
   admin: defineTable(adminSchema).index('by_identifier', ['identifier']),
-  users: defineTable(userSchema).index('by_name', ['name']).index('by_tokenIdentifier', ['tokenIdentifier']),
+  users: defineTable(userSchema)
+    .index('by_name', ['name'])
+    .index('by_subject', ['subject'])
+    .index('by_tokenIdentifier', ['tokenIdentifier']),
   accounts: defineTable(accountSchema).index('by_sub', ['sub']),
   leagues: defineTable(leagueSchema).index('by_userId', ['userId']).index('by_accountId', ['accountId']),
   orders: defineTable(orderSchema).index('by_refNumber', ['refNumber']),

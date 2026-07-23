@@ -24,6 +24,8 @@ test('ticket typography cannot be clipped by its metadata column', () => {
       checkedIn: false,
       division: 'Open',
       email: 'player.with.a.long.address@example.com',
+      eventDate: 'July 18, 2026',
+      eventName: 'Seoul of Manila Golf Tournament 2026',
       gatePassPayload: '{"ticketToken":"token"}',
       handicap: 'N/A',
       id: registrationId,
@@ -31,7 +33,8 @@ test('ticket typography cannot be clipped by its metadata column', () => {
       paymentStatus: 'paid',
       phone: 'N/A',
       shirtSize: 'N/A',
-      slotLabel: 'Player 1'
+      slotLabel: 'Player 1',
+      venue: 'Pradera Verde Golf & Country Club'
     },
     subscribeToCheckIn: false
   })
@@ -59,6 +62,13 @@ test('ticket typography cannot be clipped by its metadata column', () => {
   assert.equal(ticketNumberClasses.has('whitespace-nowrap'), true)
   assert.equal(emailClasses.has('wrap-break-word'), true)
   assert.equal(nameClasses.has('truncate'), false)
+  assert.match(html, /Seoul of Manila Golf Tournament 2026/)
+  assert.match(html, /Pradera Verde Golf &amp; Country Club/)
+  assert.match(html, /July 18, 2026/)
+  assert.match(html, />Premium</)
+  assert.doesNotMatch(html, />(Division|Handicap|Shirt)</)
+  assert.match(html, /md:grid-cols-\[minmax\(0,1fr\)_13\.5rem\]/)
+  assert.match(html, />Gate pass</)
   assert.doesNotMatch(
     html,
     /grid grid-cols-1 gap-3 overflow-hidden/

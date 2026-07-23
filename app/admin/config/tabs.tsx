@@ -1,10 +1,13 @@
 'use client'
 
+import { cn } from '@/lib/utils'
+import { type ClassName } from '@/types'
 import { Tabs as Root } from '@base-ui/react/tabs'
-import { ReactNode, useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 interface TabsProps {
   tabs: Tab[]
+  className?: ClassName
 }
 
 export interface Tab {
@@ -13,14 +16,14 @@ export interface Tab {
   content?: ReactNode
 }
 
-export const Tabs = ({ tabs }: TabsProps) => {
+export const Tabs = ({ tabs, className }: TabsProps) => {
   const firstValue = tabs[1]?.value ?? null
   const [value, setValue] = useState<string | null>(firstValue)
   const activeValue = value !== null && tabs.some((tab) => tab.value === value) ? value : firstValue
 
   return (
     <Root.Root
-      className='rounded-md'
+      className={cn(className, 'rounded-md')}
       value={activeValue}
       onValueChange={(nextValue) => setValue(typeof nextValue === 'string' ? nextValue : firstValue)}>
       <Root.List className='relative z-0 flex gap-0 md:gap-4 px-2'>

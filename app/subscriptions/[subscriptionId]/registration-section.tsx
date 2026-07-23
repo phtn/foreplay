@@ -32,9 +32,12 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
 
 export function RegistrationSection({
   defaultDivision,
+  eventDate,
   maxEntries,
   registrations,
-  subscriptionId
+  subscriptionId,
+  tournamentName,
+  venue
 }: RegistrationSectionProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -52,8 +55,15 @@ export function RegistrationSection({
   const canAddMore = remainingSlots > 0
 
   const registrationCards = useMemo(
-    () => registrations.map((registration) => toRegistrationTicketData(registration)),
-    [registrations]
+    () =>
+      registrations.map((registration, index) =>
+        toRegistrationTicketData(registration, `Player ${index + 1}`, {
+          eventDate,
+          eventName: tournamentName,
+          venue
+        })
+      ),
+    [eventDate, registrations, tournamentName, venue]
   )
 
   const resetDraft = () => {
@@ -193,7 +203,7 @@ export function RegistrationSection({
 
       <CardContent className='space-y-0 py-0 px-0 border-x border-b rounded-b-xl bg-white'>
         {registrationCards.length ? (
-          <div ref={ticketsRef} className='min-h-40! grid divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
+          <div ref={ticketsRef} className='grid min-h-40! w-full gap-4 bg-white p-2 sm:p-4'>
             {registrationCards.map((registration) => (
               <RegistrationTicketCard
                 key={registration.id}

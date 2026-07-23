@@ -6,6 +6,7 @@ import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { formatEventDate } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -69,15 +70,25 @@ const Page = async ({ params }: PageProps) => {
 
   const userIds = buildFirebaseSubscriptionUserIds(session.decodedToken)
   const typedSubscriptionId = subscriptionId as Id<'subscriptions'>
-  const [subscription, registrations] = await Promise.all([
-    fetchQuery(api.subscriptions.q.getByIdForUser, {
-      subscriptionId: typedSubscriptionId,
-      userIds
-    }),
-    fetchQuery(api.registrations.q.listBySubscriptionIdForUser, {
-      subscriptionId: typedSubscriptionId,
-      userIds
-    })
+  const subscriptionPromise = fetchQuery(api.subscriptions.q.getByIdForUser, {
+    subscriptionId: typedSubscriptionId,
+    userIds
+  })
+  const registrationsPromise = fetchQuery(api.registrations.q.listBySubscriptionIdForUser, {
+    subscriptionId: typedSubscriptionId,
+    userIds
+  })
+  const tournamentPromise = subscriptionPromise.then((subscription) => {
+    if (!subscription || (subscription.status ?? 'pending_payment') !== 'confirmed') {
+      return null
+    }
+
+    return fetchQuery(api.tournaments.q.getByTournamentId, { id: subscription.tournament_id })
+  })
+  const [subscription, registrations, tournament] = await Promise.all([
+    subscriptionPromise,
+    registrationsPromise,
+    tournamentPromise
   ])
 
   if (!subscription) {
@@ -128,6 +139,9 @@ const Page = async ({ params }: PageProps) => {
             registrations={registrations}
             maxEntries={maxEntries}
             defaultDivision={subscription.division}
+            eventDate={tournament ? formatEventDate(tournament.gate_open_at, tournament.event_date) : 'Date TBA'}
+            tournamentName={subscription.tournament_name}
+            venue={tournament?.venue ?? 'Venue TBA'}
           />
         ) : (
           <Card className='font-okx'>

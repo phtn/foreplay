@@ -17,6 +17,7 @@ import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { useMemo, useRef, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import {
@@ -30,6 +31,7 @@ import type { EditableSubscriptionStatus } from './subscription-status-actions'
 
 export interface EventSubscriptionTableRow {
   subscriptionId: string
+  userId: string
   createdAt: number
   reference: string
   contactEmail: string | null
@@ -142,21 +144,23 @@ function DateTimeCell({ timestamp, fallback = '—' }: { timestamp: number | nul
 function ReferenceCell({ row }: { row: EventSubscriptionTableRow }) {
   return (
     <div className='min-w-0 space-y-1'>
-      <p className='truncate font-ios text-foreground/90'>{row.reference.substring(0, 4).toUpperCase()}</p>
+      <Link href={`/admin/users/${row.subscriptionId}`}>
+        <p className='truncate font-ios text-foreground/90'>{row.reference.substring(0, 4).toUpperCase()}</p>
+      </Link>
     </div>
   )
 }
 
 function EntriesCell({ row }: { row: EventSubscriptionTableRow }) {
   return (
-    <div className='space-y-1'>
+    <Link href={`/admin/config/users/${row.userId}`} className='space-y-1'>
       <p className='text-foreground/85'>
         <span className='font-okx'>{row.teamName}</span>
       </p>
       <p className='whitespace-nowrap text-xs text-muted-foreground'>
         <span className='font-okx'>{row.contactEmail}</span>
       </p>
-    </div>
+    </Link>
   )
 }
 
@@ -476,7 +480,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
       {
         id: 'tickets',
         accessorKey: 'tickets',
-        header: <div className='flex items-center justify-center'>Ticket</div>,
+        header: <div className='flex items-center justify-center w-full'>Ticket</div>,
         size: 110,
         enableFiltering: false,
         enableGlobalFiltering: false,
@@ -486,7 +490,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
       {
         id: 'confirmation',
         accessorKey: 'subscriptionId',
-        header: <div className='flex items-center justify-center'>Action</div>,
+        header: <div className='flex items-center justify-center w-full'>Action</div>,
         size: 130,
         enableFiltering: false,
         enableGlobalFiltering: false,
