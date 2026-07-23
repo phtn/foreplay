@@ -128,6 +128,7 @@ const FilterComponent = <T,>({
           <BaseButton
             className={cn(
               'relative flex w-8 h-8 md:h-7.5 items-center justify-center rounded-sm md:space-x-2 md:w-auto md:px-3.5 text-sm select-none transition-colors duration-75',
+              'data-pressed:bg-indigo-100/20 dark:data-pressed:bg-indigo-200/10',
               'hover:bg- dark:hover:bg-',
               'active:bg-foreground/10 dark:active:bg-',
               'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
@@ -138,7 +139,7 @@ const FilterComponent = <T,>({
                 {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
               </span>
             ) : (
-              <Icon name='filter' className={cn('size-4 dark:opacity-90')} />
+              <Icon name='filter' className={cn('size-4 dark:opacity-60')} />
             )}
             <span className='hidden font-ios text-sm capitalize opacity-90 md:flex'>Filter</span>
           </BaseButton>

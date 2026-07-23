@@ -297,7 +297,7 @@ export const NewEntryForm = ({
           void form.handleSubmit()
         }}>
         <div className='grid md:grid-cols-3'>
-          <div className='bg-sky-500/0 md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-900'>
+          <div className='md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-900'>
             <form.AppField name='fullName'>
               {({ TextField }) => (
                 <TextField
@@ -606,9 +606,7 @@ export const NewEntryForm = ({
                 disabled={
                   isEntryLocked
                     ? !subscriptionId
-                    : !subscriptionId ||
-                      isDraftBusy ||
-                      (!isAdmin && (!hasActivePaymentDestination || !receiptFile))
+                    : !subscriptionId || isDraftBusy || (!isAdmin && (!hasActivePaymentDestination || !receiptFile))
                 }
                 onClick={() => {
                   if (isEntryLocked && subscriptionId) {

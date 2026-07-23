@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@base-ui/react'
 import { Menu } from '@base-ui/react/menu'
 import type { Column, VisibilityState } from '@tanstack/react-table'
-import { memo, useCallback, useMemo, type ComponentProps } from 'react'
+import { useCallback, useMemo, type ComponentProps } from 'react'
 import { getColumnHeaderText } from './filter-utils'
 
 interface Props<T> {
@@ -39,9 +39,9 @@ const ColumnViewComponent = <T,>({ cols, onColumnVisibilityChange }: Props<T>) =
           <Button
             className={cn(
               'relative flex h-8 grow-0 items-center justify-center rounded-sm px-2 text-sm transition-colors duration-75 select-none portrait:aspect-square md:h-7.5 md:w-auto md:space-x-2 md:px-3.5',
-              'data-pressed:bg-neutral-200 dark:data-pressed:bg-sidebar',
-              'bg-sidebar/50 dark:bg-dark-table/10',
-              'hover:bg-sidebar/60 dark:hover:bg-dark-table/50',
+              'data-pressed:bg-orange-100/20 dark:data-pressed:bg-orange-100/10',
+              '',
+              'hover:bg-sidebar/60 dark:hover:bg-sidebar/50',
               'active:bg-sidebar dark:active:bg-dark-table/20',
               'focus-visible:bg-none focus-visible:-outline-offset-1 focus-visible:outline-1',
               invisibleColumns.length > 0 && 'px-0 md:px-3.5'
@@ -51,7 +51,7 @@ const ColumnViewComponent = <T,>({ cols, onColumnVisibilityChange }: Props<T>) =
                 {invisibleColumns.length > 99 ? '99+' : invisibleColumns.length}
               </span>
             ) : (
-              <Icon name='selector-vertical' className='size-4 dark:opacity-80' />
+              <Icon name='columns' className='size-4 dark:opacity-60' />
             )}
             <span className='hidden font-ios text-sm opacity-90 md:flex'>Columns</span>
           </Button>
@@ -59,8 +59,8 @@ const ColumnViewComponent = <T,>({ cols, onColumnVisibilityChange }: Props<T>) =
         <ChevronDownIcon className='-mr-1' />
       </Menu.Trigger>
       <Menu.Portal>
-        <Menu.Positioner align='start' className='outline-none' sideOffset={2}>
-          <Menu.Popup className='origin-(--transform-origin) w-64 rounded-xl border border-dark-gray/30 bg-sidebar py-1 text-origin shadow-none outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:bg-dark-table dark:text-zinc-200'>
+        <Menu.Positioner align='start' className='outline-none' sideOffset={3}>
+          <Menu.Popup className='origin-(--transform-origin) w-64 rounded-md border border-dark-gray/30 bg-zinc-300/30 dark:bg-zinc-900/20 backdrop-blur-3xl py-1 text-origin shadow-none outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:bg-dark-table dark:text-zinc-200'>
             <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 capitalize dark:border-zinc-800'>
               <span className='font-okx text-sm font-medium'>Toggle columns</span>
             </div>
@@ -73,8 +73,7 @@ const ColumnViewComponent = <T,>({ cols, onColumnVisibilityChange }: Props<T>) =
                     column.getIsVisible() && 'bg-transparent not-italic opacity-100 dark:bg-transparent dark:text-white'
                   )}
                   checked={column.getIsVisible()}
-                  onCheckedChange={(value) => handleToggle(column.id, value === true)}
-                  onSelect={(event) => event.preventDefault()}>
+                  onCheckedChange={(value) => handleToggle(column.id, value)}>
                   <span>{getColumnHeaderText(column)}</span>
                   <Icon name={column.getIsVisible() ? 'check' : 'eye-close'} className='size-4' />
                 </Menu.CheckboxItem>
@@ -87,9 +86,7 @@ const ColumnViewComponent = <T,>({ cols, onColumnVisibilityChange }: Props<T>) =
   )
 }
 
-ColumnViewComponent.displayName = 'ColumnView'
-
-export const ColumnView = memo(ColumnViewComponent) as typeof ColumnViewComponent
+export const ColumnView = ColumnViewComponent
 
 function ChevronDownIcon(props: ComponentProps<'svg'>) {
   return (

@@ -3,6 +3,7 @@ import type { Row } from '@tanstack/react-table'
 import { memo, type MouseEvent } from 'react'
 import { TableRow } from '../ui/table'
 import { RenderCell } from './render-cell'
+import { getVisibleRowCells } from './visibility'
 
 interface RenderRowProps<T> {
   row: Row<T>
@@ -33,9 +34,7 @@ const RenderRowInner = <T,>({
 
     if (
       target instanceof HTMLElement &&
-      target.closest(
-        'button, input, select, textarea, a, form, label, [role="button"], [role="menuitem"]'
-      )
+      target.closest('button, input, select, textarea, a, form, label, [role="button"], [role="menuitem"]')
     ) {
       return
     }
@@ -51,23 +50,19 @@ const RenderRowInner = <T,>({
     <TableRow
       data-state={isSelected ? 'selected' : undefined}
       className={cn(
-        'group/row h-10 border-y border-y-dotted border-y-dark-table/10 bg-sidebar/5 text-foreground transition-colors duration-75 hover:border-y-dark-table/30 hover:bg-sidebar active:bg-background/20 dark:border-greyed dark:border-y-dark-table/40 dark:hover:bg-background/80',
+        'group/row h-10 _border-y _border-y-dotted _border-y-dark-table/10 bg-sidebar/5 text-foreground transition-colors duration-75 hover:border-y-dark-table/30 hover:bg-sidebar active:bg-background/20 _dark:border-greyed _dark:border-y-dark-table/40 dark:hover:bg-background/80',
         {
           'last:rounded-tr-2xl dark:bg-blue-200/50': isHighlighted,
-          'border-y-dark-table/30 bg-sidebar hover:bg-sidebar last:rounded-tr-2xl dark:bg-mac-blue/20':
+          '_border-y-dark-table/30 bg-sidebar hover:bg-sidebar last:rounded-tr-2xl dark:bg-mac-blue/20':
             isSelected && !isHighlighted,
-          'border-y-light-gray bg-sky-300/20 hover:bg-brand/10 dark:border-y-sky-300/15 dark:bg-background/20 dark:hover:bg-background/30':
+          '_border-y-light-gray bg-sky-300/20 hover:bg-brand/10 _dark:border-y-sky-300/15 dark:bg-background/20 dark:hover:bg-background/30':
             isPinned && !isHighlighted && !isSelected,
           'cursor-pointer': showSelectColumn && row.getCanSelect()
         }
       )}
       onClick={handleRowClick}>
-      {row.getVisibleCells().map((cell) => (
-        <RenderCell
-          key={cell.id}
-          cell={cell}
-          isEditing={isSelected || showSelectColumn || isHighlighted}
-        />
+      {getVisibleRowCells(row).map((cell) => (
+        <RenderCell key={cell.id} cell={cell} isEditing={isSelected || showSelectColumn || isHighlighted} />
       ))}
     </TableRow>
   )

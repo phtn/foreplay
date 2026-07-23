@@ -168,15 +168,15 @@ export const Content = ({
   const initialEntryLocked = isSubscriptionEntryLocked(initialSubscription)
   const formId = initialFormId
   const requestedPlayers = query.players ?? initialPlayers
-  const players = initialSubscription && initialEntryLocked
-    ? initialPlayers
-    : Math.max(1, Math.min(20, requestedPlayers))
+  const players =
+    initialSubscription && initialEntryLocked ? initialPlayers : Math.max(1, Math.min(20, requestedPlayers))
   const savedDivision = initialSubscription?.division ?? initialDivision
-  const division = initialSubscription && initialEntryLocked
-    ? savedDivision
-    : query.division && validDivisionValues.has(query.division)
-      ? query.division
-      : savedDivision
+  const division =
+    initialSubscription && initialEntryLocked
+      ? savedDivision
+      : query.division && validDivisionValues.has(query.division)
+        ? query.division
+        : savedDivision
   // const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
   const price = tournament.entryFee
   const total = players * price
@@ -277,7 +277,7 @@ export const Content = ({
           </Link>
         ) : null}
       </div>
-      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-slate-900 dark:bg-slate-800 bg-slate-200/20 shadow-xs shadow-slate-100 dark:shadow-none p-0'>
+      <Card className='relative w-full max-w-7xl rounded-lg border border-slate-400 dark:border-slate-900 dark:bg-slate-800/50 bg-slate-200/20 shadow-xs shadow-slate-100 dark:shadow-none p-0'>
         <CardContent className='p-0'>
           {tourId ? (
             <>

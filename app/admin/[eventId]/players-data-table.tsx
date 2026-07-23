@@ -282,9 +282,9 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
         }
       />
       {menuOpen ? (
-        <DropdownMenuContent align='end' className='w-64 rounded-xl'>
+        <DropdownMenuContent align='end' className='w-64 rounded-md border-[0.5px] border-foreground/50'>
           <DropdownMenuGroup className='space-y-2'>
-            <DropdownMenuLabel className='font-okx font-medium text-sky-800 dark:text-sky-500 border-b border-border/60 text-sm'>
+            <DropdownMenuLabel className='font-okx font-semibold tracking-widest uppercase text-neutral-400/80 dark:text-sky-500 border-b border-border/60 border-dashed text-xs'>
               Status Options
             </DropdownMenuLabel>
             {statusMenuActions.map((action) => {
@@ -350,7 +350,7 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
         type='button'
         variant='ghost'
         size='icon'
-        className='gap-1 text-pink-600 hover:text-pink-500 dark:text-pink-400'
+        className='gap-1 text-pink-600 hover:text-pink-500 dark:text-pink-400/80'
         aria-label={`View tickets for ${row.reference}`}
         onClick={() => setOpen(true)}>
         <Icon name='ticket' className='size-5' />
@@ -398,6 +398,9 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         header: 'Ref #',
         size: 80,
         enableFiltering: false,
+        enableHiding: true,
+        enableGlobalFiltering: true,
+        enableSorting: true,
         cell: ({ row }) => <ReferenceCell row={row.original} />
       },
       {
@@ -531,7 +534,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
       columnConfigs={columns}
       rowIdAccessor='subscriptionId'
       queryParamPrefix='players'
-      defaultPageSize={25}
+      defaultPageSize={200}
       enableRowSelection={false}
     />
   )

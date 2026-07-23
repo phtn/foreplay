@@ -59,7 +59,13 @@ import { RenderRow } from './render-row'
 import { Search } from './search'
 import { SelectToggle } from './select-toggle'
 import { CenterTableToolbar, LeftTableToolbar, RightTableToolbar } from './toolbar'
-import { getVisibleColumnsSize, getVisibleHeaders } from './visibility'
+import {
+  areVisibilityStatesEqual,
+  getVisibleColumnsSize,
+  getVisibleHeaders,
+  reconcileColumnVisibility,
+  resolveColumnVisibilityUpdate
+} from './visibility'
 
 export interface TableToolbarContext<T> {
   getFilteredData: () => T[]
@@ -177,12 +183,6 @@ const resolveRowId = <T,>(row: T, index: number, rowIdAccessor: RowIdAccessor<T>
 
 const areStringArraysEqual = (left: string[], right: string[]) =>
   left.length === right.length && left.every((value, index) => value === right[index])
-
-const areVisibilityStatesEqual = (left: VisibilityState, right: VisibilityState) => {
-  const leftKeys = Object.keys(left)
-  const rightKeys = Object.keys(right)
-  return leftKeys.length === rightKeys.length && leftKeys.every((key) => left[key] === right[key])
-}
 
 const getQueryKey = (prefix: string | undefined, key: string) => (prefix ? `${prefix}.${key}` : key)
 
@@ -335,13 +335,27 @@ export const DataTable = <T,>({
   )
 
   const selectOn = enableRowSelection && selectModeParam === 'true'
-  const columnVisibility: VisibilityState = useMemo(() => columnVisibilityParam ?? {}, [columnVisibilityParam])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => columnVisibilityParam ?? {})
   const inputRef = useRef<HTMLInputElement>(null)
   const [searchInput, setSearchInput] = useState(globalFilterParam ?? '')
   const [committedSearch, setCommittedSearch] = useState(globalFilterParam ?? '')
   const observedSearchParamRef = useRef(globalFilterParam ?? '')
   const pendingSearchWritesRef = useRef(new Set<string>())
+  const pendingColumnVisibilityRef = useRef<VisibilityState | null>(null)
   const safeSearchDebounceMs = Math.max(0, Math.min(2_000, Math.floor(searchDebounceMs)))
+
+  useEffect(() => {
+    const nextVisibility = columnVisibilityParam ?? {}
+    const pendingVisibility = pendingColumnVisibilityRef.current
+
+    if (pendingVisibility && areVisibilityStatesEqual(nextVisibility, pendingVisibility)) {
+      pendingColumnVisibilityRef.current = null
+    }
+
+    setColumnVisibility((current) =>
+      reconcileColumnVisibility(current, nextVisibility, pendingVisibility)
+    )
+  }, [columnVisibilityParam])
 
   useEffect(() => {
     const nextSearch = globalFilterParam ?? ''
@@ -524,10 +538,12 @@ export const DataTable = <T,>({
 
   const handleColumnVisibilityChange = useCallback(
     (updater: VisibilityState | ((current: VisibilityState) => VisibilityState)) => {
-      const nextVisibility = typeof updater === 'function' ? updater(columnVisibility) : updater
+      const nextVisibility = resolveColumnVisibilityUpdate(columnVisibility, updater)
       if (areVisibilityStatesEqual(columnVisibility, nextVisibility)) {
         return
       }
+      pendingColumnVisibilityRef.current = nextVisibility
+      setColumnVisibility(nextVisibility)
       void setQueryState({ columnVisibility: nextVisibility })
     },
     [columnVisibility, setQueryState]
@@ -814,7 +830,7 @@ export const DataTable = <T,>({
     [getFilteredData, rightToolbarLeft]
   )
 
-  const visibleLeafColumns = table.getVisibleLeafColumns()
+  const visibleLeafColumns = leafColumns.filter((column) => column.getIsVisible())
   const visibleColumnSignature = visibleLeafColumns.map((column) => column.id).join('\u001f')
   const visibleTableSize = getVisibleColumnsSize(visibleLeafColumns)
 

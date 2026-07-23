@@ -15,7 +15,7 @@ export const HyperWrap = ({ children, className }: HyperCardProps) => {
       className={cn(
         'relative p-0 md:rounded-sm rounded-xs',
         'group bg-background dark:bg-sidebar/50 overflow-hidden',
-        'border border-dark-table/0 dark:border-zinc-700',
+        'md:border border-zinc-300 dark:border-zinc-800',
         className
       )}>
       {children}

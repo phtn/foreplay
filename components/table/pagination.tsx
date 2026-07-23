@@ -3,7 +3,7 @@ import { PaginationState } from '@tanstack/react-table'
 import { memo, useId, useMemo } from 'react'
 import { Button } from '../ui/button'
 
-const DEFAULT_PAGE_SIZES = [10, 15, 25, 50, 100] as const
+const DEFAULT_PAGE_SIZES = [10, 15, 25, 50, 100, 250, 500] as const
 
 export interface PageControl {
   disabledNext: boolean
