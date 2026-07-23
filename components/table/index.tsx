@@ -62,9 +62,10 @@ import { CenterTableToolbar, LeftTableToolbar, RightTableToolbar } from './toolb
 import {
   areVisibilityStatesEqual,
   getVisibleColumnsSize,
-  getVisibleHeaders,
+  isColumnVisible,
   reconcileColumnVisibility,
-  resolveColumnVisibilityUpdate
+  resolveColumnVisibilityUpdate,
+  RETAINED_COLUMN_MODEL_VISIBILITY
 } from './visibility'
 
 export interface TableToolbarContext<T> {
@@ -352,9 +353,7 @@ export const DataTable = <T,>({
       pendingColumnVisibilityRef.current = null
     }
 
-    setColumnVisibility((current) =>
-      reconcileColumnVisibility(current, nextVisibility, pendingVisibility)
-    )
+    setColumnVisibility((current) => reconcileColumnVisibility(current, nextVisibility, pendingVisibility))
   }, [columnVisibilityParam])
 
   useEffect(() => {
@@ -638,7 +637,7 @@ export const DataTable = <T,>({
       pagination: paginationState,
       columnFilters,
       globalFilter: committedSearch,
-      columnVisibility,
+      columnVisibility: RETAINED_COLUMN_MODEL_VISIBILITY,
       rowSelection,
       rowPinning
     }
@@ -830,8 +829,7 @@ export const DataTable = <T,>({
     [getFilteredData, rightToolbarLeft]
   )
 
-  const visibleLeafColumns = leafColumns.filter((column) => column.getIsVisible())
-  const visibleColumnSignature = visibleLeafColumns.map((column) => column.id).join('\u001f')
+  const visibleLeafColumns = leafColumns.filter((column) => isColumnVisible(column.id, columnVisibility))
   const visibleTableSize = getVisibleColumnsSize(visibleLeafColumns)
 
   return (
@@ -859,7 +857,13 @@ export const DataTable = <T,>({
                 />
               }
               dateRange={centerToolbarDateRange}
-              view={<ColumnView cols={hideableColumns} onColumnVisibilityChange={handleColumnVisibilityChange} />}
+              view={
+                <ColumnView
+                  cols={hideableColumns}
+                  columnVisibility={columnVisibility}
+                  onColumnVisibilityChange={handleColumnVisibilityChange}
+                />
+              }
             />
           </div>
           <RightTableToolbar
@@ -876,20 +880,38 @@ export const DataTable = <T,>({
               data-slot='table'
               aria-busy={loading}
               aria-label={title ?? 'Data table'}
-              className='w-fit min-w-full table-fixed caption-bottom text-sm md:min-w-4xl'
+              className='w-fit min-w-full table-fixed caption-bottom text-sm transition-[width] duration-200 ease-out motion-reduce:transition-none md:min-w-4xl'
               style={{ width: visibleTableSize }}>
+              <colgroup>
+                {leafColumns.map((column) => {
+                  const isVisible = isColumnVisible(column.id, columnVisibility)
+
+                  return (
+                    <col
+                      key={column.id}
+                      data-column-visible={isVisible}
+                      className='transition-[width] duration-200 ease-out motion-reduce:transition-none'
+                      style={{ width: isVisible ? column.getSize() : 0 }}
+                    />
+                  )
+                })}
+              </colgroup>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
                     className='sticky top-0 z-0 h-7 md:h-8 dark:bg-background/10 bg-slate-300/30 backdrop-blur-3xl'>
-                    {getVisibleHeaders(headerGroup.headers).map((header) => {
-                      const headerSize = header.getSize()
+                    {headerGroup.headers.map((header) => {
+                      const isVisible = header.column
+                        .getLeafColumns()
+                        .some((column) => isColumnVisible(column.id, columnVisibility))
+
                       return (
                         <TableHead
                           key={header.id}
+                          aria-hidden={isVisible ? undefined : true}
                           aria-sort={
-                            header.column.getCanSort()
+                            isVisible && header.column.getCanSort()
                               ? header.column.getIsSorted() === 'asc'
                                 ? 'ascending'
                                 : header.column.getIsSorted() === 'desc'
@@ -897,13 +919,20 @@ export const DataTable = <T,>({
                                   : 'none'
                               : undefined
                           }
-                          style={{
-                            width: headerSize,
-                            minWidth: headerSize,
-                            maxWidth: headerSize
-                          }}
-                          className={cn('h-7 ps-2 md:h-8', 'font-okx font-medium text-xs tracking-tight md:text-sm')}>
-                          <ColumnSort flexRender={flexRender} header={header} sorted={header.column.getIsSorted()} />
+                          colSpan={header.colSpan}
+                          data-column-visible={isVisible}
+                          inert={!isVisible}
+                          className={cn(
+                            'h-7 overflow-hidden p-0 font-okx font-medium text-xs tracking-tight md:h-8 md:text-sm',
+                            !isVisible && 'pointer-events-none'
+                          )}>
+                          <div
+                            className={cn(
+                              'h-full min-w-0 overflow-hidden px-3 ps-2 transition-opacity duration-150 ease-out motion-reduce:transition-none flex items-center',
+                              isVisible ? 'opacity-100 delay-75' : 'opacity-0 delay-0'
+                            )}>
+                            <ColumnSort flexRender={flexRender} header={header} sorted={header.column.getIsSorted()} />
+                          </div>
                         </TableHead>
                       )
                     })}
@@ -922,11 +951,11 @@ export const DataTable = <T,>({
                       isPinned={row.getIsPinned() === 'top'}
                       isSelected={row.getIsSelected()}
                       showSelectColumn={selectOn}
-                      visibleColumnSignature={visibleColumnSignature}
+                      columnVisibility={columnVisibility}
                     />
                   ))
                 ) : (
-                  <EmptyTable colSpan={visibleLeafColumns.length} loading={loading} emptyState={emptyState} />
+                  <EmptyTable colSpan={leafColumns.length} loading={loading} emptyState={emptyState} />
                 )}
               </TableBody>
             </table>

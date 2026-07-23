@@ -233,10 +233,6 @@ export default function HomePage() {
           </section>
         </main>
       </div>
-      <div className='bg-[#1f2b27] dark:bg-background h-24 w-full flex items-end justify-center text-xs tracking-wider text-white/50'>
-        <span className='font-ios'>&copy;{new Date().getFullYear()}</span>{' '}
-        <span className='font-ios tracking-wider text-[11px] px-2'>foreplay.pro</span>
-      </div>
     </div>
   )
 }

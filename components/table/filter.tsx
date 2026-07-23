@@ -123,7 +123,7 @@ const FilterComponent = <T,>({
   return (
     <Popover.Root>
       <Popover.Trigger
-        className=''
+        className='select-none'
         render={
           <BaseButton
             className={cn(
@@ -151,7 +151,7 @@ const FilterComponent = <T,>({
           align='start'
           collisionAvoidance={{ side: 'flip', align: 'none' }}
           positionMethod='fixed'>
-          <Popover.Popup className='w-64 rounded-xl border border-dark-gray/30 bg-sidebar p-1 dark:bg-background dark:text-zinc-200'>
+          <Popover.Popup className='select-none w-64 rounded-md p-1 border border-dark-gray/30 bg-zinc-300/30 dark:bg-zinc-900/20 backdrop-blur-3xl dark:text-zinc-200'>
             {availableColumns.length > 0 ? (
               <>
                 <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 dark:border-zinc-800'>

@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils'
-import type { Row } from '@tanstack/react-table'
+import type { Row, VisibilityState } from '@tanstack/react-table'
 import { memo, type MouseEvent } from 'react'
 import { TableRow } from '../ui/table'
 import { RenderCell } from './render-cell'
-import { getVisibleRowCells } from './visibility'
+import { isColumnVisible } from './visibility'
 
 interface RenderRowProps<T> {
   row: Row<T>
@@ -12,8 +12,7 @@ interface RenderRowProps<T> {
   isPinned: boolean
   isSelected: boolean
   showSelectColumn: boolean
-  /** Forces a render (without remounting) when the visible cell set changes. */
-  visibleColumnSignature: string
+  columnVisibility: VisibilityState
 }
 
 const RenderRowInner = <T,>({
@@ -23,11 +22,9 @@ const RenderRowInner = <T,>({
   isPinned,
   isSelected,
   showSelectColumn,
-  visibleColumnSignature
+  columnVisibility
 }: RenderRowProps<T>) => {
-  // Read the signature so React Compiler and future refactors retain this
-  // deliberate invalidation dependency.
-  void visibleColumnSignature
+  'use no memo'
 
   const handleRowClick = (event: MouseEvent<HTMLTableRowElement>) => {
     const target = event.target
@@ -61,8 +58,13 @@ const RenderRowInner = <T,>({
         }
       )}
       onClick={handleRowClick}>
-      {getVisibleRowCells(row).map((cell) => (
-        <RenderCell key={cell.id} cell={cell} isEditing={isSelected || showSelectColumn || isHighlighted} />
+      {row.getAllCells().map((cell) => (
+        <RenderCell
+          key={cell.id}
+          cell={cell}
+          isEditing={isSelected || showSelectColumn || isHighlighted}
+          isVisible={isColumnVisible(cell.column.id, columnVisibility)}
+        />
       ))}
     </TableRow>
   )

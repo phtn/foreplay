@@ -5,26 +5,31 @@ import { TableCell } from '../ui/table'
 interface RenderCellProps<TData, TValue> {
   cell: Cell<TData, TValue>
   isEditing: boolean
+  isVisible: boolean
 }
 
 export const RenderCell = <TData, TValue>({
   cell,
-  isEditing
+  isEditing,
+  isVisible
 }: RenderCellProps<TData, TValue>) => {
-  const cellSize = cell.column.getSize()
-
   return (
     <TableCell
-      style={{
-        width: cellSize,
-        minWidth: cellSize,
-        maxWidth: cellSize
-      }}
+      aria-hidden={isVisible ? undefined : true}
+      data-column-visible={isVisible}
+      inert={!isVisible}
       className={cn(
-        'overflow-hidden last:py-0',
+        'overflow-hidden p-0 [&:last-child>div]:py-0',
+        !isVisible && 'pointer-events-none',
         isEditing && 'dark:bg-background/10'
       )}>
-      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      <div
+        className={cn(
+          'min-w-0 overflow-hidden p-3 transition-opacity duration-150 ease-out motion-reduce:transition-none',
+          isVisible ? 'opacity-100 delay-75' : 'opacity-0 delay-0'
+        )}>
+        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+      </div>
     </TableCell>
   )
 }

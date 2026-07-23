@@ -14,67 +14,10 @@ import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { dateFormatter, formatRegistrationFee, formatSlotsLabel, timeFormatter } from '@/utils/formatters'
 
 interface TourDetailProps {
   tourId: string
-}
-
-const pesoFormatter = new Intl.NumberFormat('en-PH', {
-  currency: 'PHP',
-  maximumFractionDigits: 0,
-  style: 'currency',
-  currencyDisplay: 'code'
-})
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  day: 'numeric',
-  month: 'long',
-  timeZone: 'Asia/Manila',
-  year: 'numeric'
-})
-
-const timeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: 'numeric',
-  minute: '2-digit',
-  timeZone: 'Asia/Manila'
-})
-
-function formatRegistrationFee(value: number, sponsorshipTiers?: Doc<'tournaments'>['sponsorship_tiers']) {
-  if (value > 0) {
-    return `${pesoFormatter.format(value)}`
-  }
-
-  const lowestSponsorTier = sponsorshipTiers
-    ?.map((tier) => Number(tier.investment_label.replace(/[^\d.]/g, '')))
-    .filter((amount) => Number.isFinite(amount) && amount > 0)
-    .sort((left, right) => left - right)[0]
-
-  return lowestSponsorTier
-    ? `Sponsor packages from ${pesoFormatter.format(lowestSponsorTier)}`
-    : 'Entry details pending'
-}
-
-function formatSlotsLabel(tournament: Doc<'tournaments'>) {
-  if (tournament.slots_limit) {
-    return tournament.registered_slots > 0
-      ? `${tournament.registered_slots}/${tournament.slots_limit} players`
-      : `${tournament.slots_limit} slots`
-  }
-
-  return tournament.registered_slots > 0 ? `${tournament.registered_slots} registered` : 'Slots pending'
-}
-
-function getFormatLabel(tournament: Doc<'tournaments'>) {
-  const formatFact = tournament.overview_facts?.find((fact) => fact.label.toLowerCase() === 'format')
-  return formatFact?.value ?? tournament.divisions?.[0] ?? 'Tournament'
-}
-
-function getStatusLabel(tournament: Doc<'tournaments'>) {
-  if (tournament.sponsorship_tiers?.length) {
-    return '120 slots'
-  }
-
-  return tournament.published === false ? 'Coming soon' : 'Entry open'
 }
 
 function mapConvexTournament(tournament: Doc<'tournaments'>, fallback: TournamentSpotlight): TournamentSpotlight {
@@ -88,10 +31,10 @@ function mapConvexTournament(tournament: Doc<'tournaments'>, fallback: Tournamen
     title: tournament.title,
     venue: tournament.venue,
     dateLabel,
-    feeLabel: formatRegistrationFee(tournament.registration_fee, tournament.sponsorship_tiers),
-    slotsLabel: formatSlotsLabel(tournament),
-    formatLabel: getFormatLabel(tournament),
-    statusLabel: getStatusLabel(tournament),
+    feeLabel: formatRegistrationFee(tournament.registration_fee),
+    slotsLabel: formatSlotsLabel(tournament.registered_slots, tournament.slots_limit),
+    formatLabel: tournament.divisions?.[0] ?? 'Tournament',
+    statusLabel: tournament.published === false ? 'Coming soon' : 'Entry open',
     description: tournament.description ?? fallback.description,
     divisions: tournament.divisions ?? fallback.divisions,
     teeTimeAt: new Date(tournament.gate_open_at).toISOString(),
@@ -139,8 +82,6 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
         description={tournament.description}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
-        // secondaryHref={`/tournaments/${tournament.id}/sponsorship`}
-        // secondaryLabel='Sponsor Event'
         primaryLabel='Book Entry'
         teeTimeAt={tournament.teeTimeAt}
         teeTimeLabel={tournament.teeTimeLabel}
@@ -293,22 +234,3 @@ export const Sponsorship = ({ id, partnerPitch, sponsorshipTiers }: SponsorshipP
     </Card>
   )
 }
-
-/*
-<Card className='border-border/70 hidden'>
-              <CardHeader>
-                <CardTitle className='text-xl'>Why partners sponsor this event</CardTitle>
-              </CardHeader>
-              <CardContent className='grid gap-4 sm:grid-cols-3'>
-                {tournament.partnerReasons.map((reason) => (
-                  <div key={reason.title} className='rounded-2xl border border-border/60 bg-muted/20 p-4'>
-                    <div className='flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary'>
-                      <Icon name='check' className='size-4' />
-                    </div>
-                    <h3 className='mt-4 font-semibold'>{reason.title}</h3>
-                    <p className='mt-2 text-sm leading-6 text-muted-foreground'>{reason.description}</p>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-*/

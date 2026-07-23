@@ -1,46 +1,15 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
+import { createTable, getCoreRowModel } from '@tanstack/react-table'
 
 import {
+  RETAINED_COLUMN_MODEL_VISIBILITY,
   areVisibilityStatesEqual,
   getVisibleColumnsSize,
-  getVisibleHeaders,
-  getVisibleRowCells,
+  isColumnVisible,
   reconcileColumnVisibility,
   resolveColumnVisibilityUpdate
 } from './visibility'
-
-test('retained headers are filtered against current column visibility', () => {
-  let secondColumnVisible = true
-  const headers = [
-    {
-      id: 'first',
-      column: {
-        getIsVisible: () => true,
-        getSize: () => 120
-      }
-    },
-    {
-      id: 'second',
-      column: {
-        getIsVisible: () => secondColumnVisible,
-        getSize: () => 180
-      }
-    }
-  ]
-
-  assert.deepEqual(
-    getVisibleHeaders(headers).map((header) => header.id),
-    ['first', 'second']
-  )
-
-  secondColumnVisible = false
-
-  assert.deepEqual(
-    getVisibleHeaders(headers).map((header) => header.id),
-    ['first']
-  )
-})
 
 test('table width only includes visible columns', () => {
   const visibleColumns = [
@@ -51,34 +20,32 @@ test('table width only includes visible columns', () => {
   assert.equal(getVisibleColumnsSize(visibleColumns), 300)
 })
 
-test('row cells are filtered from live column visibility instead of a stale row cache', () => {
-  let secondColumnVisible = true
-  const cells = [
-    {
-      id: 'first',
-      column: {
-        getIsVisible: () => true,
-        getSize: () => 120
-      }
-    },
-    {
-      id: 'second',
-      column: {
-        getIsVisible: () => secondColumnVisible,
-        getSize: () => 180
-      }
+test('controlled visibility explicitly identifies collapsed columns', () => {
+  assert.equal(isColumnVisible('first', { second: false }), true)
+  assert.equal(isColumnVisible('second', { second: false }), false)
+})
+
+test('the animated table model retains the adjacent header when the first column collapses', () => {
+  const presentationVisibility = { reference: false }
+  const table = createTable({
+    columns: [
+      { id: 'reference', accessorKey: 'reference' },
+      { id: 'created', accessorKey: 'created' }
+    ],
+    data: [{ reference: 'REF-1', created: 'Today' }],
+    getCoreRowModel: getCoreRowModel(),
+    onStateChange: () => undefined,
+    renderFallbackValue: null,
+    state: {
+      columnPinning: { left: [], right: [] },
+      columnVisibility: RETAINED_COLUMN_MODEL_VISIBILITY
     }
-  ]
-  const row = {
-    getAllCells: () => cells,
-    getVisibleCells: () => cells
-  }
+  })
 
-  secondColumnVisible = false
-
+  assert.equal(isColumnVisible('reference', presentationVisibility), false)
   assert.deepEqual(
-    getVisibleRowCells(row).map((cell) => cell.id),
-    ['first']
+    table.getHeaderGroups()[0]?.headers.map((header) => header.column.id),
+    ['reference', 'created']
   )
 })
 

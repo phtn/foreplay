@@ -284,7 +284,7 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
       {menuOpen ? (
         <DropdownMenuContent align='end' className='w-64 rounded-md border-[0.5px] border-foreground/50'>
           <DropdownMenuGroup className='space-y-2'>
-            <DropdownMenuLabel className='font-okx font-semibold tracking-widest uppercase text-neutral-400/80 dark:text-sky-500 border-b border-border/60 border-dashed text-xs'>
+            <DropdownMenuLabel className='font-okx font-semibold tracking-widest uppercase text-neutral-500 dark:text-sky-500 border-b border-border/60 border-dashed text-xs'>
               Status Options
             </DropdownMenuLabel>
             {statusMenuActions.map((action) => {
@@ -311,7 +311,7 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
                     name={actionPending ? 'spinner-ring' : isCurrent ? 'check' : action.icon}
                     className={cn('size-4', { 'text-sky-800 dark:text-sky-500 opacity-100': isCurrent })}
                   />
-                  <span className={cn('whitespace-nowrap capitalize', { '': isCurrent })}>{actionLabel}</span>
+                  <span className={cn('whitespace-nowrap capitalize font-okx', { '': isCurrent })}>{actionLabel}</span>
                   {isCurrent ? (
                     <span className='ml-auto font-ios text-foreground/80 text-[10px] uppercase tracking-widest'>
                       Current
@@ -397,9 +397,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         accessorKey: 'reference',
         header: 'Ref #',
         size: 80,
-        enableFiltering: false,
-        enableHiding: true,
-        enableGlobalFiltering: true,
+        enableFiltering: true,
         enableSorting: true,
         cell: ({ row }) => <ReferenceCell row={row.original} />
       },
@@ -408,8 +406,8 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         accessorKey: 'createdAt',
         header: 'Created',
         size: 100,
-        enableFiltering: false,
-        enableGlobalFiltering: false,
+        enableFiltering: true,
+        enableGlobalFiltering: true,
         cell: ({ row }) => <DateTimeCell timestamp={row.original.createdAt} />
       },
 
@@ -492,7 +490,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         size: 130,
         enableFiltering: false,
         enableGlobalFiltering: false,
-        enableHiding: false,
+        enableHiding: true,
         enableSorting: false,
         cell: ({ row }) => <SubscriptionStatusActions eventId={eventId} row={row.original} />
       },
@@ -516,7 +514,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         header: 'Remarks',
         size: 330,
         enableFiltering: false,
-        enableHiding: false,
+        enableHiding: true,
         enableSorting: false,
         cell: ({ row }) => <RemarksCell eventId={eventId} row={row.original} />
       }

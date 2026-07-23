@@ -1,27 +1,14 @@
 import type { VisibilityState } from '@tanstack/react-table'
 
+export const RETAINED_COLUMN_MODEL_VISIBILITY: VisibilityState = Object.freeze({})
+
 interface VisibilityAwareColumn {
   getIsVisible: () => boolean
   getSize: () => number
 }
 
-interface VisibilityAwareHeader {
-  column: VisibilityAwareColumn
-}
-
-interface VisibilityAwareCell {
-  column: VisibilityAwareColumn
-}
-
-interface VisibilityAwareRow<T extends VisibilityAwareCell> {
-  getAllCells: () => readonly T[]
-}
-
-export const getVisibleHeaders = <T extends VisibilityAwareHeader>(headers: readonly T[]) =>
-  headers.filter((header) => header.column.getIsVisible())
-
-export const getVisibleRowCells = <T extends VisibilityAwareCell>(row: VisibilityAwareRow<T>) =>
-  row.getAllCells().filter((cell) => cell.column.getIsVisible())
+export const isColumnVisible = (columnId: string, columnVisibility: VisibilityState) =>
+  columnVisibility[columnId] !== false
 
 export const getVisibleColumnsSize = (columns: readonly VisibilityAwareColumn[]) =>
   columns.reduce((total, column) => total + column.getSize(), 0)

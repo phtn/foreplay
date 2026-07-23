@@ -1,4 +1,6 @@
-import { GolfCourse } from '@/app/course'
+import { courseDrawing } from '@/public/pinatubo-complete'
+import { CourseDrawingExport } from 'foreway/core'
+import { CourseMap } from 'foreway/react'
 import TourDetail from './details'
 
 interface TourContentProps {
@@ -12,11 +14,12 @@ const courseStats = [
 ]
 
 export function TourContent({ tourId }: TourContentProps) {
+  const drawing = courseDrawing as CourseDrawingExport
   return (
     <main>
       <TourDetail tourId={tourId} />
       <div className='md:flex items-center'>
-        <GolfCourse />
+        <CourseMap className='min-w-0 flex-1' drawing={drawing as CourseDrawingExport} height={520} />
         <div className='grid grid-cols-3 md:grid-cols-1 gap-4'>
           {courseStats.map((stat) => (
             <div key={stat.label} className='pb-4 text-center'>

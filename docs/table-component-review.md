@@ -40,8 +40,8 @@ toolbar   memo rows   paginator
 | Area | Previous behavior and impact | Resolution |
 | --- | --- | --- |
 | URL subscriptions | Selection and pin controls subscribed once per row; sort and filter children duplicated root state. State notifications grew with rendered rows. | All query hooks now live in `DataTable`; children use TanStack state and callbacks. |
-| Visibility | Row keys included a visibility signature, forcing full unmount/remount and destroying cell-local state. | Rows keep stable `row.id` keys. A primitive visibility signature invalidates memoized rows without remounting them. |
-| Cell enumeration | Rows called `getAllCells().filter(...)`. | Rows call `getVisibleCells()` directly. |
+| Visibility | Row keys included a visibility signature, forcing full unmount/remount and destroying cell-local state. | Rows keep stable `row.id` keys and receive controlled visibility directly. A single animated `<colgroup>` collapses layout while mounted header/cell content fades and becomes inert. |
+| Cell enumeration | Rows called `getAllCells().filter(...)`. | Rows retain all cells during visibility transitions and mark collapsed cells from the controlled visibility state. |
 | Selection column | Checkbox and animation trees existed for every row even when selection mode was off. | The column is created only when selection mode is enabled; motion was removed. |
 | Search | Every keystroke wrote the URL and synchronously retriggered filtering. | Input remains responsive; filtering and URL updates are debounced by 150 ms and run in a transition. |
 | Global matching | Query and every row token were repeatedly Unicode-normalized. | TanStack resolves the normalized query once; normalized row/column tokens use a `WeakMap` cache. |
