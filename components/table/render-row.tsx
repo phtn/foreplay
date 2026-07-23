@@ -34,7 +34,7 @@ const RenderRowInner = <T,>({
     if (
       target instanceof HTMLElement &&
       target.closest(
-        'button, input, select, textarea, a, [role="button"], [role="menuitem"]'
+        'button, input, select, textarea, a, form, label, [role="button"], [role="menuitem"]'
       )
     ) {
       return

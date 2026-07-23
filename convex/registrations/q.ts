@@ -34,7 +34,7 @@ export const listByTournamentId = query({
     return await ctx.db
       .query('registrations')
       .withIndex('by_tournamentId', (q) => q.eq('tournament_id', tournamentId))
-      .collect()
+      .take(500)
   }
 })
 

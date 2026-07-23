@@ -37,12 +37,7 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { ColumnSort } from './column-sort'
 import { ColumnView } from './column-view'
-import {
-  type ActionConfig,
-  type ColumnConfig,
-  createColumns,
-  globalFilterFn
-} from './create-column'
+import { type ActionConfig, type ColumnConfig, createColumns, globalFilterFn } from './create-column'
 import { EmptyTable } from './empty-table'
 import { Filter } from './filter'
 import { HyperWrap } from './hyper-wrap'
@@ -63,11 +58,7 @@ import {
 import { RenderRow } from './render-row'
 import { Search } from './search'
 import { SelectToggle } from './select-toggle'
-import {
-  CenterTableToolbar,
-  LeftTableToolbar,
-  RightTableToolbar
-} from './toolbar'
+import { CenterTableToolbar, LeftTableToolbar, RightTableToolbar } from './toolbar'
 
 export interface TableToolbarContext<T> {
   getFilteredData: () => T[]
@@ -86,22 +77,20 @@ export interface DataTableQueryState {
   sorting: SortingState
 }
 
-export type RowIdAccessor<T> =
-  | keyof T
-  | ((row: T, index: number) => string | number | null | undefined)
+export type RowIdAccessor<T> = keyof T | ((row: T, index: number) => string | number | null | undefined)
 
 export interface DataTableProps<T> {
   data: T[]
   title?: string
+  /** Content rendered in the table body when no rows match. */
+  emptyState?: ReactNode
   loading: boolean
   editingRowId: string | null
   columnConfigs: ColumnConfig<T>[]
   actionConfig?: ActionConfig<T>
   onDeleteSelected?: (ids: string[]) => void | Promise<void>
   deleteActionLabel?: string
-  onBulkUpdateSelected?: (
-    args: BulkUpdateSelectionArgs<T>
-  ) => void | Promise<void>
+  onBulkUpdateSelected?: (args: BulkUpdateSelectionArgs<T>) => void | Promise<void>
   deleteIdAccessor?: keyof T
   selectedItemId?: string | null
   /** Default rows per page. Values above 500 are clamped. */
@@ -112,10 +101,13 @@ export interface DataTableProps<T> {
   loadedCountParamKey?: string
   /** Initial column visibility when no column visibility URL param is set. */
   defaultColumnVisibility?: VisibilityState
+  /**
+   * Shows the row-selection workflow. Disable it for read-only/server-backed
+   * tables that do not provide durable bulk actions.
+   */
+  enableRowSelection?: boolean
   centerToolbarDateRange?: ReactNode
-  rightToolbarLeft?:
-    | ReactNode
-    | ((context: TableToolbarContext<T>) => ReactNode)
+  rightToolbarLeft?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
   /** Enables a pin column that keeps rows above the table body. */
   enableRowPinning?: boolean
   /** Exact query param key for pinned rows. Overrides queryParamPrefix. */
@@ -152,11 +144,7 @@ interface LocalDataState<T> {
   value: T[]
 }
 
-const UNSAFE_ROW_IDS = new Set([
-  '__proto__',
-  'constructor',
-  'prototype'
-])
+const UNSAFE_ROW_IDS = new Set(['__proto__', 'constructor', 'prototype'])
 
 const getFallbackRowIdValue = <T,>(row: T) => {
   if (!row || typeof row !== 'object') {
@@ -167,11 +155,7 @@ const getFallbackRowIdValue = <T,>(row: T) => {
   return record._id ?? record.id ?? record.visitorId ?? record.fid ?? null
 }
 
-const resolveRowId = <T,>(
-  row: T,
-  index: number,
-  rowIdAccessor: RowIdAccessor<T> | undefined
-) => {
+const resolveRowId = <T,>(row: T, index: number, rowIdAccessor: RowIdAccessor<T> | undefined) => {
   const value =
     typeof rowIdAccessor === 'function'
       ? rowIdAccessor(row, index)
@@ -182,11 +166,7 @@ const resolveRowId = <T,>(
   if (value === null || value === undefined) return String(index)
 
   const rowId = String(value)
-  if (
-    rowId.length === 0 ||
-    rowId.length > TABLE_QUERY_LIMITS.tokenCharacters ||
-    UNSAFE_ROW_IDS.has(rowId)
-  ) {
+  if (rowId.length === 0 || rowId.length > TABLE_QUERY_LIMITS.tokenCharacters || UNSAFE_ROW_IDS.has(rowId)) {
     throw new Error(
       `DataTable row id "${rowId.slice(0, 64)}" is empty, unsafe, or longer than ${TABLE_QUERY_LIMITS.tokenCharacters} characters.`
     )
@@ -195,27 +175,20 @@ const resolveRowId = <T,>(
 }
 
 const areStringArraysEqual = (left: string[], right: string[]) =>
-  left.length === right.length &&
-  left.every((value, index) => value === right[index])
+  left.length === right.length && left.every((value, index) => value === right[index])
 
-const areVisibilityStatesEqual = (
-  left: VisibilityState,
-  right: VisibilityState
-) => {
+const areVisibilityStatesEqual = (left: VisibilityState, right: VisibilityState) => {
   const leftKeys = Object.keys(left)
   const rightKeys = Object.keys(right)
-  return (
-    leftKeys.length === rightKeys.length &&
-    leftKeys.every((key) => left[key] === right[key])
-  )
+  return leftKeys.length === rightKeys.length && leftKeys.every((key) => left[key] === right[key])
 }
 
-const getQueryKey = (prefix: string | undefined, key: string) =>
-  prefix ? `${prefix}.${key}` : key
+const getQueryKey = (prefix: string | undefined, key: string) => (prefix ? `${prefix}.${key}` : key)
 
 export const DataTable = <T,>({
   data,
   title,
+  emptyState,
   loading,
   editingRowId,
   columnConfigs,
@@ -229,6 +202,7 @@ export const DataTable = <T,>({
   defaultLoadedCount = 100,
   loadedCountParamKey,
   defaultColumnVisibility,
+  enableRowSelection = true,
   centerToolbarDateRange,
   rightToolbarLeft,
   enableRowPinning = false,
@@ -249,14 +223,11 @@ export const DataTable = <T,>({
     () => ({
       columns: getQueryKey(queryPrefix, 'columns'),
       filters: getQueryKey(queryPrefix, 'filters'),
-      loadedCount:
-        loadedCountParamKey ??
-        getQueryKey(queryPrefix, '__tableLoadedCount'),
+      loadedCount: loadedCountParamKey ?? getQueryKey(queryPrefix, '__tableLoadedCount'),
       multiRowCompact: getQueryKey(queryPrefix, 'multiRowCompact'),
       pageIndex: getQueryKey(queryPrefix, 'pageIndex'),
       pageSize: getQueryKey(queryPrefix, 'pageSize'),
-      pinnedRows:
-        rowPinningParamKey ?? getQueryKey(queryPrefix, 'pinnedRows'),
+      pinnedRows: rowPinningParamKey ?? getQueryKey(queryPrefix, 'pinnedRows'),
       search: getQueryKey(queryPrefix, 'search'),
       selectMode: getQueryKey(queryPrefix, 'selectMode'),
       selected: getQueryKey(queryPrefix, 'selected'),
@@ -276,41 +247,30 @@ export const DataTable = <T,>({
       selectMode: selectModeParser,
       multiRowCompact: parseAsBoolean.withDefault(false),
       loadedCount: createLoadedCountParser(defaultLoadedCount),
-      columnVisibility: createColumnVisibilityParser(
-        defaultColumnVisibility
-      )
+      columnVisibility: createColumnVisibilityParser(defaultColumnVisibility)
     }),
-    [
-      defaultColumnVisibility,
-      defaultLoadedCount,
-      defaultPageSize
-    ]
+    [defaultColumnVisibility, defaultLoadedCount, defaultPageSize]
   )
-  const queryUrlKeys = useMemo(
-    () => {
-      const keys = {
-        pageIndex: queryKeys.pageIndex,
-        pageSize: queryKeys.pageSize,
-        globalFilter: queryKeys.search,
-        sorting: queryKeys.sort,
-        columnFilters: queryKeys.filters,
-        rowSelection: queryKeys.selected,
-        rowPinning: queryKeys.pinnedRows,
-        selectMode: queryKeys.selectMode,
-        multiRowCompact: queryKeys.multiRowCompact,
-        loadedCount: queryKeys.loadedCount,
-        columnVisibility: queryKeys.columns
-      }
-      const values = Object.values(keys)
-      if (new Set(values).size !== values.length) {
-        throw new Error(
-          'DataTable query keys must be unique. Check queryParamPrefix and explicit param-key overrides.'
-        )
-      }
-      return keys
-    },
-    [queryKeys]
-  )
+  const queryUrlKeys = useMemo(() => {
+    const keys = {
+      pageIndex: queryKeys.pageIndex,
+      pageSize: queryKeys.pageSize,
+      globalFilter: queryKeys.search,
+      sorting: queryKeys.sort,
+      columnFilters: queryKeys.filters,
+      rowSelection: queryKeys.selected,
+      rowPinning: queryKeys.pinnedRows,
+      selectMode: queryKeys.selectMode,
+      multiRowCompact: queryKeys.multiRowCompact,
+      loadedCount: queryKeys.loadedCount,
+      columnVisibility: queryKeys.columns
+    }
+    const values = Object.values(keys)
+    if (new Set(values).size !== values.length) {
+      throw new Error('DataTable query keys must be unique. Check queryParamPrefix and explicit param-key overrides.')
+    }
+    return keys
+  }, [queryKeys])
   const [queryState, setQueryState] = useQueryStates(queryParsers, {
     urlKeys: queryUrlKeys,
     history: 'replace',
@@ -330,19 +290,14 @@ export const DataTable = <T,>({
   } = queryState
   const paginationParam = queryState
 
-  const [localDataState, setLocalDataState] =
-    useState<LocalDataState<T> | null>(null)
-  const [bulkAction, setBulkAction] = useState<
-    'idle' | 'update' | 'delete'
-  >('idle')
-  const tableData =
-    localDataState?.source === data ? localDataState.value : data
+  const [localDataState, setLocalDataState] = useState<LocalDataState<T> | null>(null)
+  const [bulkAction, setBulkAction] = useState<'idle' | 'update' | 'delete'>('idle')
+  const tableData = localDataState?.source === data ? localDataState.value : data
 
   const updateLocalData = useCallback(
     (updater: (current: T[]) => T[]) => {
       setLocalDataState((current) => {
-        const currentValue =
-          current?.source === data ? current.value : data
+        const currentValue = current?.source === data ? current.value : data
         return {
           source: data,
           value: updater(currentValue)
@@ -360,10 +315,7 @@ export const DataTable = <T,>({
     [paginationParam.pageIndex, paginationParam.pageSize]
   )
 
-  const configuredColumns = useMemo(
-    () => new Map(columnConfigs.map((config) => [config.id, config])),
-    [columnConfigs]
-  )
+  const configuredColumns = useMemo(() => new Map(columnConfigs.map((config) => [config.id, config])), [columnConfigs])
   const sorting: SortingState = useMemo(
     () =>
       (sortingParam ?? []).filter((sort) => {
@@ -381,22 +333,14 @@ export const DataTable = <T,>({
     [columnFiltersParam, configuredColumns]
   )
 
-  const selectOn = selectModeParam === 'true'
-  const columnVisibility: VisibilityState = useMemo(
-    () => columnVisibilityParam ?? {},
-    [columnVisibilityParam]
-  )
+  const selectOn = enableRowSelection && selectModeParam === 'true'
+  const columnVisibility: VisibilityState = useMemo(() => columnVisibilityParam ?? {}, [columnVisibilityParam])
   const inputRef = useRef<HTMLInputElement>(null)
   const [searchInput, setSearchInput] = useState(globalFilterParam ?? '')
-  const [committedSearch, setCommittedSearch] = useState(
-    globalFilterParam ?? ''
-  )
+  const [committedSearch, setCommittedSearch] = useState(globalFilterParam ?? '')
   const observedSearchParamRef = useRef(globalFilterParam ?? '')
   const pendingSearchWritesRef = useRef(new Set<string>())
-  const safeSearchDebounceMs = Math.max(
-    0,
-    Math.min(2_000, Math.floor(searchDebounceMs))
-  )
+  const safeSearchDebounceMs = Math.max(0, Math.min(2_000, Math.floor(searchDebounceMs)))
 
   useEffect(() => {
     const nextSearch = globalFilterParam ?? ''
@@ -413,10 +357,7 @@ export const DataTable = <T,>({
     if (searchInput === committedSearch) return
 
     const timeout = window.setTimeout(() => {
-      const nextSearch = searchInput.slice(
-        0,
-        TABLE_QUERY_LIMITS.searchCharacters
-      )
+      const nextSearch = searchInput.slice(0, TABLE_QUERY_LIMITS.searchCharacters)
       if (pendingSearchWritesRef.current.size > 8) {
         pendingSearchWritesRef.current.clear()
       }
@@ -432,21 +373,11 @@ export const DataTable = <T,>({
     }, safeSearchDebounceMs)
 
     return () => window.clearTimeout(timeout)
-  }, [
-    committedSearch,
-    safeSearchDebounceMs,
-    searchInput,
-    setQueryState
-  ])
+  }, [committedSearch, safeSearchDebounceMs, searchInput, setQueryState])
 
-  const handleFilterChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      setSearchInput(
-        event.target.value.slice(0, TABLE_QUERY_LIMITS.searchCharacters)
-      )
-    },
-    []
-  )
+  const handleFilterChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(event.target.value.slice(0, TABLE_QUERY_LIMITS.searchCharacters))
+  }, [])
 
   const clearGlobalFilter = useCallback(() => {
     pendingSearchWritesRef.current.add('')
@@ -457,40 +388,35 @@ export const DataTable = <T,>({
     })
   }, [setQueryState])
 
-  const getTableRowId = useCallback(
-    (row: T, index: number) => resolveRowId(row, index, rowIdAccessor),
-    [rowIdAccessor]
-  )
-  const rowIds = useMemo(
-    () => tableData.map((row, index) => getTableRowId(row, index)),
-    [getTableRowId, tableData]
-  )
+  const getTableRowId = useCallback((row: T, index: number) => resolveRowId(row, index, rowIdAccessor), [rowIdAccessor])
+  const rowIds = useMemo(() => tableData.map((row, index) => getTableRowId(row, index)), [getTableRowId, tableData])
   const availableRowIds = useMemo(() => new Set(rowIds), [rowIds])
 
   useEffect(() => {
-    if (
-      process.env.NODE_ENV !== 'production' &&
-      availableRowIds.size !== rowIds.length
-    ) {
-      console.warn(
-        'DataTable received duplicate row IDs. Selection, pinning, and memoized rows require unique IDs.'
-      )
+    if (process.env.NODE_ENV !== 'production' && availableRowIds.size !== rowIds.length) {
+      console.warn('DataTable received duplicate row IDs. Selection, pinning, and memoized rows require unique IDs.')
     }
   }, [availableRowIds, rowIds.length])
 
-  const rawRowSelection: RowSelectionState = useMemo(
-    () => rowSelectionParam ?? {},
-    [rowSelectionParam]
-  )
+  const rawRowSelection: RowSelectionState = useMemo(() => rowSelectionParam ?? {}, [rowSelectionParam])
+
+  useEffect(() => {
+    if (enableRowSelection || (selectModeParam !== 'true' && Object.keys(rawRowSelection).length === 0)) {
+      return
+    }
+
+    void setQueryState({
+      selectMode: 'false',
+      rowSelection: {}
+    })
+  }, [enableRowSelection, rawRowSelection, selectModeParam, setQueryState])
+
   const rowSelection: RowSelectionState = useMemo(() => {
     if (!selectOn) return {}
 
     return Object.fromEntries(
       Object.keys(rawRowSelection)
-        .filter(
-          (rowId) =>
-            rawRowSelection[rowId] === true && availableRowIds.has(rowId)
-        )
+        .filter((rowId) => rawRowSelection[rowId] === true && availableRowIds.has(rowId))
         .map((rowId) => [rowId, true])
     )
   }, [availableRowIds, rawRowSelection, selectOn])
@@ -499,9 +425,7 @@ export const DataTable = <T,>({
     if (!enableRowPinning) return { top: [], bottom: [] }
 
     return {
-      top: (rowPinningParam?.top ?? []).filter((rowId) =>
-        availableRowIds.has(rowId)
-      ),
+      top: (rowPinningParam?.top ?? []).filter((rowId) => availableRowIds.has(rowId)),
       bottom: []
     }
   }, [availableRowIds, enableRowPinning, rowPinningParam])
@@ -516,12 +440,7 @@ export const DataTable = <T,>({
     if (areStringArraysEqual(currentIds, nextIds)) return
 
     void setQueryState({ rowSelection })
-  }, [
-    loading,
-    rawRowSelection,
-    rowSelection,
-    setQueryState
-  ])
+  }, [loading, rawRowSelection, rowSelection, setQueryState])
 
   useEffect(() => {
     if (!enableRowPinning || loading) return
@@ -533,61 +452,30 @@ export const DataTable = <T,>({
     void setQueryState({
       rowPinning: { top: nextTop, bottom: [] }
     })
-  }, [
-    enableRowPinning,
-    loading,
-    rowPinning,
-    rowPinningParam,
-    setQueryState
-  ])
+  }, [enableRowPinning, loading, rowPinning, rowPinningParam, setQueryState])
 
   useEffect(() => {
-    if (
-      !loadedCountParamKey ||
-      loading ||
-      loadedCountParam === data.length
-    ) {
+    if (!loadedCountParamKey || loading || loadedCountParam === data.length) {
       return
     }
     void setQueryState({ loadedCount: data.length })
-  }, [
-    data.length,
-    loadedCountParam,
-    loadedCountParamKey,
-    loading,
-    setQueryState
-  ])
+  }, [data.length, loadedCountParam, loadedCountParamKey, loading, setQueryState])
 
   useEffect(() => {
-    if (
-      sorting.length !== (sortingParam ?? []).length
-    ) {
+    if (sorting.length !== (sortingParam ?? []).length) {
       void setQueryState({ sorting })
     }
   }, [setQueryState, sorting, sortingParam])
 
   useEffect(() => {
-    if (
-      columnFilters.length !== (columnFiltersParam ?? []).length
-    ) {
+    if (columnFilters.length !== (columnFiltersParam ?? []).length) {
       void setQueryState({ columnFilters })
     }
-  }, [
-    columnFilters,
-    columnFiltersParam,
-    setQueryState
-  ])
+  }, [columnFilters, columnFiltersParam, setQueryState])
 
   const handlePaginationChange = useCallback(
-    (
-      updater:
-        | PaginationState
-        | ((current: PaginationState) => PaginationState)
-    ) => {
-      const nextPagination =
-        typeof updater === 'function'
-          ? updater(paginationState)
-          : updater
+    (updater: PaginationState | ((current: PaginationState) => PaginationState)) => {
+      const nextPagination = typeof updater === 'function' ? updater(paginationState) : updater
       void setQueryState({
         pageIndex: nextPagination.pageIndex,
         pageSize: nextPagination.pageSize
@@ -600,13 +488,7 @@ export const DataTable = <T,>({
     (value: string) => {
       const parsedPageSize = Number(value)
       const nextPageSize = Number.isFinite(parsedPageSize)
-        ? Math.max(
-            1,
-            Math.min(
-              TABLE_QUERY_LIMITS.pageSize,
-              Math.floor(parsedPageSize)
-            )
-          )
+        ? Math.max(1, Math.min(TABLE_QUERY_LIMITS.pageSize, Math.floor(parsedPageSize)))
         : paginationState.pageSize
 
       handlePaginationChange({
@@ -618,11 +500,8 @@ export const DataTable = <T,>({
   )
 
   const handleSortingChange = useCallback(
-    (
-      updater: SortingState | ((current: SortingState) => SortingState)
-    ) => {
-      const nextSorting =
-        typeof updater === 'function' ? updater(sorting) : updater
+    (updater: SortingState | ((current: SortingState) => SortingState)) => {
+      const nextSorting = typeof updater === 'function' ? updater(sorting) : updater
       void setQueryState({
         sorting: nextSorting,
         pageIndex: 0
@@ -632,13 +511,8 @@ export const DataTable = <T,>({
   )
 
   const handleColumnFiltersChange = useCallback(
-    (
-      updater:
-        | ColumnFiltersState
-        | ((current: ColumnFiltersState) => ColumnFiltersState)
-    ) => {
-      const nextFilters =
-        typeof updater === 'function' ? updater(columnFilters) : updater
+    (updater: ColumnFiltersState | ((current: ColumnFiltersState) => ColumnFiltersState)) => {
+      const nextFilters = typeof updater === 'function' ? updater(columnFilters) : updater
       void setQueryState({
         columnFilters: nextFilters,
         pageIndex: 0
@@ -648,18 +522,9 @@ export const DataTable = <T,>({
   )
 
   const handleColumnVisibilityChange = useCallback(
-    (
-      updater:
-        | VisibilityState
-        | ((current: VisibilityState) => VisibilityState)
-    ) => {
-      const nextVisibility =
-        typeof updater === 'function'
-          ? updater(columnVisibility)
-          : updater
-      if (
-        areVisibilityStatesEqual(columnVisibility, nextVisibility)
-      ) {
+    (updater: VisibilityState | ((current: VisibilityState) => VisibilityState)) => {
+      const nextVisibility = typeof updater === 'function' ? updater(columnVisibility) : updater
+      if (areVisibilityStatesEqual(columnVisibility, nextVisibility)) {
         return
       }
       void setQueryState({ columnVisibility: nextVisibility })
@@ -668,29 +533,17 @@ export const DataTable = <T,>({
   )
 
   const handleRowSelectionChange = useCallback(
-    (
-      updater:
-        | RowSelectionState
-        | ((current: RowSelectionState) => RowSelectionState)
-    ) => {
-      const nextSelection =
-        typeof updater === 'function' ? updater(rowSelection) : updater
+    (updater: RowSelectionState | ((current: RowSelectionState) => RowSelectionState)) => {
+      const nextSelection = typeof updater === 'function' ? updater(rowSelection) : updater
       void setQueryState({ rowSelection: nextSelection })
     },
     [rowSelection, setQueryState]
   )
 
   const handleRowPinningChange = useCallback(
-    (
-      updater:
-        | RowPinningState
-        | ((current: RowPinningState) => RowPinningState)
-    ) => {
-      const nextPinning =
-        typeof updater === 'function' ? updater(rowPinning) : updater
-      const nextTop = (nextPinning.top ?? []).filter((rowId) =>
-        availableRowIds.has(rowId)
-      )
+    (updater: RowPinningState | ((current: RowPinningState) => RowPinningState)) => {
+      const nextPinning = typeof updater === 'function' ? updater(rowPinning) : updater
+      const nextTop = (nextPinning.top ?? []).filter((rowId) => availableRowIds.has(rowId))
       void setQueryState({
         rowPinning: { top: nextTop, bottom: [] }
       })
@@ -699,21 +552,17 @@ export const DataTable = <T,>({
   )
 
   const selectToggle = useCallback(() => {
+    if (!enableRowSelection) return
+
     const nextSelectOn = !selectOn
     void setQueryState({
       selectMode: nextSelectOn ? 'true' : 'false',
       ...(nextSelectOn ? {} : { rowSelection: {} })
     })
-  }, [selectOn, setQueryState])
+  }, [enableRowSelection, selectOn, setQueryState])
 
   const columns = useMemo(
-    () =>
-      createColumns(
-        columnConfigs,
-        actionConfig,
-        selectOn,
-        enableRowPinning
-      ),
+    () => createColumns(columnConfigs, actionConfig, selectOn, enableRowPinning),
     [actionConfig, columnConfigs, enableRowPinning, selectOn]
   )
   const safeTotalRowCount =
@@ -779,33 +628,20 @@ export const DataTable = <T,>({
   })
 
   const pageCount = table.getPageCount()
-  const hasAuthoritativePageCount =
-    !manualPagination || totalRowCount !== undefined
+  const hasAuthoritativePageCount = !manualPagination || totalRowCount !== undefined
   useEffect(() => {
     if (loading || !hasAuthoritativePageCount) return
     const lastPageIndex = Math.max(0, pageCount - 1)
     if (paginationState.pageIndex <= lastPageIndex) return
     void setQueryState({ pageIndex: lastPageIndex })
-  }, [
-    hasAuthoritativePageCount,
-    loading,
-    pageCount,
-    paginationState.pageIndex,
-    setQueryState
-  ])
+  }, [hasAuthoritativePageCount, loading, pageCount, paginationState.pageIndex, setQueryState])
 
-  const notifyQueryStateChange = useEffectEvent(
-    (queryState: DataTableQueryState) => {
-      onQueryStateChange?.(queryState)
-    }
-  )
+  const notifyQueryStateChange = useEffectEvent((queryState: DataTableQueryState) => {
+    onQueryStateChange?.(queryState)
+  })
 
   useEffect(() => {
-    if (
-      !loading &&
-      hasAuthoritativePageCount &&
-      paginationState.pageIndex > Math.max(0, pageCount - 1)
-    ) {
+    if (!loading && hasAuthoritativePageCount && paginationState.pageIndex > Math.max(0, pageCount - 1)) {
       return
     }
     notifyQueryStateChange({
@@ -814,40 +650,17 @@ export const DataTable = <T,>({
       pagination: paginationState,
       sorting
     })
-  }, [
-    columnFilters,
-    committedSearch,
-    hasAuthoritativePageCount,
-    loading,
-    pageCount,
-    paginationState,
-    sorting
-  ])
+  }, [columnFilters, committedSearch, hasAuthoritativePageCount, loading, pageCount, paginationState, sorting])
 
-  const leafColumns =
-    table.getAllLeafColumns() as Column<T, unknown>[]
-  const columnById = useMemo(
-    () =>
-      new Map(
-        leafColumns.map((column) => [column.id, column] as const)
-      ),
-    [leafColumns]
-  )
-  const filterableColumns = useMemo(
-    () => leafColumns.filter((column) => column.getCanFilter()),
-    [leafColumns]
-  )
-  const hideableColumns = useMemo(
-    () => leafColumns.filter((column) => column.getCanHide()),
-    [leafColumns]
-  )
+  const leafColumns = table.getAllLeafColumns() as Column<T, unknown>[]
+  const columnById = useMemo(() => new Map(leafColumns.map((column) => [column.id, column] as const)), [leafColumns])
+  const filterableColumns = useMemo(() => leafColumns.filter((column) => column.getCanFilter()), [leafColumns])
+  const hideableColumns = useMemo(() => leafColumns.filter((column) => column.getCanHide()), [leafColumns])
   const activeFilterColumns = useMemo(
     () =>
       columnFilters.flatMap((filter) => {
         const column = columnById.get(filter.id)
-        return column?.getCanFilter()
-          ? [column as Column<T, unknown>]
-          : []
+        return column?.getCanFilter() ? [column as Column<T, unknown>] : []
       }),
     [columnById, columnFilters]
   )
@@ -856,10 +669,7 @@ export const DataTable = <T,>({
     (columnId: string) => {
       if (columnFilters.some((filter) => filter.id === columnId)) return
       void setQueryState({
-        columnFilters: [
-          ...columnFilters,
-          { id: columnId, value: [] as string[] }
-        ],
+        columnFilters: [...columnFilters, { id: columnId, value: [] as string[] }],
         pageIndex: 0
       })
     },
@@ -869,9 +679,7 @@ export const DataTable = <T,>({
   const handleRemoveFilterColumn = useCallback(
     (columnId: string) => {
       void setQueryState({
-        columnFilters: columnFilters.filter(
-          (filter) => filter.id !== columnId
-        ),
+        columnFilters: columnFilters.filter((filter) => filter.id !== columnId),
         pageIndex: 0
       })
     },
@@ -911,24 +719,12 @@ export const DataTable = <T,>({
       gotoNext,
       gotoLast
     }),
-    [
-      canGoToNextPage,
-      canGoToPreviousPage,
-      gotoFirst,
-      gotoLast,
-      gotoNext,
-      gotoPrevious
-    ]
+    [canGoToNextPage, canGoToPreviousPage, gotoFirst, gotoLast, gotoNext, gotoPrevious]
   )
 
-  const tableRows = enableRowPinning
-    ? [...table.getTopRows(), ...table.getCenterRows()]
-    : table.getRowModel().rows
+  const tableRows = enableRowPinning ? [...table.getTopRows(), ...table.getCenterRows()] : table.getRowModel().rows
   const selectedRows = table.getSelectedRowModel().rows
-  const selectedRowData = useMemo(
-    () => selectedRows.map((row) => row.original),
-    [selectedRows]
-  )
+  const selectedRowData = useMemo(() => selectedRows.map((row) => row.original), [selectedRows])
   const selectedRowSignature = useMemo(
     () =>
       selectedRows
@@ -959,37 +755,18 @@ export const DataTable = <T,>({
       if (onDeleteSelected) {
         await onDeleteSelected(getSelectionIds(selectedRows))
       } else {
-        const selectedRowIds = new Set(
-          selectedRows.map((row) => row.id)
-        )
-        updateLocalData((current) =>
-          current.filter(
-            (item, index) =>
-              !selectedRowIds.has(getTableRowId(item, index))
-          )
-        )
+        const selectedRowIds = new Set(selectedRows.map((row) => row.id))
+        updateLocalData((current) => current.filter((item, index) => !selectedRowIds.has(getTableRowId(item, index))))
       }
       clearSelection()
     } finally {
       setBulkAction('idle')
     }
-  }, [
-    bulkAction,
-    clearSelection,
-    getSelectionIds,
-    getTableRowId,
-    onDeleteSelected,
-    selectedRows,
-    updateLocalData
-  ])
+  }, [bulkAction, clearSelection, getSelectionIds, getTableRowId, onDeleteSelected, selectedRows, updateLocalData])
 
   const handleBulkUpdateRows = useCallback(
     async (updates: Partial<T>) => {
-      if (
-        selectedRows.length === 0 ||
-        Object.keys(updates).length === 0 ||
-        bulkAction !== 'idle'
-      ) {
+      if (selectedRows.length === 0 || Object.keys(updates).length === 0 || bulkAction !== 'idle') {
         return
       }
 
@@ -1002,14 +779,10 @@ export const DataTable = <T,>({
             updates
           })
         } else {
-          const selectedRowIds = new Set(
-            selectedRows.map((row) => row.id)
-          )
+          const selectedRowIds = new Set(selectedRows.map((row) => row.id))
           updateLocalData((current) =>
             current.map((item, index) => {
-              if (
-                !selectedRowIds.has(getTableRowId(item, index))
-              ) {
+              if (!selectedRowIds.has(getTableRowId(item, index))) {
                 return item
               }
 
@@ -1024,69 +797,37 @@ export const DataTable = <T,>({
         setBulkAction('idle')
       }
     },
-    [
-      bulkAction,
-      getSelectionIds,
-      getTableRowId,
-      onBulkUpdateSelected,
-      selectedRowData,
-      selectedRows,
-      updateLocalData
-    ]
+    [bulkAction, getSelectionIds, getTableRowId, onBulkUpdateSelected, selectedRowData, selectedRows, updateLocalData]
   )
 
-  const getFilteredData = useCallback(
-    () => {
-      // The table instance is stable while its derived row models change.
-      void columnFilters
-      void columns
-      void committedSearch
-      void tableData
-      return table
-        .getFilteredRowModel()
-        .rows.map((row) => row.original)
-    },
-    [
-      columnFilters,
-      columns,
-      committedSearch,
-      table,
-      tableData
-    ]
-  )
+  const getFilteredData = useCallback(() => {
+    // The table instance is stable while its derived row models change.
+    void columnFilters
+    void columns
+    void committedSearch
+    void tableData
+    return table.getFilteredRowModel().rows.map((row) => row.original)
+  }, [columnFilters, columns, committedSearch, table, tableData])
   const toolbarLeftContent = useMemo(
-    () =>
-      typeof rightToolbarLeft === 'function'
-        ? rightToolbarLeft({ getFilteredData })
-        : rightToolbarLeft,
+    () => (typeof rightToolbarLeft === 'function' ? rightToolbarLeft({ getFilteredData }) : rightToolbarLeft),
     [getFilteredData, rightToolbarLeft]
   )
 
   const visibleLeafColumns = table.getVisibleLeafColumns()
-  const visibleColumnSignature = visibleLeafColumns
-    .map((column) => column.id)
-    .join('\u001f')
+  const visibleColumnSignature = visibleLeafColumns.map((column) => column.id).join('\u001f')
 
   return (
     <div className='max-w-full overflow-hidden text-foreground'>
-      <div className='relative inset-0 mb-0 w-screen overflow-hidden md:w-full md:max-w-[84lvw] md:pb-8'>
-        {title ? (
-          <h2 className='mb-1 truncate font-clash text-sm font-medium'>
-            {title}
-          </h2>
-        ) : null}
+      <div className='relative inset-0 mb-0 w-screen overflow-hidden md:w-full md:pb-8'>
+        {title ? <h2 className='mb-1 truncate font-clash text-sm font-medium'>{title}</h2> : null}
 
         <div className='portrait:sticky flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
           <div className='flex shrink-0 flex-nowrap items-center gap-2 md:gap-3'>
-            <LeftTableToolbar
-              select={
-                <SelectToggle
-                  on={selectOn}
-                  toggleFn={selectToggle}
-                  selectedCount={selectedRows.length}
-                />
-              }
-            />
+            {enableRowSelection ? (
+              <LeftTableToolbar
+                select={<SelectToggle on={selectOn} toggleFn={selectToggle} selectedCount={selectedRows.length} />}
+              />
+            ) : null}
             <CenterTableToolbar
               filter={
                 <Filter
@@ -1100,98 +841,78 @@ export const DataTable = <T,>({
                 />
               }
               dateRange={centerToolbarDateRange}
-              view={
-                <ColumnView
-                  cols={hideableColumns}
-                  onColumnVisibilityChange={
-                    handleColumnVisibilityChange
-                  }
-                />
-              }
+              view={<ColumnView cols={hideableColumns} onColumnVisibilityChange={handleColumnVisibilityChange} />}
             />
           </div>
           <RightTableToolbar
             left={toolbarLeftContent}
             search={
-              <Search
-                ref={inputRef}
-                onChange={handleFilterChange}
-                onClear={clearGlobalFilter}
-                value={searchInput}
-              />
+              <Search ref={inputRef} onChange={handleFilterChange} onClear={clearGlobalFilter} value={searchInput} />
             }
           />
         </div>
 
-        <HyperWrap className='h-[calc(100svh-7rem)] w-full max-w-full overflow-auto pb-2 md:h-[93lvh] md:w-full md:pb-12'>
-          <table
-            data-slot='table'
-            aria-busy={loading}
-            aria-label={title ?? 'Data table'}
-            className='w-fit min-w-full table-fixed caption-bottom text-sm md:min-w-4xl'
-            style={{ width: table.getTotalSize() }}>
-            <TableHeader className='w-full'>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow
-                  key={headerGroup.id}
-                  className='h-7 bg-dark-table dark:bg-dark-table/0 md:h-8'>
-                  {headerGroup.headers.map((header) => {
-                    const headerSize = header.getSize()
-                    return (
-                      <TableHead
-                        key={header.id}
-                        aria-sort={
-                          header.column.getCanSort()
-                            ? header.column.getIsSorted() === 'asc'
-                              ? 'ascending'
-                              : header.column.getIsSorted() === 'desc'
-                                ? 'descending'
-                                : 'none'
-                            : undefined
-                        }
-                        style={{
-                          width: headerSize,
-                          minWidth: headerSize,
-                          maxWidth: headerSize
-                        }}
-                        className={cn(
-                          'sticky top-0 z-20 h-7 overflow-hidden bg-[#eceef2] ps-2 uppercase md:h-8',
-                          'font-clash text-xs font-medium tracking-tight text-dark-table/80 dark:bg-dark-table dark:text-zinc-300 md:text-sm'
-                        )}>
-                        <ColumnSort
-                          flexRender={flexRender}
-                          header={header}
-                          sorted={header.column.getIsSorted()}
-                        />
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
+        <HyperWrap className='flex h-[calc(100svh-7rem)] min-h-0 w-full max-w-full flex-col gap-0 overflow-hidden p-0 md:w-full'>
+          <div data-slot='table-scroll-area' className='min-h-0 flex-1 overflow-auto overscroll-contain'>
+            <table
+              data-slot='table'
+              aria-busy={loading}
+              aria-label={title ?? 'Data table'}
+              className='w-fit min-w-full table-fixed caption-bottom text-sm md:min-w-4xl'
+              style={{ width: table.getTotalSize() }}>
+              <TableHeader className='w-full'>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow
+                    key={headerGroup.id}
+                    className='sticky top-0 z-0 h-7 md:h-8 dark:bg-background/10 bg-slate-300/30 backdrop-blur-3xl'>
+                    {headerGroup.headers.map((header) => {
+                      const headerSize = header.getSize()
+                      return (
+                        <TableHead
+                          key={header.id}
+                          aria-sort={
+                            header.column.getCanSort()
+                              ? header.column.getIsSorted() === 'asc'
+                                ? 'ascending'
+                                : header.column.getIsSorted() === 'desc'
+                                  ? 'descending'
+                                  : 'none'
+                              : undefined
+                          }
+                          style={{
+                            width: headerSize,
+                            minWidth: headerSize,
+                            maxWidth: headerSize
+                          }}
+                          className={cn('h-7 ps-2 md:h-8', 'font-okx font-medium text-xs tracking-tight md:text-sm')}>
+                          <ColumnSort flexRender={flexRender} header={header} sorted={header.column.getIsSorted()} />
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
+              </TableHeader>
 
-            <TableBody>
-              {tableRows.length > 0 ? (
-                tableRows.map((row) => (
-                  <RenderRow
-                    key={row.id}
-                    row={row}
-                    isActive={selectedItemId === row.id}
-                    isEditing={editingRowId === row.id}
-                    isPinned={row.getIsPinned() === 'top'}
-                    isSelected={row.getIsSelected()}
-                    showSelectColumn={selectOn}
-                    visibleColumnSignature={visibleColumnSignature}
-                  />
-                ))
-              ) : (
-                <EmptyTable
-                  colSpan={visibleLeafColumns.length}
-                  loading={loading}
-                />
-              )}
-            </TableBody>
-          </table>
+              <TableBody>
+                {tableRows.length > 0 ? (
+                  tableRows.map((row) => (
+                    <RenderRow
+                      key={row.id}
+                      row={row}
+                      isActive={selectedItemId === row.id}
+                      isEditing={editingRowId === row.id}
+                      isPinned={row.getIsPinned() === 'top'}
+                      isSelected={row.getIsSelected()}
+                      showSelectColumn={selectOn}
+                      visibleColumnSignature={visibleColumnSignature}
+                    />
+                  ))
+                ) : (
+                  <EmptyTable colSpan={visibleLeafColumns.length} loading={loading} emptyState={emptyState} />
+                )}
+              </TableBody>
+            </table>
+          </div>
 
           <Paginator
             state={paginationState}
@@ -1210,11 +931,7 @@ export const DataTable = <T,>({
         actions={
           <button
             type='button'
-            aria-label={
-              multiRowCompact
-                ? 'Expand multi-row editor'
-                : 'Compact multi-row editor'
-            }
+            aria-label={multiRowCompact ? 'Expand multi-row editor' : 'Compact multi-row editor'}
             aria-pressed={multiRowCompact}
             onClick={() =>
               void setQueryState({
@@ -1235,8 +952,7 @@ export const DataTable = <T,>({
         className={cn(
           'left-auto right-3 top-30 bottom-16 h-auto max-h-none w-[calc(100vw-1.5rem)] max-w-124 translate-x-0 rounded-xl border-dark-table/20',
           'md:right-6 md:top-24 md:bottom-6 md:w-[min(calc(100vw-3rem),31rem)]',
-          multiRowCompact &&
-            'w-[min(calc(100vw-16rem),32rem)] md:w-[min(calc(100vw-20rem),16rem)]'
+          multiRowCompact && 'w-[min(calc(100vw-16rem),32rem)] md:w-[min(calc(100vw-20rem),16rem)]'
         )}>
         <MultiSelect
           key={selectedRowSignature}

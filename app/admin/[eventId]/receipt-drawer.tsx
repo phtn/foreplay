@@ -91,9 +91,11 @@ export function ReceiptDrawer({
             )}>
             <div className='flex items-start justify-between gap-4 p-4 sm:p-5'>
               <div className='min-w-0 space-y-1'>
-                <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Receipt verification</p>
-                <h2 className='truncate font-okx text-xl font-semibold'>{teamName}</h2>
-                <p className='truncate font-mono text-xs text-muted-foreground'>{reference}</p>
+                <p className='font-ios text-xs uppercase tracking-widest dark:text-sky-500 text-sky-700'>
+                  Receipt viewer
+                </p>
+                <h2 className='truncate font-poly text-xl font-semibold'>{teamName}</h2>
+                <p className='truncate font-ios text-xs text-muted-foreground tracking-widest'>{reference}</p>
               </div>
               <Button
                 type='button'
@@ -106,13 +108,13 @@ export function ReceiptDrawer({
               </Button>
             </div>
 
-            <div className='grid grid-cols-[1fr_0.6fr_auto] gap-2 px-2 sm:p-5'>
+            <div className='grid grid-cols-[1fr_0.6fr_1fr] gap-2 px-2 sm:p-5'>
               {[
                 { label: 'Email', value: contactEmail ?? 'N/A' },
                 { label: 'Amount', value: amount == null ? 'N/A' : pesoFormatter.format(amount) },
                 { label: 'Uploaded', value: uploadedAt == null ? 'N/A' : new Date(uploadedAt).toLocaleString() }
               ].map((item) => (
-                <div key={item.label} className='min-w-0 rounded-lg border border-border/60 bg-muted/20 px-2 py-2'>
+                <div key={item.label} className='min-w-0 _border border-border/60 bg-muted/20 px-2 py-2'>
                   <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{item.label}</p>
                   <p className='mt-1 truncate text-xs font-medium text-foreground/85'>{item.value}</p>
                 </div>
@@ -126,7 +128,7 @@ export function ReceiptDrawer({
                     <Icon name='file' className='size-8 text-slate-500' />
                     <p className='text-sm'>This receipt cannot be previewed inline.</p>
                     <a href={receiptUrl} target='_blank' rel='noreferrer' className='text-sm font-medium text-sky-700'>
-                      Open original
+                      Open in a new tab
                     </a>
                   </div>
                 ) : (
@@ -152,11 +154,12 @@ export function ReceiptDrawer({
                 href={receiptUrl}
                 target='_blank'
                 rel='noreferrer'
-                className='inline-flex h-12 items-center justify-center rounded-lg border border-border/70 px-3 text-sm transition-colors hover:bg-muted'>
-                Open original
+                className='inline-flex h-12 items-center justify-center rounded-lg border border-border/70 px-3 text-sm transition-colors hover:bg-muted space-x-2'>
+                <span>Open external</span>
+                <Icon name='external-fill' />
               </a>
-              <Button type='button' className='h-12' onClick={() => setOpen(false)}>
-                Done
+              <Button type='button' variant='ghost' className='h-12' onClick={() => setOpen(false)}>
+                Close
               </Button>
             </div>
           </aside>

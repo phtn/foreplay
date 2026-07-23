@@ -118,7 +118,6 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
       <div className='flex items-center justify-between px-4'>
         <SectionTitle title={eventName ?? 'Event Name'} eyebrow='Event' href={`/admin/som-2026`} />
         <h1 className='font-poly text-base hidden md:flex'>{'Pairings'}</h1>
-
         <LinkTitle title='Podium' icon='trophy' href={`/admin/${eventId}/podium`} />
       </div>
 
@@ -133,8 +132,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
           <TableRow className='bg-slate-100/50 dark:bg-slate-400/35 font-okx'>
             <TableHead className='w-12 text-center text-indigo-600 dark:text-indigo-300'>{rows.length}</TableHead>
             <TableHead>Player</TableHead>
-            <TableHead>Principal</TableHead>
-            <TableHead className='text-center'>Handicap</TableHead>
+            <TableHead className='text-center'>T-Shirt</TableHead>
             <TableHead className='text-center'>Checked-In</TableHead>
             <TableHead className='text-center'>Start</TableHead>
             <TableHead className='text-center'>Group</TableHead>
@@ -165,14 +163,12 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className='flex justify-center'>
                     <Badge variant='outline' size='sm'>
                       {formatPrincipal(registration.shirt_size)}
                     </Badge>
                   </TableCell>
-                  <TableCell className='text-center font-mono text-sm font-medium'>
-                    {registration.handicap_index ?? '-'}
-                  </TableCell>
+
                   <TableCell className='text-center'>
                     <Badge variant={registration.checked_in ? 'success-light' : 'warning-light'} size='sm'>
                       {registration.checked_in ? 'Yes' : 'No'}

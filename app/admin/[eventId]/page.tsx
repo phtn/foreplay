@@ -2,9 +2,13 @@ import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
-import { Doc } from '@/convex/_generated/dataModel'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { Icon } from '@/lib/icons'
+import {
+  toRegistrationTicketData,
+  type RegistrationTicketData
+} from '@/lib/tickets/registration-ticket'
 import {
   formatCommission,
   formatEventDate,
@@ -16,7 +20,10 @@ import {
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { EventSubscriptions } from './players-table'
+import {
+  type EventSubscriptionTableRow,
+  PlayersDataTable
+} from './players-data-table'
 
 interface EventPageProps {
   params: Promise<{ eventId: string }>
@@ -31,11 +38,21 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   )
 }
 
+const toCount = (value: string) => {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) && parsed >= 0
+    ? Math.floor(parsed)
+    : 0
+}
+
 export default async function EventPage({ params }: EventPageProps) {
   const [{ eventId }] = await Promise.all([params, requireAdminSession()])
-  const [event, subscriptions] = await Promise.all([
+  const [event, subscriptions, registrations] = await Promise.all([
     fetchQuery(api.tournaments.q.getByTournamentId, { id: eventId }),
-    fetchQuery(api.subscriptions.q.listByTournamentId, { tournamentId: eventId })
+    fetchQuery(api.subscriptions.q.listByTournamentId, { tournamentId: eventId }),
+    fetchQuery(api.registrations.q.listByTournamentId, {
+      tournamentId: eventId
+    })
   ])
 
   if (!event) {
@@ -48,6 +65,54 @@ export default async function EventPage({ params }: EventPageProps) {
   const eventDateLabel = formatEventDate(event.gate_open_at, event.event_date)
   const gateOpenTimeLabel = formatGateOpenTime(event.gate_open_at)
   const slotsLabel = formatSlotsLabel(event.registered_slots, event.slots_limit)
+  const ticketsBySubscription = new Map<
+    string,
+    RegistrationTicketData[]
+  >()
+
+  for (const registration of registrations) {
+    if (!registration.subscription_id) continue
+
+    const tickets =
+      ticketsBySubscription.get(registration.subscription_id) ?? []
+    tickets.push(
+      toRegistrationTicketData(
+        registration,
+        `Player ${tickets.length + 1}`
+      )
+    )
+    ticketsBySubscription.set(registration.subscription_id, tickets)
+  }
+
+  const playerRows: EventSubscriptionTableRow[] = subscriptions.map(
+    (subscription) => ({
+      subscriptionId: subscription._id,
+      createdAt: subscription._creationTime,
+      reference:
+        subscription.txn_ref_no ??
+        subscription.form_id ??
+        subscription._id,
+      contactEmail: subscription.contact_email ?? null,
+      teamName: subscription.team_name ?? 'Team pending',
+      totalPlayers: toCount(subscription.total_players),
+      totalCheckedIn: toCount(subscription.total_checked_in),
+      paymentAmount: subscription.payment_amount ?? null,
+      paymentStatus: subscription.payment_status,
+      subscriptionStatus:
+        subscription.status ?? 'pending_payment',
+      confirmer:
+        subscription.confirmed_by_name ??
+        subscription.confirmed_by_email ??
+        subscription.confirmed_by_id ??
+        null,
+      confirmedAt: subscription.confirmed_at ?? null,
+      receiptUrl: subscription.receiptImageUrl,
+      canUndo: Boolean(subscription.admin_status_change_id),
+      tickets:
+        ticketsBySubscription.get(subscription._id) ?? [],
+      adminRemarks: subscription.admin_remarks ?? ''
+    })
+  )
   // const sponsorshipTiers = event.sponsorship_tiers ?? []
 
   return (
@@ -90,7 +155,7 @@ export default async function EventPage({ params }: EventPageProps) {
         ))}
       </div>
 
-      <EventSubscriptions eventId={eventId} subscriptions={subscriptions} />
+      <PlayersDataTable eventId={eventId} rows={playerRows} />
 
       <EventDetails event={event} />
     </main>

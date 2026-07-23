@@ -1,20 +1,19 @@
 'use client'
 
-import { CreateQR } from '@/components/qrcode/creator'
+import { RegistrationTicketCard } from '@/components/tickets/registration-ticket-card'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { api } from '@/convex/_generated/api'
-import type { Doc, Id } from '@/convex/_generated/dataModel'
+import type { Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { createPngFilename, downloadElementAsPng } from '@/lib/tickets/download-ticket-png'
+import { toRegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
-import { ClassName } from '@/types'
-import { useQuery } from 'convex/react'
+import type { ClassName } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState, useTransition } from 'react'
-import { DerivedRegistration, DraftRegistration, RegistrationSectionProps } from '../types'
+import type { DraftRegistration, RegistrationSectionProps } from '../types'
 import { createSubscriptionRegistration, deleteSubscriptionRegistration } from './registration-actions'
 
 // const shirtSizeOptions = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
@@ -33,17 +32,6 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
   }
 }
 
-function buildGatePassPayload(
-  registration: Pick<Doc<'registrations'>, '_id' | 'player_name' | 'player_email' | 'ticket_token'>
-) {
-  return JSON.stringify({
-    registrationId: registration._id,
-    ticketToken: registration.ticket_token,
-    name: registration.player_name,
-    email: registration.player_email ?? ''
-  })
-}
-
 export function RegistrationSection({
   defaultDivision,
   maxEntries,
@@ -55,33 +43,18 @@ export function RegistrationSection({
   const [isAdding, setIsAdding] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [exportErrorMessage, setExportErrorMessage] = useState<string | null>(null)
-  const [exportingTicketId, setExportingTicketId] = useState<Id<'registrations'> | 'all' | null>(null)
+  const [isExportingAll, setIsExportingAll] = useState(false)
   const [deletingRegistrationId, setDeletingRegistrationId] = useState<Id<'registrations'> | null>(null)
   const [draft, setDraft] = useState<DraftRegistration>(() => buildInitialDraft(defaultDivision))
   const ticketsRef = useRef<HTMLDivElement>(null)
+  const exportAllLockRef = useRef(false)
 
   const registrationLimit = Math.max(1, maxEntries)
   const remainingSlots = Math.max(0, registrationLimit - registrations.length)
   const canAddMore = remainingSlots > 0
 
   const registrationCards = useMemo(
-    () =>
-      registrations.map(
-        (registration, index) =>
-          ({
-            id: registration._id,
-            slotLabel: `Player ${index + 1}`,
-            name: registration.player_name,
-            email: registration.player_email ?? 'No email',
-            gatePassPayload: buildGatePassPayload(registration),
-            checkedIn: registration.checked_in === true,
-            checkedInAt: registration.checked_in_at,
-            phone: registration.player_phone ?? 'No phone',
-            division: registration.division ?? 'No division',
-            handicap: registration.handicap_index ?? 'No handicap',
-            shirtSize: registration.shirt_size
-          }) as DerivedRegistration
-      ),
+    () => registrations.map((registration) => toRegistrationTicketData(registration)),
     [registrations]
   )
 
@@ -89,33 +62,14 @@ export function RegistrationSection({
     setDraft(buildInitialDraft(defaultDivision))
   }
 
-  const handleDownloadTicket = useCallback(async (registration: DerivedRegistration, element: HTMLElement) => {
-    setExportErrorMessage(null)
-    setExportingTicketId(registration.id)
-
-    try {
-      await downloadElementAsPng(
-        element,
-        createPngFilename(
-          `foreplay-${registration.slotLabel}-${registration.name}`,
-          `foreplay-ticket-${registration.id}`
-        )
-      )
-    } catch (error) {
-      console.error('Unable to export ticket PNG.', error)
-      setExportErrorMessage('Unable to download this ticket. Please try again.')
-    } finally {
-      setExportingTicketId(null)
-    }
-  }, [])
-
   const handleDownloadAllTickets = useCallback(async () => {
-    if (!ticketsRef.current) {
+    if (!ticketsRef.current || exportAllLockRef.current) {
       return
     }
 
     setExportErrorMessage(null)
-    setExportingTicketId('all')
+    exportAllLockRef.current = true
+    setIsExportingAll(true)
 
     try {
       await downloadElementAsPng(
@@ -126,7 +80,8 @@ export function RegistrationSection({
       console.error('Unable to export all ticket PNGs.', error)
       setExportErrorMessage('Unable to download the tickets. Please try again.')
     } finally {
-      setExportingTicketId(null)
+      exportAllLockRef.current = false
+      setIsExportingAll(false)
     }
   }, [subscriptionId])
 
@@ -191,7 +146,7 @@ export function RegistrationSection({
         <div className='flex gap-4 sm:flex-row sm:items-start sm:justify-between'>
           <div className='space-y-1.5 w-full'>
             <CardTitle className='flex items-center gap-3 font-okx text-lg'>
-              <span>Register Players</span>
+              <span>Ticket Registry</span>
               {canAddMore ? (
                 <Button
                   size='icon-xs'
@@ -215,22 +170,24 @@ export function RegistrationSection({
                 variant='outline'
                 size='sm'
                 className='size-8 px-0 sm:w-auto sm:px-3'
-                disabled={exportingTicketId !== null}
-                aria-label='Download all tickets as PNG'
-                title='Download all tickets as PNG'
+                disabled={isExportingAll}
+                aria-label='Download ticket as PNG'
+                title='Download ticket as PNG'
                 onClick={() => {
                   void handleDownloadAllTickets()
                 }}>
-                <Icon name={exportingTicketId === 'all' ? 'spinner-ring' : 'down-to-line'} className='size-4' />
-                <span className='hidden sm:inline'>Download all</span>
+                <Icon name={isExportingAll ? 'spinner-ring' : 'down-to-line'} className='size-4' />
+                <span className='hidden sm:inline'>download</span>
               </Button>
             ) : null}
             <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-foreground whitespace-nowrap'>
               {registrations.length}/{registrationLimit} saved
             </span>
-            <span className='inline-flex rounded-md bg-sky-500/5 dark:bg-sky-100/10 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 dark:text-sky-200 whitespace-nowrap'>
-              {remainingSlots} open
-            </span>
+            {remainingSlots > 0 && (
+              <span className='inline-flex rounded-md bg-sky-500/5 dark:bg-sky-100/10 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 dark:text-sky-200 whitespace-nowrap'>
+                {remainingSlots} open
+              </span>
+            )}
           </div>
         </div>
         <p className='text-sm text-foreground/60'>Add player&apos;s details to register and secure the slot.</p>
@@ -238,17 +195,14 @@ export function RegistrationSection({
 
       <CardContent className='space-y-0 py-0 px-0 border-x border-b rounded-b-xl bg-white'>
         {registrationCards.length ? (
-          <div
-            ref={ticketsRef}
-            className='min-h-40! grid md:grid-cols-2 md:divide-x divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
+          <div ref={ticketsRef} className='min-h-40! grid divide-y md:divide-y-0 divide-slate-500 divide-dashed w-full'>
             {registrationCards.map((registration) => (
-              <RegistrationTicket
+              <RegistrationTicketCard
                 key={registration.id}
-                deletingRegistrationId={deletingRegistrationId}
-                exportingTicketId={exportingTicketId}
-                isPending={isPending}
+                deletePending={deletingRegistrationId === registration.id}
+                exportDisabled={isPending || isExportingAll}
                 onDelete={handleDelete}
-                onDownload={handleDownloadTicket}
+                onExportError={setExportErrorMessage}
                 registration={registration}
               />
             ))}
@@ -270,7 +224,7 @@ export function RegistrationSection({
         )}
 
         {errorMessage ? (
-          <div className='rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
+          <div className='rounded-xs border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
             {errorMessage}
           </div>
         ) : null}
@@ -278,7 +232,7 @@ export function RegistrationSection({
         {exportErrorMessage ? (
           <div
             role='alert'
-            className='rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
+            className='rounded-xs border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive'>
             {exportErrorMessage}
           </div>
         ) : null}
@@ -352,182 +306,15 @@ export function RegistrationSection({
             Add player
           </Button>
         ) : (
-          <div className='flex items-center space-x-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300'>
-            <Icon name='check' className='size-4.5' />
-            <span>All entry slots already have player registrations.</span>
+          <div className='font-okx font-medium flex items-center space-x-2 rounded-b-xl border dark:text-emerald-600 border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-700'>
+            <Icon name='checkbox-checked' className='size-4.5' />
+            <span>Valid Ticket Registration</span>
           </div>
         )}
       </CardContent>
     </Card>
   )
 }
-
-interface RegistrationFieldProps {
-  label: string
-  value: string
-  className?: ClassName
-}
-
-interface RegistrationTicketProps {
-  deletingRegistrationId: Id<'registrations'> | null
-  exportingTicketId: Id<'registrations'> | 'all' | null
-  isPending: boolean
-  onDelete: (registrationId: Id<'registrations'>, playerName: string) => void
-  onDownload: (registration: DerivedRegistration, element: HTMLElement) => void
-  registration: DerivedRegistration
-}
-
-function formatCheckedInAt(timestamp: number | undefined) {
-  return timestamp ? new Date(timestamp).toLocaleString() : 'Scanned'
-}
-
-function RegistrationTicket({
-  deletingRegistrationId,
-  exportingTicketId,
-  isPending,
-  onDelete,
-  onDownload,
-  registration
-}: RegistrationTicketProps) {
-  const liveCheckInStatus = useQuery(api.registrations.q.getCheckInStatus, { registrationId: registration.id })
-  const checkedIn = liveCheckInStatus?.checkedIn ?? registration.checkedIn
-  const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration.checkedInAt
-  const ticketRef = useRef<HTMLDivElement>(null)
-
-  return (
-    <div
-      ref={ticketRef}
-      className={cn('relative py-6 px-2 transition-colors', checkedIn && 'bg-emerald-500/5 dark:bg-emerald-500/10')}>
-      <div className='grid gap-4 md:grid-cols-[1fr_auto] md:divide-x-0 sm:items-start ps-4 pe-2 md:px-2'>
-        <div className='min-w-0 space-y-4'>
-          <div className='flex items-start justify-between gap-4 sm:block'>
-            <div className='min-w-0'>
-              <div className='flex flex-wrap items-center gap-2'>
-                <p className='font-ios font-medium text-xs uppercase tracking-widest text-sky-700 w-fit'>
-                  {registration.slotLabel}
-                </p>
-                {checkedIn ? (
-                  <span className='inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 font-ios text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-300'>
-                    <Icon name='check' className='size-3' />
-                    Scanned
-                  </span>
-                ) : null}
-                <div data-ticket-export-ignore className='inline-flex items-center gap-1.5'>
-                  <Button
-                    type='button'
-                    variant='ghost'
-                    size='icon-xs'
-                    className='shrink-0 rounded-full text-foreground/70 hover:bg-sky-500/10 dark:hover:bg-neutral-200 hover:text-sky-700'
-                    disabled={isPending || exportingTicketId !== null}
-                    aria-label={`Download ${registration.name}'s ticket as PNG`}
-                    title='Download ticket as PNG'
-                    onClick={() => {
-                      if (ticketRef.current) {
-                        onDownload(registration, ticketRef.current)
-                      }
-                    }}>
-                    <Icon
-                      name={exportingTicketId === registration.id ? 'spinner-ring' : 'down-to-line'}
-                      className='size-4 text-neutral-500'
-                    />
-                  </Button>
-                  {!checkedIn ? (
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='icon-xs'
-                      className='shrink-0 rounded-full text-foreground/70 hover:text-destructive dark:hover:bg-neutral-200 hover:bg-destructive/10'
-                      disabled={isPending || exportingTicketId !== null}
-                      aria-label={`Delete ${registration.name}`}
-                      onClick={() => onDelete(registration.id, registration.name)}>
-                      <Icon
-                        name={deletingRegistrationId === registration.id ? 'spinner-ring' : 'close'}
-                        className='size-4 text-neutral-500'
-                      />
-                    </Button>
-                  ) : null}
-                </div>
-              </div>
-              <p className='whitespace-nowrap font-ios font-medium text-lg text-foreground/90 dark:text-slate-900'>
-                {registration.name}
-              </p>
-              {checkedIn ? (
-                <p className='mt-1 text-xs text-emerald-700/80 dark:text-emerald-300/80'>
-                  Checked in {formatCheckedInAt(checkedInAt)}
-                </p>
-              ) : null}
-            </div>
-          </div>
-
-          <div className='grid gap-3 grid-cols-1 overflow-hidden'>
-            <RegistrationField label='Email' value={registration.email} />
-            <RegistrationField label='Phone' value={registration.phone} />
-            <RegistrationField
-              label='Pass'
-              value={registration.id.split(',').reverse().join(',').substring(22).toUpperCase()}
-              className={cn(
-                'relative z-50 font-ios font-semibold text-2xl tracking-[0.35em] line-through decoration-white overflow-visible',
-                checkedIn && 'text-emerald-700 dark:text-emerald-700'
-              )}
-            />
-          </div>
-        </div>
-
-        <CreateQR
-          config={{
-            text: registration.gatePassPayload,
-            radius: 0.36,
-            ecLevel: 'M',
-            fill: checkedIn ? 'oklch(43.2% 0.095 166.913)' : 'oklch(27.9% 0.041 260.031)',
-            background: null,
-            size: 180
-          }}
-          registration={{
-            ...registration,
-            checkedIn,
-            checkedInAt
-          }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function RegistrationField({ label, value, className }: RegistrationFieldProps) {
-  return (
-    <div className='space-y-0.5'>
-      <p className='font-ios font-medium text-[10px] uppercase tracking-widest text-foreground/80 dark:text-slate-500 italic'>
-        {label}
-      </p>
-      <p
-        className={cn(
-          'font-ios tracking-[0.28em] text-sm text-foreground/80 dark:text-slate-800 max-w-[16ch]! text-clip',
-          className
-        )}>
-        {value}
-      </p>
-    </div>
-  )
-}
-
-// function GatePassQRCode({ content }: { content: string; label: string; shirtSize: string }) {
-//   const qrOptions = useMemo<QRCodeOptions>(
-//     () => ({
-//       content,
-//       width: 240,
-//       height: 240,
-//       padding: 1
-//     }),
-//     [content]
-//   )
-
-//   return (
-//     <div className='p-0 w-64 relative flex items-center justify-center'>
-//       <QRCodeSVG className='size-64 overflow-hidden [&_svg]:size-full' options={qrOptions} />
-//       <div className='bg-[url("/som-optimized.svg")] bg-cover absolute top-0 z-90 w-54 h-54 opacity-40' />
-//     </div>
-//   )
-// }
 
 function RegistrationInput({
   id,

@@ -1,12 +1,18 @@
 import { TableCell, TableRow } from '@/components/ui/table'
 import { Icon } from '@/lib/icons'
+import type { ReactNode } from 'react'
 
 interface EmptyTableProps {
   colSpan: number
   loading: boolean
+  emptyState?: ReactNode
 }
 
-export const EmptyTable = ({ colSpan, loading }: EmptyTableProps) => (
+export const EmptyTable = ({
+  colSpan,
+  loading,
+  emptyState
+}: EmptyTableProps) => (
   <TableRow className='max-w-6xl'>
     <TableCell
       colSpan={Math.max(1, colSpan)}
@@ -17,7 +23,7 @@ export const EmptyTable = ({ colSpan, loading }: EmptyTableProps) => (
           <span>Loading...</span>
         </div>
       ) : (
-        <span className='p-2'>No data.</span>
+        (emptyState ?? <span className='p-2'>No data.</span>)
       )}
     </TableCell>
   </TableRow>

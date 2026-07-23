@@ -1,11 +1,10 @@
 import { ConvexError, v } from 'convex/values'
 import type { Id } from '../_generated/dataModel'
 import { mutation } from '../_generated/server'
-
-const trimOrUndefined = (value: string | undefined) => {
-  const trimmed = value?.trim()
-  return trimmed ? trimmed : undefined
-}
+import {
+  buildRegistrationDocument,
+  MAX_REGISTRATIONS_PER_SUBSCRIPTION
+} from './ticket'
 
 const pairingGroup = v.union(v.literal('A'), v.literal('B'), v.literal('C'))
 
@@ -39,6 +38,15 @@ export const createForSubscription = mutation({
       throw new ConvexError('Subscription not found.')
     }
 
+    if (
+      subscription.payment_status !== 'paid' ||
+      subscription.status !== 'confirmed'
+    ) {
+      throw new ConvexError(
+        'Player tickets can only be created after payment is confirmed.'
+      )
+    }
+
     const playerName = args.playerName.trim()
     const shirtSize = args.shirtSize.trim()
 
@@ -53,7 +61,7 @@ export const createForSubscription = mutation({
     const registrations = await ctx.db
       .query('registrations')
       .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', args.subscriptionId))
-      .collect()
+      .take(MAX_REGISTRATIONS_PER_SUBSCRIPTION + 1)
 
     const maxEntries = Number.parseInt(subscription.total_players, 10)
 
@@ -61,27 +69,28 @@ export const createForSubscription = mutation({
       throw new ConvexError('This subscription does not have a valid entry count.')
     }
 
-    if (registrations.length >= maxEntries) {
+    if (
+      registrations.length >= maxEntries ||
+      registrations.length >= MAX_REGISTRATIONS_PER_SUBSCRIPTION
+    ) {
       throw new ConvexError('All available player forms are already in use.')
     }
 
-    const registrationId = await ctx.db.insert('registrations', {
-      user_id: args.userId,
-      tournament_id: subscription.tournament_id,
-      subscription_id: args.subscriptionId,
-      player_id: crypto.randomUUID(),
-      player_name: playerName,
-      player_email: trimOrUndefined(args.playerEmail)?.toLowerCase(),
-      player_phone: trimOrUndefined(args.playerPhone),
-      handicap_index: trimOrUndefined(args.handicapIndex),
-      division: trimOrUndefined(args.division) ?? subscription.division,
-      shirt_size: shirtSize,
-      payment_status: subscription.payment_status,
-      receipt_image_url: subscription.receipt_image_url,
-      txn_ref_no: subscription.txn_ref_no,
-      checked_in: false,
-      ticket_token: crypto.randomUUID()
-    })
+    const registrationId = await ctx.db.insert(
+      'registrations',
+      buildRegistrationDocument({
+        division: args.division,
+        handicapIndex: args.handicapIndex,
+        playerEmail: args.playerEmail,
+        playerId: crypto.randomUUID(),
+        playerName,
+        playerPhone: args.playerPhone,
+        shirtSize,
+        subscription,
+        ticketToken: crypto.randomUUID(),
+        userId: args.userId
+      })
+    )
 
     return { registrationId }
   }
@@ -198,6 +207,20 @@ export const checkInByGatePassPayload = mutation({
       throw new ConvexError('Gate pass not found.')
     }
 
+    const subscription = registration.subscription_id
+      ? await ctx.db.get(registration.subscription_id)
+      : null
+    const ticketIsActive = registration.subscription_id
+      ? subscription?.payment_status === 'paid' &&
+        subscription.status === 'confirmed'
+      : registration.payment_status === 'paid'
+
+    if (!ticketIsActive) {
+      throw new ConvexError(
+        'This ticket is not active because payment is not confirmed.'
+      )
+    }
+
     const alreadyCheckedIn = registration.checked_in === true
     const checkedInAt = registration.checked_in_at ?? Date.now()
 
@@ -207,8 +230,7 @@ export const checkInByGatePassPayload = mutation({
         checked_in_at: checkedInAt
       })
 
-      if (registration.subscription_id) {
-        const subscription = await ctx.db.get(registration.subscription_id)
+      if (registration.subscription_id && subscription) {
         const currentCheckedIn = Number.parseInt(subscription?.total_checked_in ?? '0', 10)
         const nextCheckedIn = Number.isFinite(currentCheckedIn) ? currentCheckedIn + 1 : 1
 

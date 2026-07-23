@@ -9,7 +9,10 @@ import { paymentMethodSchema } from './paymentMethods/d'
 import { podiumAwardSchema } from './podiumAwards/d'
 import { registrationSchema } from './registrations/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
-import { subscriptionSchema } from './subscriptions/d'
+import {
+  subscriptionSchema,
+  subscriptionStatusChangeSchema
+} from './subscriptions/d'
 import { tournamentSchema } from './tournaments/d'
 import { txnSchema } from './txns/d'
 import { userSchema } from './users/d'
@@ -40,6 +43,9 @@ export default defineSchema({
     .index('by_tournamentId', ['tournament_id'])
     .index('by_userId_tournamentId', ['user_id', 'tournament_id'])
     .index('by_tournamentId_formId', ['tournament_id', 'form_id']),
+  subscriptionStatusChanges: defineTable(
+    subscriptionStatusChangeSchema
+  ).index('by_subscription_id', ['subscription_id']),
   tournaments: defineTable(tournamentSchema).index('by_tournament_id', ['id']),
   events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id'])
 })

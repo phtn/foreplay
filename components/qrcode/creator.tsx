@@ -1,18 +1,19 @@
 'use client'
 
-import { DerivedRegistration } from '@/app/subscriptions/types'
-import { api } from '@/convex/_generated/api'
 import { Icon } from '@/lib/icons'
+import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
-import { ClassName } from '@/types'
-import { useQuery } from 'convex/react'
+import type { ClassName } from '@/types'
 import QrCreator from 'qr-creator'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 interface CreateQRProps {
   config: QrCreator.Config
   className?: string
-  registration?: DerivedRegistration
+  disabled?: boolean
+  downloading?: boolean
+  onDownload?: () => void | Promise<void>
+  registration?: RegistrationTicketData
 }
 
 function QRCanvas({ className, config }: CreateQRProps) {
@@ -36,15 +37,18 @@ function QRCanvas({ className, config }: CreateQRProps) {
   return <div className={cn('overflow-hidden [&_canvas]:size-full [&_svg]:size-full', className)} ref={containerRef} />
 }
 
-export const CreateQR = ({ className, config, registration }: CreateQRProps) => {
+export const CreateQR = ({
+  className,
+  config,
+  disabled = false,
+  downloading = false,
+  onDownload,
+  registration
+}: CreateQRProps) => {
   const [open, setOpen] = useState(false)
   const wasCheckedInWhenOpenedRef = useRef(false)
-  const liveCheckInStatus = useQuery(
-    api.registrations.q.getCheckInStatus,
-    registration ? { registrationId: registration.id } : 'skip'
-  )
-  const checkedIn = liveCheckInStatus?.checkedIn ?? registration?.checkedIn ?? false
-  const checkedInAt = liveCheckInStatus?.checkedInAt ?? registration?.checkedInAt
+  const checkedIn = registration?.checkedIn ?? false
+  const checkedInAt = registration?.checkedInAt
   const fullscreenConfig = useMemo<QrCreator.Config>(
     () => ({
       ...config,
@@ -95,13 +99,21 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
     <>
       <button
         type='button'
-        aria-label='Open gate pass QR code'
+        disabled={disabled}
+        aria-label={
+          disabled
+            ? 'Gate pass QR code is inactive'
+            : 'Open gate pass QR code'
+        }
         className={cn(
           'group relative size-64 overflow-hidden rounded-lg p-2 transition-transform active:scale-[0.98]',
           'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-sky-500/30',
+          disabled && 'cursor-not-allowed opacity-65 active:scale-100',
           className
         )}
         onClick={() => {
+          if (disabled) return
+
           wasCheckedInWhenOpenedRef.current = checkedIn
           setOpen(true)
         }}>
@@ -119,6 +131,7 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
 
       {open ? (
         <div
+          data-ticket-export-ignore
           role='dialog'
           aria-modal='true'
           aria-label='Gate pass QR code'
@@ -129,7 +142,25 @@ export const CreateQR = ({ className, config, registration }: CreateQRProps) => 
               <p className='font-okx text-lg font-medium'>Gate Pass</p>
             </div>
             <div className='flex items-center space-x-2'>
-              <Icon name='down-to-line' className='size-5' />
+              {onDownload ? (
+                <button
+                  type='button'
+                  disabled={downloading}
+                  aria-label='Download ticket as PNG'
+                  className='inline-flex size-11 items-center justify-center rounded-full transition-colors hover:bg-white/15 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-white/25 disabled:opacity-50'
+                  onClick={() => {
+                    void onDownload()
+                  }}>
+                  <Icon
+                    name={
+                      downloading
+                        ? 'spinner-ring'
+                        : 'down-to-line'
+                    }
+                    className='size-5'
+                  />
+                </button>
+              ) : null}
               <button
                 type='button'
                 aria-label='Close gate pass QR code'

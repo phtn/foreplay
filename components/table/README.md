@@ -175,6 +175,20 @@ Bulk editing is opt-in per field:
 or setting it to `false`, excludes the field. Identifier fields are always
 excluded.
 
+Disable selection for read-only or server-backed tables that do not expose
+durable bulk mutations:
+
+```tsx
+<DataTable
+  {...tableProps}
+  enableRowSelection={false}
+/>
+```
+
+Without this flag, the default local selection workflow can update or remove
+rows from the table's client-side data. Server-owned data should instead use
+authenticated `onBulkUpdateSelected` and `onDeleteSelected` callbacks.
+
 This UI allow-list is not an authorization boundary. `onBulkUpdateSelected`,
 `onDeleteSelected`, row actions, and editable-cell callbacks must call backend
 functions that:
@@ -202,6 +216,8 @@ backslash-based values render as plain text instead of a link.
 ## Notable behavior
 
 - Selection mode mounts the selection column only while enabled.
+- Read-only tables can remove the selection workflow with
+  `enableRowSelection={false}`.
 - “Select all” selects the current page, matching the pagination UI.
 - Changing search, sorting, filters, or page size resets to page 1.
 - Sort controls cycle through ascending, descending, and unsorted.

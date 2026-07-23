@@ -45,10 +45,7 @@ const FilterComponent = <T,>({
     [columns]
   )
 
-  const activeFilterIds = useMemo(
-    () => new Set(activeFilterColumns.map((column) => column.id)),
-    [activeFilterColumns]
-  )
+  const activeFilterIds = useMemo(() => new Set(activeFilterColumns.map((column) => column.id)), [activeFilterColumns])
 
   const availableColumns = useMemo(
     () => filterableColumns.filter((column) => !activeFilterIds.has(column.id)),
@@ -65,14 +62,9 @@ const FilterComponent = <T,>({
       const facetedValues = column.getFacetedUniqueValues()
       const controlledFilter = columnFilters.find((filter) => filter.id === column.id)
       const selectedValues = (controlledFilter?.value ?? []) as (string | number | boolean)[]
-      const meta = column.columnDef.meta as
-        | { filterOptions?: unknown[]; filterOptionLimit?: number }
-        | undefined
+      const meta = column.columnDef.meta as { filterOptions?: unknown[]; filterOptionLimit?: number } | undefined
       const metaFilterOptions = meta?.filterOptions
-      const optionLimit = Math.max(
-        1,
-        Math.min(1_000, meta?.filterOptionLimit ?? DEFAULT_FACET_OPTION_LIMIT)
-      )
+      const optionLimit = Math.max(1, Math.min(1_000, meta?.filterOptionLimit ?? DEFAULT_FACET_OPTION_LIMIT))
 
       const countByToken = new Map<string, number>()
       const rawValueByToken = new Map<string, unknown>()
@@ -100,9 +92,7 @@ const FilterComponent = <T,>({
         })
       }
 
-      const uniqueValues = Array.from(uniqueOptions.values()).sort((a, b) =>
-        a.label.localeCompare(b.label)
-      )
+      const uniqueValues = Array.from(uniqueOptions.values()).sort((a, b) => a.label.localeCompare(b.label))
 
       return {
         column,
@@ -111,12 +101,7 @@ const FilterComponent = <T,>({
         uniqueValues
       }
     })
-  }, [
-    activeFilterColumns,
-    columnFilters,
-    facetingData,
-    globalFilter
-  ])
+  }, [activeFilterColumns, columnFilters, facetingData, globalFilter])
 
   const totalActiveFilters = useMemo(() => {
     return activeFiltersData.reduce((total, filterData) => {
@@ -142,10 +127,8 @@ const FilterComponent = <T,>({
           <BaseButton
             className={cn(
               'relative flex w-8 h-8 md:h-7.5 items-center justify-center rounded-sm md:space-x-2 md:w-auto md:px-3.5 text-sm select-none transition-colors duration-75',
-              'data-pressed:bg-gray-100 dark:data-pressed:bg-dark-table/50 ',
-              'bg-sidebar/50 dark:bg-dark-table/10',
-              'hover:bg-sidebar/60 dark:hover:bg-dark-table/50',
-              'active:bg-sidebar dark:active:bg-dark-table/20',
+              'hover:bg- dark:hover:bg-',
+              'active:bg-foreground/10 dark:active:bg-',
               'focus-visible:bg-none focus-visible:outline-1 focus-visible:-outline-offset-1',
               { 'px-0 md:px-3.5': totalActiveFilters > 0 }
             )}>
@@ -166,7 +149,7 @@ const FilterComponent = <T,>({
           align='start'
           collisionAvoidance={{ side: 'flip', align: 'none' }}
           positionMethod='fixed'>
-          <Popover.Popup className='w-64 rounded-xl border border-dark-gray/30 bg-sidebar p-1 dark:bg-dark-table dark:text-zinc-200'>
+          <Popover.Popup className='w-64 rounded-xl border border-dark-gray/30 bg-sidebar p-1 dark:bg-background dark:text-zinc-200'>
             {availableColumns.length > 0 ? (
               <>
                 <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 dark:border-zinc-800'>
@@ -216,10 +199,7 @@ const FilterComponent = <T,>({
                         type='search'
                         value={optionQueries[filterData.column.id] ?? ''}
                         onChange={(event) => {
-                          const query = event.target.value.slice(
-                            0,
-                            TABLE_QUERY_LIMITS.tokenCharacters
-                          )
+                          const query = event.target.value.slice(0, TABLE_QUERY_LIMITS.tokenCharacters)
                           setOptionQueries((current) => ({
                             ...current,
                             [filterData.column.id]: query
@@ -228,38 +208,27 @@ const FilterComponent = <T,>({
                         maxLength={TABLE_QUERY_LIMITS.tokenCharacters}
                         placeholder='Find a value'
                         aria-label={`Find ${getColumnHeaderText(filterData.column)} filter value`}
-                        className='mb-2 h-8 w-full rounded-sm border border-dark-gray/20 bg-background px-2 font-brk text-xs outline-none'
+                        className='mb-2 h-8 w-full rounded-sm border border-neutral-500/20 bg-background px-2 font-brk text-xs outline-none'
                       />
                     ) : null}
 
                     <div className='max-h-40 overflow-y-auto scrollbar-gutter-[stable]'>
                       {(() => {
-                        const query = (optionQueries[filterData.column.id] ?? '')
+                        const query = optionQueries[filterData.column.id] ?? ''
                         const normalizedQuery = normalizeText(query)
                         const matchingOptions = normalizedQuery
-                          ? filterData.uniqueValues.filter((option) =>
-                              option.searchText.includes(
-                                normalizedQuery
-                              )
-                            )
+                          ? filterData.uniqueValues.filter((option) => option.searchText.includes(normalizedQuery))
                           : filterData.uniqueValues
-                        const renderedOptions = matchingOptions.slice(
-                          0,
-                          filterData.optionLimit
-                        )
-                        const hiddenOptionCount =
-                          matchingOptions.length - renderedOptions.length
+                        const renderedOptions = matchingOptions.slice(0, filterData.optionLimit)
+                        const hiddenOptionCount = matchingOptions.length - renderedOptions.length
 
                         return (
                           <>
                             {renderedOptions.map((option, index) => {
                               const id = `v-${baseId}-${columnIndex}-${index}`
-                              const isChecked =
-                                filterData.selectedValues.some(
-                                  (selected) =>
-                                    getFilterValueToken(selected) ===
-                                    option.token
-                                )
+                              const isChecked = filterData.selectedValues.some(
+                                (selected) => getFilterValueToken(selected) === option.token
+                              )
 
                               return (
                                 <div
@@ -277,63 +246,33 @@ const FilterComponent = <T,>({
                                     aria-label={`${isChecked ? 'Remove' : 'Add'} ${option.label} filter`}
                                     className='mr-2 flex size-4 shrink-0 items-center justify-center rounded-sm'
                                     onCheckedChange={(checked) => {
-                                      const nextFilterValue = [
-                                        ...filterData.selectedValues
-                                      ]
+                                      const nextFilterValue = [...filterData.selectedValues]
 
                                       if (checked) {
-                                        const exists =
-                                          nextFilterValue.some(
-                                            (value) =>
-                                              getFilterValueToken(
-                                                value
-                                              ) === option.token
-                                          )
+                                        const exists = nextFilterValue.some(
+                                          (value) => getFilterValueToken(value) === option.token
+                                        )
                                         if (!exists) {
-                                          nextFilterValue.push(
-                                            option.token
-                                          )
+                                          nextFilterValue.push(option.token)
                                         }
                                       } else {
-                                        const nextIndex =
-                                          nextFilterValue.findIndex(
-                                            (value) =>
-                                              getFilterValueToken(
-                                                value
-                                              ) === option.token
-                                          )
+                                        const nextIndex = nextFilterValue.findIndex(
+                                          (value) => getFilterValueToken(value) === option.token
+                                        )
                                         if (nextIndex > -1) {
-                                          nextFilterValue.splice(
-                                            nextIndex,
-                                            1
-                                          )
+                                          nextFilterValue.splice(nextIndex, 1)
                                         }
                                       }
 
                                       filterData.column.setFilterValue(
-                                        nextFilterValue.length > 0
-                                          ? nextFilterValue
-                                        : undefined
+                                        nextFilterValue.length > 0 ? nextFilterValue : undefined
                                       )
                                     }}>
-                                    <Icon
-                                      name={
-                                        isChecked
-                                          ? 'check'
-                                          : 'checkbox-unchecked'
-                                      }
-                                      className='size-4'
-                                    />
+                                    <Icon name={isChecked ? 'check' : 'checkbox-unchecked'} className='size-4' />
                                   </Checkbox.Root>
-                                  <label
-                                    htmlFor={id}
-                                    className='flex grow justify-between gap-2 font-brk text-xs'>
-                                    <span className='truncate'>
-                                      {option.label}
-                                    </span>
-                                    <span className='shrink-0 text-xs'>
-                                      {option.count}
-                                    </span>
+                                  <label htmlFor={id} className='flex grow justify-between gap-2 font-brk text-xs'>
+                                    <span className='truncate'>{option.label}</span>
+                                    <span className='shrink-0 text-xs'>{option.count}</span>
                                   </label>
                                 </div>
                               )

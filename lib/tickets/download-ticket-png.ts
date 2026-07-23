@@ -1,4 +1,7 @@
-const MODERN_COLOR_FUNCTION = /(?:color-mix|lab|lch|oklab|oklch)\(/i
+const MODERN_COLOR_FUNCTION =
+  /(?:color(?:-mix)?|lab|lch|oklab|oklch)\(/i
+const MAX_CANVAS_DIMENSION = 16_000
+const MAX_CANVAS_AREA = 64_000_000
 
 const colorProperties = [
   'accent-color',
@@ -65,15 +68,19 @@ function normalizeExportColors(root: HTMLElement, clonedDocument: Document) {
 
     for (const property of colorProperties) {
       const value = computedStyle.getPropertyValue(property)
-      if (MODERN_COLOR_FUNCTION.test(value)) {
-        inlineStyle.setProperty(property, resolveColor(value))
+      if (hasModernColorFunction(value)) {
+        inlineStyle.setProperty(
+          property,
+          resolveColor(value),
+          'important'
+        )
       }
     }
 
     for (const property of ['background-image', 'box-shadow', 'filter', 'text-shadow'] as const) {
       const value = computedStyle.getPropertyValue(property)
-      if (MODERN_COLOR_FUNCTION.test(value)) {
-        inlineStyle.setProperty(property, 'none')
+      if (hasModernColorFunction(value)) {
+        inlineStyle.setProperty(property, 'none', 'important')
       }
     }
   }
@@ -91,6 +98,58 @@ function canvasToBlob(canvas: HTMLCanvasElement) {
   })
 }
 
+async function waitForExportSurface(element: HTMLElement) {
+  await document.fonts?.ready
+
+  const images = Array.from(
+    element.querySelectorAll<HTMLImageElement>('img')
+  )
+  await Promise.all(
+    images.map(async (image) => {
+      if (image.complete) return
+
+      try {
+        await image.decode()
+      } catch {
+        // html2canvas will apply its own fallback for unreadable images.
+      }
+    })
+  )
+
+  await new Promise<void>((resolve) =>
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => resolve())
+    )
+  )
+}
+
+export function hasModernColorFunction(value: string) {
+  return MODERN_COLOR_FUNCTION.test(value)
+}
+
+export function getTicketExportScale(
+  width: number,
+  height: number,
+  devicePixelRatio: number
+) {
+  const safeWidth = Math.max(Math.ceil(width), 1)
+  const safeHeight = Math.max(Math.ceil(height), 1)
+  const safeDeviceScale =
+    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0
+      ? devicePixelRatio
+      : 1
+  const dimensionScale =
+    MAX_CANVAS_DIMENSION / Math.max(safeWidth, safeHeight)
+  const areaScale = Math.sqrt(
+    MAX_CANVAS_AREA / (safeWidth * safeHeight)
+  )
+
+  return Math.max(
+    Number.EPSILON,
+    Math.min(2, safeDeviceScale, dimensionScale, areaScale)
+  )
+}
+
 export function createPngFilename(label: string, fallback = 'ticket') {
   const normalized = label
     .normalize('NFKD')
@@ -104,21 +163,55 @@ export function createPngFilename(label: string, fallback = 'ticket') {
 }
 
 export async function downloadElementAsPng(element: HTMLElement, filename: string) {
-  await document.fonts?.ready
-  await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
+  await waitForExportSurface(element)
 
   const { default: html2canvas } = await import('html2canvas')
   const exportWidth = Math.max(element.scrollWidth, 1)
   const exportHeight = Math.max(element.scrollHeight, 1)
-  const dimensionScale = 16_000 / Math.max(exportWidth, exportHeight)
-  const areaScale = Math.sqrt(64_000_000 / (exportWidth * exportHeight))
-  const exportScale = Math.min(2, window.devicePixelRatio || 1, dimensionScale, areaScale)
+  const exportScale = getTicketExportScale(
+    exportWidth,
+    exportHeight,
+    window.devicePixelRatio
+  )
   const canvas = await html2canvas(element, {
     allowTaint: false,
     backgroundColor: '#ffffff',
     ignoreElements: (candidate) => candidate.hasAttribute('data-ticket-export-ignore'),
     logging: false,
     onclone: (clonedDocument, clonedElement) => {
+      // html2canvas parses the cloned document backgrounds separately from
+      // the requested element. Tailwind's modern theme colors can serialize
+      // as lab()/oklab() here, which html2canvas 1.x cannot parse.
+      clonedDocument.documentElement.style.setProperty(
+        'background-color',
+        '#ffffff',
+        'important'
+      )
+      clonedDocument.body.style.setProperty(
+        'background-color',
+        '#ffffff',
+        'important'
+      )
+
+      const exportStyles = clonedDocument.createElement('style')
+      exportStyles.textContent = `
+        [data-ticket-export-root],
+        [data-ticket-export-root] * {
+          animation: none !important;
+          caret-color: transparent !important;
+          transition: none !important;
+        }
+        [data-ticket-export-root] *::before,
+        [data-ticket-export-root] *::after {
+          background-image: none !important;
+          box-shadow: none !important;
+          text-shadow: none !important;
+        }
+        [data-ticket-export-ignore] {
+          display: none !important;
+        }
+      `
+      clonedDocument.head.appendChild(exportStyles)
       normalizeExportColors(clonedElement, clonedDocument)
     },
     scale: exportScale,
@@ -134,5 +227,5 @@ export async function downloadElementAsPng(element: HTMLElement, filename: strin
   document.body.appendChild(link)
   link.click()
   link.remove()
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
