@@ -33,8 +33,10 @@ interface ContentProps {
   tourId: string
   initialFormId: string
   initialDivision: string
+  initialFullName: string
   initialEmail: string
   initialPhone: string
+  isAdmin: boolean
   initialSubscription: Subscription | null
   paymentMethod: PaymentMethod | null
   currentEntries: Subscription[]
@@ -137,8 +139,10 @@ export const Content = ({
   tourId,
   initialFormId,
   initialDivision,
+  initialFullName,
   initialEmail,
   initialPhone,
+  isAdmin,
   initialSubscription,
   paymentMethod,
   currentEntries,
@@ -325,8 +329,10 @@ export const Content = ({
                 players={players}
                 totalAmount={total}
                 division={division}
+                initialFullName={initialFullName}
                 initialEmail={initialEmail}
                 initialPhone={initialPhone}
+                isAdmin={isAdmin}
                 initialSubscription={initialSubscription}
                 paymentMethod={paymentMethod}
                 divisionOptions={tournament.divisionOptions}

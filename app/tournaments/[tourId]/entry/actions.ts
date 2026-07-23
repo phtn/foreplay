@@ -1,8 +1,9 @@
 'use server'
 
+import { createQRCodeSvg } from '@/components/qrcode/create-svg'
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
-import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
+import { getVerifiedAdminSession, getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds, buildFirebaseUserId } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
@@ -29,6 +30,8 @@ type ReceiptTargetInput = {
   subscriptionId: Id<'subscriptions'>
   formId: string
 }
+
+const adminOverrideContentType = 'image/svg+xml;charset=utf-8'
 
 const trimOrUndefined = (value: string | undefined) => {
   const trimmed = value?.trim()
@@ -137,5 +140,64 @@ export async function updateTournamentSubscriptionReceipt(input: UpdateTournamen
     return { ok: true, value: result } as const
   } catch (error) {
     return actionError(error, 'Unable to submit this receipt.', 'submit receipt')
+  }
+}
+
+export async function submitAdminOverrideReceipt(input: ReceiptTargetInput) {
+  try {
+    const session = await getVerifiedAdminSession()
+    if (!session) {
+      return { ok: false, error: 'Admin access is required to submit an override.' } as const
+    }
+
+    const ownerUserIds = buildFirebaseSubscriptionUserIds(session.decodedToken)
+    const uploadUrl = await fetchMutation(api.subscriptions.m.generateReceiptUploadUrl, {
+      subscriptionId: input.subscriptionId,
+      formId: input.formId,
+      ownerUserIds
+    })
+    const qrContent = JSON.stringify({
+      email: typeof session.decodedToken.email === 'string' ? session.decodedToken.email : '',
+      name: typeof session.decodedToken.name === 'string' ? session.decodedToken.name : '',
+      uid: session.decodedToken.uid
+    })
+    const receiptSvg = createQRCodeSvg({
+      content: qrContent,
+      width: 800,
+      height: 800
+    })
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': adminOverrideContentType
+      },
+      body: new Blob([receiptSvg], { type: adminOverrideContentType })
+    })
+
+    if (!uploadResponse.ok) {
+      throw new Error('Unable to upload the admin override receipt.')
+    }
+
+    const uploadResult: unknown = await uploadResponse.json()
+
+    if (
+      !uploadResult ||
+      typeof uploadResult !== 'object' ||
+      !('storageId' in uploadResult) ||
+      typeof uploadResult.storageId !== 'string'
+    ) {
+      throw new Error('The admin override upload returned an invalid storage ID.')
+    }
+
+    const result = await fetchMutation(api.subscriptions.m.updateReceipt, {
+      subscriptionId: input.subscriptionId,
+      formId: input.formId,
+      storageId: uploadResult.storageId as Id<'_storage'>,
+      ownerUserIds
+    })
+
+    return { ok: true, value: result } as const
+  } catch (error) {
+    return actionError(error, 'Unable to submit this admin override.', 'submit admin override')
   }
 }

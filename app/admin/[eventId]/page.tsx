@@ -6,41 +6,26 @@ import { Doc } from '@/convex/_generated/dataModel'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import {
+  formatCommission,
+  formatEventDate,
+  formatGateOpenTime,
+  formatRegistrationFee,
+  formatSlotsLabel,
+  formatStatus,
+  getPublicationLabel,
+  nanoCreatedAt
+} from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { confirmSubscription, updateSubscriptionRemarks } from './actions'
 import { ReceiptDrawer } from './receipt-drawer'
+import { StatHeader } from './stat-header'
 
 interface EventPageProps {
   params: Promise<{ eventId: string }>
 }
-
-const pesoFormatter = new Intl.NumberFormat('en-PH', {
-  style: 'currency',
-  currency: 'PHP',
-  maximumFractionDigits: 0
-})
-
-const dateFormatter = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'full',
-  timeZone: 'Asia/Manila'
-})
-
-const timeFormatter = new Intl.DateTimeFormat('en-US', {
-  hour: 'numeric',
-  minute: '2-digit',
-  timeZone: 'Asia/Manila'
-})
-
-// const createdAtFormatter = new Intl.DateTimeFormat('en-US', {
-//   dateStyle: 'medium',
-//   timeStyle: 'short'
-// })
-const createdAtNano = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'short',
-  timeStyle: 'short'
-})
 
 const subscriptionStatusStyles: Record<string, string> = {
   pending_payment: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
@@ -54,60 +39,6 @@ const paymentStatusStyles: Record<string, string> = {
   paid: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
   failed: 'bg-destructive/10 text-destructive',
   refunded: 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
-}
-
-function formatEventDate(timestamp: number, fallback: string) {
-  return fallback || dateFormatter.format(new Date(timestamp))
-}
-
-function formatGateOpenTime(timestamp: number) {
-  return timeFormatter.format(new Date(timestamp))
-}
-
-// function formatCreatedAt(timestamp: number) {
-//   return createdAtFormatter.format(timestamp)
-// }
-function nanoCreatedAt(timestamp: number) {
-  return createdAtNano.format(timestamp)
-}
-
-// function formatConfirmedAt(timestamp: number | undefined) {
-//   return timestamp ? createdAtNano.format(timestamp) : null
-// }
-
-function formatRegistrationFee(value: number) {
-  if (value <= 0) {
-    return 'Sponsor-driven event'
-  }
-
-  return pesoFormatter.format(value)
-}
-
-function formatSlotsLabel(registeredSlots: number, slotsLimit?: number) {
-  if (slotsLimit) {
-    return `${registeredSlots}/${slotsLimit}`
-  }
-
-  return `${registeredSlots}`
-}
-
-function getPublicationLabel(published: boolean | undefined) {
-  return published === false ? 'Draft' : 'Published'
-}
-
-function formatCommission(type: string, value?: number) {
-  if (value === undefined) {
-    return 'Not configured'
-  }
-
-  return `${type} · ${value}`
-}
-
-function formatStatus(value: string | undefined) {
-  return (value ?? 'pending_payment')
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
 }
 
 function DetailRow({ label, value }: { label: string; value: string }) {
@@ -216,33 +147,9 @@ const EventSubscriptions = ({ eventId, subscriptions }: EventSubscriptionsProps)
   )
 
   return (
-    <Card className='rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 p-0'>
-      <CardHeader className='px-2 pt-4'>
-        <div className='flex flex-col md:gap-4 lg:flex-row lg:items-start lg:justify-between'>
-          <div className='space-y-1'>
-            <CardTitle className='font-poly font-medium md:text-lg text-base'>Entries</CardTitle>
-            <p className='text-sm text-muted-foreground sr-only'>
-              Entry requests, payment state, and receipt workflow for this event.
-            </p>
-          </div>
-
-          <div className='grid grid-cols-5 sm:grid-cols-5'>
-            {[
-              { label: 'Total', value: counts.total },
-              { label: 'Pending', value: counts.pending },
-              { label: 'Review', value: counts.review },
-              { label: 'Confirmed', value: counts.confirmed },
-              { label: 'Cancelled', value: counts.cancelled }
-            ].map((stat) => (
-              <div key={stat.label} className='bg-muted/0 px-1.5 md:px-3 md:py-2 py-1 flex flex-col items-center'>
-                <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{stat.label}</p>
-                <p className='mt-1 font-poly text-lg'>{stat.value}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className='px-0!  dark:bg-slate-600/10'>
+    <Card className='gap-y-0 rounded-md md:rounded-2xl border-border/70 bg-slate-400/10 dark:bg-slate-400/20 p-0'>
+      <StatHeader counts={counts} />
+      <CardContent className='p-0! dark:bg-slate-600/10 m-0'>
         {subscriptions.length ? (
           <div className='overflow-x-auto'>
             <table className='w-full min-w-300 text-sm'>

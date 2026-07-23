@@ -1,0 +1,120 @@
+'use client'
+
+import { type Keys, useWindow } from '@/hooks/use-window'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { ClassName } from '@/types'
+import { AnimatePresence, motion } from 'motion/react'
+import { ReactNode, useEffect, useId, useRef } from 'react'
+
+interface DialogWindowProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  children: ReactNode
+  title?: ReactNode
+  description?: ReactNode
+  descriptionStyle?: ClassName
+  actions?: ReactNode
+  headerClassName?: ClassName
+  titleClassName?: ClassName
+  actionsClassName?: ClassName
+  closeButtonClassName?: ClassName
+  hotkey?: Keys
+  className?: string
+  draggable?: boolean
+}
+
+export const DialogWindow = ({
+  open,
+  onOpenChange,
+  title,
+  description,
+  descriptionStyle,
+  actions,
+  headerClassName,
+  titleClassName,
+  actionsClassName,
+  closeButtonClassName,
+  hotkey,
+  className,
+  children
+}: DialogWindowProps) => {
+  const { isOpen, close } = useWindow({
+    isOpen: open,
+    onOpenChange,
+    hotkey
+  })
+
+  const headingId = useId()
+  const descriptionId = useId()
+  const windowRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+    windowRef.current?.focus()
+  }, [isOpen])
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.section
+          ref={windowRef}
+          tabIndex={-1}
+          role='dialog'
+          aria-modal='false'
+          aria-labelledby={title ? headingId : undefined}
+          aria-describedby={description ? descriptionId : undefined}
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 12, scale: 0.98 }}
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className={cn(
+            'fixed left-1/2 z-9100 flex h-[min(70vh,36rem)] w-[min(calc(100vw-2rem),28rem)] -translate-x-1/2 flex-col overflow-hidden rounded-2xl border border-sidebar/50 bg-background/95 shadow-2xl backdrop-blur-xl',
+            'bottom-[calc(env(safe-area-inset-bottom)+5.5rem)]',
+            'px-0',
+            className
+          )}
+          style={{ touchAction: 'manipulation' }}>
+          {(title || description || actions) && (
+            <header
+              className={cn(
+                'flex items-start justify-between gap-2 border-b border-sidebar/30 bg-background/80 px-3 py-2.5',
+                headerClassName
+              )}>
+              <div className='min-w-0 flex-1'>
+                {title && (
+                  <h2 id={headingId} className={cn('truncate text-sm font-semibold', titleClassName)}>
+                    {title}
+                  </h2>
+                )}
+                {description && (
+                  <p
+                    id={descriptionId}
+                    className={cn('mt-0.5 truncate text-xs text-muted-foreground', descriptionStyle)}>
+                    {description}
+                  </p>
+                )}
+              </div>
+
+              <div className={cn('flex shrink-0 items-center gap-3', actionsClassName)}>
+                {actions}
+                <button
+                  type='button'
+                  onClick={close}
+                  className={cn(
+                    'rounded-md px-2 py-1 text-muted-foreground transition-colors hover:bg-sidebar hover:text-foreground',
+                    closeButtonClassName
+                  )}
+                  aria-label='Close chat window'>
+                  <Icon name='x' className='size-4 md:size-5.5' />
+                </button>
+              </div>
+            </header>
+          )}
+
+          <div className='min-h-0 flex-1 px-0 w-full'>{children}</div>
+        </motion.section>
+      )}
+    </AnimatePresence>
+  )
+}

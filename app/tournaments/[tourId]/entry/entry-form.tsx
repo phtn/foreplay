@@ -11,7 +11,12 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { Activity, useCallback, useEffect, useRef, useState } from 'react'
-import { createTournamentSubscription, generateReceiptUploadUrl, updateTournamentSubscriptionReceipt } from './actions'
+import {
+  createTournamentSubscription,
+  generateReceiptUploadUrl,
+  submitAdminOverrideReceipt,
+  updateTournamentSubscriptionReceipt
+} from './actions'
 
 const entryControlClassName =
   'h-12 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
@@ -36,8 +41,10 @@ interface NewEntryFormProps {
   players: number
   totalAmount: number
   division: string
+  initialFullName: string
   initialEmail: string
   initialPhone: string
+  isAdmin: boolean
   initialSubscription: Subscription | null
   paymentMethod: PaymentMethod | null
   divisionOptions: DivisionOption[]
@@ -51,8 +58,10 @@ export const NewEntryForm = ({
   players,
   totalAmount,
   division,
+  initialFullName,
   initialEmail,
   initialPhone,
+  isAdmin,
   initialSubscription,
   paymentMethod,
   divisionOptions,
@@ -117,8 +126,8 @@ export const NewEntryForm = ({
   const form = useAppForm({
     defaultValues: {
       fullName: initiallyLocked
-        ? (initialSubscription?.team_name ?? '')
-        : (entryQuery.teamName ?? initialSubscription?.team_name ?? ''),
+        ? (initialSubscription?.team_name ?? initialFullName)
+        : (entryQuery.teamName ?? initialSubscription?.team_name ?? initialFullName),
       email: initiallyLocked
         ? (initialSubscription?.contact_email ?? initialEmail)
         : (entryQuery.email ?? initialSubscription?.contact_email ?? initialEmail),
@@ -207,7 +216,7 @@ export const NewEntryForm = ({
     URL.revokeObjectURL(url)
   }, [formId, paymentQRCodeContent])
   const submitReceipt = useCallback(async () => {
-    if (!receiptFile || !subscriptionId || isEntryLocked) {
+    if ((!receiptFile && !isAdmin) || !subscriptionId || isEntryLocked) {
       return
     }
 
@@ -216,6 +225,19 @@ export const NewEntryForm = ({
     setIsSubmittingReceipt(true)
 
     try {
+      if (!receiptFile) {
+        const overrideResult = await submitAdminOverrideReceipt({ subscriptionId, formId })
+
+        if (!overrideResult.ok) {
+          throw new Error(overrideResult.error)
+        }
+
+        setDidSubmitReceipt(true)
+        setSuccessMessage(null)
+        setReceiptSuccessMessage('Admin override submitted. Payment is pending review.')
+        return
+      }
+
       const convertedReceipt = receiptFile.type.startsWith('image/')
         ? await convert(receiptFile, {
             format: 'webp',
@@ -262,7 +284,7 @@ export const NewEntryForm = ({
     } finally {
       setIsSubmittingReceipt(false)
     }
-  }, [convert, formId, isEntryLocked, receiptFile, subscriptionId])
+  }, [convert, formId, isAdmin, isEntryLocked, receiptFile, subscriptionId])
 
   const router = useRouter()
 
@@ -284,7 +306,7 @@ export const NewEntryForm = ({
                   label='Full Name'
                   icon={'user'}
                   placeholder='Your first and last name'
-                  autoComplete='organization'
+                  autoComplete='name'
                   containerClassName='mb-4'
                   className={entryControlClassName}
                   disabled={isDraftBusy || isEntryLocked}
@@ -576,6 +598,7 @@ export const NewEntryForm = ({
                 ) : null}
               </div>
               <Button
+                id='submit-receipt'
                 type='button'
                 size='xl'
                 variant='default'
@@ -583,7 +606,9 @@ export const NewEntryForm = ({
                 disabled={
                   isEntryLocked
                     ? !subscriptionId
-                    : !hasActivePaymentDestination || !receiptFile || !subscriptionId || isDraftBusy
+                    : !subscriptionId ||
+                      isDraftBusy ||
+                      (!isAdmin && (!hasActivePaymentDestination || !receiptFile))
                 }
                 onClick={() => {
                   if (isEntryLocked && subscriptionId) {
@@ -594,7 +619,13 @@ export const NewEntryForm = ({
                 }}>
                 {isSubmittingReceipt ? <Icon name='spinner-ring' className='size-4' /> : null}
                 <span className='font-poly capitalize'>
-                  {isEntryLocked ? 'View Entry' : receiptFile ? 'Submit Receipt' : 'Receipt Required'}
+                  {isEntryLocked
+                    ? 'View Entry'
+                    : receiptFile
+                      ? 'Submit Receipt'
+                      : isAdmin
+                        ? 'Admin Override'
+                        : 'Receipt Required'}
                 </span>
               </Button>
             </div>

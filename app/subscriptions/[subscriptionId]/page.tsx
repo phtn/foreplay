@@ -136,10 +136,10 @@ const Page = async ({ params }: PageProps) => {
             </CardHeader>
             <CardContent>
               <p className='text-lg font-semibold'>Payment verification is currently under review. </p>
-              <p className='opacity-70 flex items-center mt-2'>
+              <div className='opacity-70 flex items-center mt-2'>
                 <Icon name='arrow-drop-down' className='size-6 -rotate-45 opacity-50' />
                 <span>Estimated completion: within 24 hours.</span>
-              </p>
+              </div>
             </CardContent>
           </Card>
         )}

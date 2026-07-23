@@ -95,8 +95,10 @@ const Page = async ({ params, searchParams }: PageProps) => {
         tourId={tourId}
         initialFormId={initialFormId}
         initialDivision={subscription?.division ?? initialDivision}
+        initialFullName={user?.name ?? session?.decodedToken.name ?? ''}
         initialEmail={user?.email ?? session?.decodedToken.email ?? ''}
         initialPhone={user?.phone ?? session?.decodedToken.phone_number ?? ''}
+        isAdmin={session?.customClaims.admin === true}
         initialSubscription={subscription}
         paymentMethod={
           paymentMethod
