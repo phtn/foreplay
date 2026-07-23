@@ -1,4 +1,3 @@
-import { ToggleGroup } from '@base-ui/react/toggle-group'
 import { Toolbar } from '@base-ui/react/toolbar'
 import { ReactNode } from 'react'
 
@@ -30,27 +29,24 @@ interface RightTableToolbarProps {
 export const RightTableToolbar = ({ left, search }: RightTableToolbarProps) => {
   return (
     <Toolbar.Root className='flex h-9 shrink-0 items-center justify-end gap-px overflow-visible'>
-      <ToggleGroup className='flex shrink-0 items-center justify-end gap-1 md:gap-2' aria-label='Alignment'>
+      <div className='flex shrink-0 items-center justify-end gap-1 md:gap-2'>
         {left}
         {search}
-      </ToggleGroup>
+      </div>
     </Toolbar.Root>
   )
 }
 
 interface LeftTableToolbarProps {
   select: ReactNode
-  deleteRow: ReactNode
-  views?: ReactNode
 }
 
-export const LeftTableToolbar = ({ select, deleteRow }: LeftTableToolbarProps) => {
+export const LeftTableToolbar = ({ select }: LeftTableToolbarProps) => {
   return (
     <Toolbar.Root className='relative flex h-9 shrink-0 items-start gap-px overflow-visible bg-transparent px-1.5 py-0.5'>
-      <ToggleGroup className='relative flex items-center gap-2 bg-transparent md:gap-4' aria-label='Alignment'>
+      <div className='relative flex items-center gap-2 bg-transparent md:gap-4'>
         {select}
-        {deleteRow}
-      </ToggleGroup>
+      </div>
     </Toolbar.Root>
   )
 }

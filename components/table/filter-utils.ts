@@ -1,4 +1,5 @@
-import type {Column} from '@tanstack/react-table'
+import type { Column } from '@tanstack/react-table'
+import { TABLE_QUERY_LIMITS } from './parsers'
 
 const FILTER_OBJECT_LABEL_KEYS = [
   'label',
@@ -7,59 +8,126 @@ const FILTER_OBJECT_LABEL_KEYS = [
   'slug',
   'id',
   '_id',
-  'value',
+  'value'
 ] as const
 
-const stableStringify = (value: unknown): string => {
-  if (value === null || value === undefined) return ''
-  if (typeof value !== 'object') return String(value)
+const MAX_FILTER_COLLECTION_ITEMS = 32
+const MAX_FILTER_OBJECT_DEPTH = 4
 
-  if (Array.isArray(value)) {
-    return JSON.stringify(value.map((item) => stableStringify(item)))
-  }
+const boundToken = (value: string) =>
+  value.slice(0, TABLE_QUERY_LIMITS.tokenCharacters)
 
-  const entries = Object.entries(value as Record<string, unknown>).sort(
-    ([a], [b]) => a.localeCompare(b),
-  )
-
-  return JSON.stringify(
-    Object.fromEntries(
-      entries.map(([key, entryValue]) => [key, stableStringify(entryValue)]),
-    ),
-  )
-}
-
-const getObjectCandidate = (value: Record<string, unknown>): string | null => {
-  for (const key of FILTER_OBJECT_LABEL_KEYS) {
-    const candidate = value[key]
-    if (
-      typeof candidate === 'string' &&
-      candidate.trim().length > 0
-    ) {
-      return candidate.trim()
+const getObjectCandidate = (
+  value: Record<string, unknown>
+): string | null => {
+  try {
+    for (const key of FILTER_OBJECT_LABEL_KEYS) {
+      const candidate = value[key]
+      if (
+        typeof candidate === 'string' &&
+        candidate.trim().length > 0
+      ) {
+        return boundToken(candidate.trim())
+      }
+      if (
+        typeof candidate === 'number' ||
+        typeof candidate === 'boolean'
+      ) {
+        return String(candidate)
+      }
     }
-    if (typeof candidate === 'number' || typeof candidate === 'boolean') {
-      return String(candidate)
-    }
+  } catch {
+    return null
   }
 
   return null
 }
 
-export const getFilterValueToken = (value: unknown): string => {
+const stableStringify = (
+  value: unknown,
+  seen = new WeakSet<object>(),
+  depth = 0
+): string => {
   if (value === null || value === undefined) return ''
-  if (typeof value === 'string') return value.trim()
+  if (typeof value !== 'object') return boundToken(String(value))
+  if (seen.has(value)) return '[Circular]'
+  if (depth >= MAX_FILTER_OBJECT_DEPTH) {
+    return Array.isArray(value) ? '[Array]' : '[Object]'
+  }
+
+  seen.add(value)
+  try {
+    if (Array.isArray(value)) {
+      return boundToken(
+        JSON.stringify(
+          value
+            .slice(0, MAX_FILTER_COLLECTION_ITEMS)
+            .map((item) => stableStringify(item, seen, depth + 1))
+        )
+      )
+    }
+
+    const entries = Object.entries(
+      value as Record<string, unknown>
+    )
+      .sort(([left], [right]) => left.localeCompare(right))
+      .slice(0, MAX_FILTER_COLLECTION_ITEMS)
+
+    return boundToken(
+      JSON.stringify(
+        Object.fromEntries(
+          entries.map(([key, entryValue]) => [
+            key,
+            stableStringify(entryValue, seen, depth + 1)
+          ])
+        )
+      )
+    )
+  } catch {
+    return '[Unserializable]'
+  } finally {
+    seen.delete(value)
+  }
+}
+
+const getValueToken = (
+  value: unknown,
+  seen: WeakSet<object>,
+  depth: number
+): string => {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string') return boundToken(value.trim())
   if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value)
   }
+  if (typeof value !== 'object') return boundToken(String(value))
+  if (seen.has(value)) return '[Circular]'
+  if (depth >= MAX_FILTER_OBJECT_DEPTH) {
+    return Array.isArray(value) ? '[Array]' : '[Object]'
+  }
+
   if (Array.isArray(value)) {
-    return value.map((item) => getFilterValueToken(item)).join(' | ')
+    seen.add(value)
+    try {
+      return boundToken(
+        value
+          .slice(0, MAX_FILTER_COLLECTION_ITEMS)
+          .map((item) => getValueToken(item, seen, depth + 1))
+          .join(' | ')
+      )
+    } finally {
+      seen.delete(value)
+    }
   }
-  if (typeof value === 'object') {
-    return getObjectCandidate(value as Record<string, unknown>) ?? stableStringify(value)
-  }
-  return String(value)
+
+  return (
+    getObjectCandidate(value as Record<string, unknown>) ??
+    stableStringify(value)
+  )
 }
+
+export const getFilterValueToken = (value: unknown): string =>
+  getValueToken(value, new WeakSet<object>(), 0)
 
 export const getFilterValueLabel = (value: unknown): string => {
   if (typeof value === 'boolean') {
@@ -69,14 +137,29 @@ export const getFilterValueLabel = (value: unknown): string => {
     return 'Empty'
   }
   if (typeof value === 'string') {
-    return value.trim().length > 0 ? value : 'Empty'
+    return value.trim().length > 0
+      ? boundToken(value)
+      : 'Empty'
   }
   if (typeof value === 'number') {
     return String(value)
   }
   if (Array.isArray(value)) {
     if (value.length === 0) return 'Empty'
-    return value.map((item) => getFilterValueLabel(item)).join(', ')
+    return (
+      boundToken(
+        value
+          .slice(0, MAX_FILTER_COLLECTION_ITEMS)
+          .map((item) =>
+            typeof item === 'boolean'
+              ? item
+                ? 'Active'
+                : 'Inactive'
+              : (getFilterValueToken(item) || 'Empty')
+          )
+          .join(', ')
+      ) || 'Empty'
+    )
   }
   if (typeof value === 'object') {
     return (
@@ -85,13 +168,15 @@ export const getFilterValueLabel = (value: unknown): string => {
       'Empty'
     )
   }
-  return String(value)
+  return boundToken(String(value))
 }
 
 export const getFilterMatchTokens = (value: unknown): string[] => {
   if (value === null || value === undefined) return ['']
   if (Array.isArray(value)) {
-    const itemTokens = value.flatMap((item) => getFilterMatchTokens(item))
+    const itemTokens = value
+      .slice(0, MAX_FILTER_COLLECTION_ITEMS)
+      .map((item) => getFilterValueToken(item))
     const joinedToken = getFilterValueToken(value)
     return [...new Set([...itemTokens, joinedToken].filter(Boolean))]
   }
@@ -105,11 +190,16 @@ export const formatColumnId = (id: string): string => {
     .replace(/[-_]/g, ' ')
     .trim()
     .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    )
     .join(' ')
 }
 
-export const getColumnHeaderText = <T,>(column: Column<T, unknown>): string => {
+export const getColumnHeaderText = <T,>(
+  column: Column<T, unknown>
+): string => {
   const header = column.columnDef.header
 
   if (typeof header === 'string') {

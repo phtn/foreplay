@@ -3,10 +3,15 @@ import { Frame, FrameFooter, FrameHeader, FramePanel, FrameTitle } from '@/compo
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-// import { Modal, ModalBackdrop, ModalBody, ModalContainer, ModalDialog, ModalFooter, ModalHeader } from '@heroui/react'
 import { useMemo, useState } from 'react'
 import { Drawer, DrawerContent, DrawerFooter, DrawerHeader } from '../ui/drawer'
-import { Select } from '../ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '../ui/select'
 import { BulkEditorConfig, BulkEditorOption, ColumnConfig, ColumnMeta } from './create-column'
 
 type EditableValue = string | number | boolean | null | undefined
@@ -42,6 +47,8 @@ interface MultiSelectProps<T> {
   isCompact?: boolean
 }
 
+const MAX_BULK_EDITOR_OPTIONS = 500
+
 export const MultiSelect = <T,>({
   columnConfigs,
   pending = false,
@@ -60,7 +67,10 @@ export const MultiSelect = <T,>({
       const meta = (config.meta ?? {}) as ColumnMeta<T>
       const bulkEditor = normalizeBulkEditorConfig(meta.bulkEditor)
 
-      if (meta.bulkEditor === false || (bulkEditor && bulkEditor.enabled === false)) {
+      if (
+        (meta.bulkEditor !== true && bulkEditor === null) ||
+        bulkEditor?.enabled === false
+      ) {
         return []
       }
 
@@ -116,6 +126,7 @@ export const MultiSelect = <T,>({
   const [draftValues, setDraftValues] = useState<Record<string, string>>(() => initialDraftValues)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const hasDraftChanges = useMemo(
     () => editableFields.some((field) => (draftValues[field.id] ?? '') !== (initialDraftValues[field.id] ?? '')),
@@ -128,8 +139,27 @@ export const MultiSelect = <T,>({
   )
 
   const pendingUpdates = useMemo(() => buildUpdatePayload(pendingFieldUpdates), [pendingFieldUpdates])
+  const invalidFieldIds = useMemo(
+    () =>
+      new Set(
+        editableFields
+          .filter((field) => {
+            if (field.inputKind !== 'number') return false
+            const draftValue = (draftValues[field.id] ?? '').trim()
+            const initialValue = initialDraftValues[field.id] ?? ''
+            return (
+              draftValue !== initialValue &&
+              draftValue.length > 0 &&
+              !Number.isFinite(Number(draftValue))
+            )
+          })
+          .map((field) => field.id)
+      ),
+    [draftValues, editableFields, initialDraftValues]
+  )
 
   const hasPendingUpdates = pendingFieldUpdates.length > 0
+  const hasInvalidDrafts = invalidFieldIds.size > 0
 
   const handleApply = () => {
     if (!hasPendingUpdates || pending) return
@@ -137,10 +167,15 @@ export const MultiSelect = <T,>({
   }
 
   const handleConfirmApply = async () => {
-    if (!hasPendingUpdates || pending) return
+    if (!hasPendingUpdates || hasInvalidDrafts || pending) return
 
-    await onApply(pendingUpdates)
-    setIsConfirmOpen(false)
+    setActionError(null)
+    try {
+      await onApply(pendingUpdates)
+      setIsConfirmOpen(false)
+    } catch {
+      setActionError('Changes could not be saved. Please try again.')
+    }
   }
 
   const handleDelete = () => {
@@ -151,13 +186,19 @@ export const MultiSelect = <T,>({
   const handleConfirmDelete = async () => {
     if (!onDeleteSelected || pending) return
 
-    await onDeleteSelected()
-    setIsDeleteConfirmOpen(false)
+    setActionError(null)
+    try {
+      await onDeleteSelected()
+      setIsDeleteConfirmOpen(false)
+    } catch {
+      setActionError('The selected rows could not be deleted. Please try again.')
+    }
   }
 
   const resetDraftValues = () => {
     setIsConfirmOpen(false)
     setIsDeleteConfirmOpen(false)
+    setActionError(null)
     setDraftValues(initialDraftValues)
   }
 
@@ -228,25 +269,36 @@ export const MultiSelect = <T,>({
                         <div className='flex flex-col'>
                           {field.inputKind === 'select' ? (
                             <Select
-                              value={draftValues[field.id]}
-                              items={field.options}
+                              value={draftValues[field.id] || null}
                               onValueChange={(value) =>
                                 setDraftValues((current) => ({
                                   ...current,
-                                  [field.id]: (Array.isArray(value) ? value : []).map(String).join(', ')
+                                  [field.id]:
+                                    typeof value === 'string' ? value : ''
                                 }))
                               }
-                              // onChange={(keys) => {
-                              //   const key = Array.from(keys)[0]
-                              //   setDraftValues((current) => ({
-                              //     ...current,
-                              //     [field.id]: key != null ? String(key) : '',
-                              //   }))
-                              // }}
-                              disabled={pending}></Select>
+                              disabled={pending}>
+                              <SelectTrigger className='h-10 w-full rounded-sm border-border bg-background dark:bg-dark-table'>
+                                <SelectValue placeholder={field.placeholder} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}>
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           ) : (
                             <input
                               type={field.inputKind}
+                              step={
+                                field.inputKind === 'number'
+                                  ? 'any'
+                                  : undefined
+                              }
                               value={draftValues[field.id] ?? ''}
                               onChange={(event) => {
                                 const value = event.target.value
@@ -257,6 +309,9 @@ export const MultiSelect = <T,>({
                               }}
                               placeholder={field.placeholder}
                               disabled={pending}
+                              aria-invalid={
+                                invalidFieldIds.has(field.id) || undefined
+                              }
                               className='h-10 rounded-sm border border-border bg-background dark:bg-dark-table px-3 font-clash text-sm outline-none transition-colors placeholder:text-muted-foreground/80 focus:border-foreground/30 disabled:cursor-not-allowed disabled:opacity-60'
                             />
                           )}
@@ -269,7 +324,7 @@ export const MultiSelect = <T,>({
             </div>
           ) : (
             <div className='flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground'>
-              No primitive table fields are available for bulk editing.
+              No fields are enabled for bulk editing.
             </div>
           )}
         </FramePanel>
@@ -298,12 +353,27 @@ export const MultiSelect = <T,>({
               <button
                 type='button'
                 onClick={handleApply}
-                disabled={pending || !hasPendingUpdates || editableFields.length === 0}
+                disabled={
+                  pending ||
+                  hasInvalidDrafts ||
+                  !hasPendingUpdates ||
+                  editableFields.length === 0
+                }
                 className='rounded-lg border border-foreground/10 bg-foreground px-2 md:px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
                 {pending ? 'Saving...' : 'Apply changes'}
               </button>
             </div>
           </div>
+          {hasInvalidDrafts ? (
+            <p role='alert' className='mt-2 text-xs text-destructive'>
+              Enter a finite number before applying changes.
+            </p>
+          ) : null}
+          {actionError ? (
+            <p role='alert' className='mt-2 text-xs text-destructive'>
+              {actionError}
+            </p>
+          ) : null}
         </FrameFooter>
       </Frame>
 
@@ -371,7 +441,7 @@ export const MultiSelect = <T,>({
             <button
               type='button'
               onClick={handleConfirmApply}
-              disabled={pending || !hasPendingUpdates}
+              disabled={pending || hasInvalidDrafts || !hasPendingUpdates}
               className='rounded-lg border border-foreground/10 bg-foreground px-3 py-2 text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:cursor-not-allowed disabled:opacity-50'>
               {pending ? 'Saving...' : 'Confirm changes'}
             </button>
@@ -527,7 +597,20 @@ const ensureCurrentOptions = (values: EditableValue[], options: BulkEditorOption
 }
 
 const dedupeOptions = (options: BulkEditorOption[]) => {
-  return Array.from(new Map(options.map((option) => [option.value, option])).values())
+  const uniqueOptions = new Map<string, BulkEditorOption>()
+
+  for (const option of options) {
+    const value = String(option.value)
+    if (!value || uniqueOptions.has(value)) continue
+
+    uniqueOptions.set(value, {
+      value,
+      label: String(option.label)
+    })
+    if (uniqueOptions.size === MAX_BULK_EDITOR_OPTIONS) break
+  }
+
+  return Array.from(uniqueOptions.values())
 }
 
 const getFieldLabel = <T,>(config: ColumnConfig<T>) => {
@@ -539,7 +622,13 @@ const getFieldLabel = <T,>(config: ColumnConfig<T>) => {
 }
 
 const isIdentifierField = <T,>(config: ColumnConfig<T>) => {
-  const identifiers = new Set(['id', '_id'])
+  const identifiers = new Set([
+    'id',
+    '_id',
+    '__proto__',
+    'constructor',
+    'prototype'
+  ])
   const configId = String(config.id).toLowerCase()
   const accessorKey = String(config.accessorKey).toLowerCase()
 
@@ -640,9 +729,9 @@ const humanizeLabel = (value: string) => {
 const coerceValue = <T,>(rawValue: string, field: EditableField<T>) => {
   const sample = field.values.find((value) => value !== null && value !== undefined)
 
-  if (typeof sample === 'number') {
+  if (field.inputKind === 'number' || typeof sample === 'number') {
     const numericValue = Number(rawValue)
-    return Number.isNaN(numericValue) ? rawValue : numericValue
+    return Number.isFinite(numericValue) ? numericValue : rawValue
   }
 
   if (typeof sample === 'boolean') {
@@ -689,5 +778,5 @@ const buildUpdatePayload = <T,>(pendingFieldUpdates: PendingFieldUpdate<T>[]) =>
   return pendingFieldUpdates.reduce((updates, { field, value }) => {
     updates[field.key] = value
     return updates
-  }, {} as Partial<T>)
+  }, Object.create(null) as Partial<T>)
 }

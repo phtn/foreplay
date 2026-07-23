@@ -1,68 +1,102 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { Doc, Id } from '@/convex/_generated/dataModel'
-import { OrderStatus } from '@/convex/orders/d'
-import { Icon, IconName } from '@/lib/icons'
-import { cn } from '@/lib/utils'
-import { ClassName } from '@/types'
-import { formatEventDate } from '@/utils/formatters'
-import { CellContext } from '@tanstack/react-table'
-import { useMutation } from 'convex/react'
-import { FunctionReference } from 'convex/server'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
 import {
-  startTransition,
+  Avatar,
+  AvatarFallback,
+  AvatarImage
+} from '@/components/ui/avatar'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger
+} from '@/components/ui/hover-card'
+import { Icon, type IconName } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import type { ClassName } from '@/types'
+import { formatEventDate } from '@/utils/formatters'
+import type { CellContext } from '@tanstack/react-table'
+import Link from 'next/link'
+import {
   useCallback,
   useEffect,
   useRef,
   useState,
-  type MouseEvent as ReactMouseEvent,
+  type KeyboardEvent,
   type ReactNode
 } from 'react'
 import { Button } from '../ui/button'
+import {
+  appendInternalPathSegment,
+  toSafeInternalHref
+} from './safe-navigation'
 
 interface CellOptions<T> {
   className?: ClassName
-  formatter?: (value: string | number | symbol | Date, ctx: CellContext<T, unknown>) => ReactNode
+  formatter?: (
+    value: unknown,
+    context: CellContext<T, unknown>
+  ) => ReactNode
   fallback?: ReactNode
 }
 
+export type CellCommitHandler<T, Value> = (
+  row: T,
+  nextValue: Value
+) => void | Promise<void>
+
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 2
+})
+
+const integerFormatter = new Intl.NumberFormat('en-US', {
+  maximumFractionDigits: 0
+})
+
+const fallbackContent = (fallback: ReactNode, className: ClassName) => (
+  <div className={cn('font-brk', className)}>
+    {fallback !== undefined ? (
+      <span>{fallback}</span>
+    ) : (
+      <span className='font-brk text-sm opacity-60'>····</span>
+    )}
+  </div>
+)
+
 /**
- * Generic factory for creating reusable cells.
+ * Generic factory for lightweight display cells.
  */
-export function superCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
-  const CellComponent = (ctx: CellContext<T, unknown>) => {
-    const rawValue = ctx.row.getValue(prop as string) as keyof T
+export function superCell<T>(
+  prop: keyof T,
+  options: CellOptions<T> = {}
+) {
+  const CellComponent = (context: CellContext<T, unknown>) => {
+    const rawValue = context.row.getValue(String(prop))
 
     if (rawValue === null || rawValue === undefined) {
-      return (
-        <div className={`font-brk ${options.className}`}>
-          {options.fallback ? (
-            <span>{options.fallback}</span>
-          ) : (
-            <span className='font-brk text-sm opacity-60'>····</span>
-          )}
-        </div>
-      )
+      return fallbackContent(options.fallback, options.className)
     }
 
-    const value = options.formatter ? options.formatter(rawValue, ctx) : rawValue
+    const value = options.formatter
+      ? options.formatter(rawValue, context)
+      : String(rawValue)
 
-    return <div className={`font-brk text-sm ${options.className}`}>{value as string}</div>
+    return (
+      <div className={cn('font-brk text-sm', options.className)}>
+        {value}
+      </div>
+    )
   }
+
   CellComponent.displayName = `SuperCell(${String(prop)})`
   return CellComponent
 }
 
-/**
- * Specialized cells built on top of cellFactory
- */
-export const textCell = <T, K extends keyof T>(prop: K, className?: ClassName, fallback?: ReactNode) => {
-  const cell = superCell<T>(prop, {
-    className,
-    fallback
-  })
+export const textCell = <T, K extends keyof T>(
+  prop: K,
+  className?: ClassName,
+  fallback?: ReactNode
+) => {
+  const cell = superCell<T>(prop, { className, fallback })
   cell.displayName = `TextCell(${String(prop)})`
   return cell
 }
@@ -76,81 +110,112 @@ export const formatText = <T, K extends keyof T>(
   const cell = superCell<T>(prop, {
     className,
     fallback,
-    formatter: (v) => formatter(String(v))
+    formatter: (value) => formatter(String(value))
   })
-  cell.displayName = `TextCell(${String(prop)})`
+  cell.displayName = `FormatTextCell(${String(prop)})`
   return cell
 }
 
 interface HoverCellProps {
-  /** Content shown inside the HoverCard on hover. */
   content?: ReactNode
-  /** Trigger element; must be a single element when using Radix asChild. */
   children: ReactNode
   label?: ReactNode
 }
-export const HoverCell = ({ children, content, label }: HoverCellProps) => {
-  return (
-    <HoverCard>
-      <HoverCardTrigger asChild>
-        <span className='cursor-default'>{children}</span>
-      </HoverCardTrigger>
-      {content != null && (
-        <HoverCardContent className='bg-sidebar dark:bg-dark-table'>
-          <div className='flex items-start space-x-2'>
-            <div className='text-3xl'>{label}</div>
-            <div>{content}</div>
-          </div>
-        </HoverCardContent>
-      )}
-    </HoverCard>
-  )
-}
 
-/**
- * Specialized cells built on top of cellFactory
- */
-export const firstLCell = <T, K extends keyof T>(prop: K, className?: ClassName, fallback?: ReactNode) => {
-  const FirstL = (ctx: CellContext<T, unknown>) => {
-    const rawVal = ctx.row.getValue(prop as string) as string
-    if (!rawVal) {
-      return fallback ? <span className={className}>{fallback}</span> : <span className='font-brk text-sm'>····</span>
+export const HoverCell = ({
+  children,
+  content,
+  label
+}: HoverCellProps) => (
+  <HoverCard>
+    <HoverCardTrigger asChild>
+      <span className='cursor-default'>{children}</span>
+    </HoverCardTrigger>
+    {content !== null && content !== undefined ? (
+      <HoverCardContent className='bg-sidebar dark:bg-dark-table'>
+        <div className='flex items-start space-x-2'>
+          <div className='text-3xl'>{label}</div>
+          <div>{content}</div>
+        </div>
+      </HoverCardContent>
+    ) : null}
+  </HoverCard>
+)
+
+export const firstLCell = <T, K extends keyof T>(
+  prop: K,
+  className?: ClassName,
+  fallback?: ReactNode
+) => {
+  const FirstLastCell = (context: CellContext<T, unknown>) => {
+    const rawValue = context.row.getValue(String(prop))
+    const names = String(rawValue ?? '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+
+    if (names.length === 0) {
+      return fallback !== undefined ? (
+        <span className={className}>{fallback}</span>
+      ) : (
+        <span className='font-brk text-sm'>····</span>
+      )
     }
-    const names = rawVal.split(' ')
+
+    const displayValue =
+      names.length === 1
+        ? names[0]
+        : `${names[0]} ${names[names.length - 1].charAt(0)}`
+
     return (
-      <span className={`leading-none ${className}`}>
-        {names.length > 2 ? names[0] + ' ' + names[names.length - 1][0] : names[0] + ' ' + names[1][0]}
+      <span className={cn('leading-none', className)}>
+        {displayValue}
       </span>
     )
   }
-  FirstL.displayName = `FirstLCell(${String(prop)})`
-  return FirstL
+
+  FirstLastCell.displayName = `FirstLastCell(${String(prop)})`
+  return FirstLastCell
 }
+
+/**
+ * Creates a same-origin link cell. The href argument is a base path; the cell
+ * value is appended as one encoded path segment. Unsafe/external bases render
+ * as plain text.
+ */
 export const linkText = <T, K extends keyof T>(
   prop: K,
-  href: string | ((ctx: CellContext<T, unknown>) => string),
+  href:
+    | string
+    | ((context: CellContext<T, unknown>) => string),
   formatter?: (value: string) => string,
   className?: ClassName,
   fallback?: ReactNode
 ) => {
-  const LinkTextComponent = (ctx: CellContext<T, keyof T>) => {
-    const rawValue = ctx.row.getValue(prop as string)
+  const LinkTextComponent = (
+    context: CellContext<T, unknown>
+  ) => {
+    const rawValue = context.row.getValue(String(prop))
     if (rawValue === null || rawValue === undefined) {
       return <div className={cn(className)}>{fallback ?? '—'}</div>
     }
 
-    const value = formatter ? formatter(String(rawValue)) : String(rawValue)
-    const resolvedHref = typeof href === 'function' ? href(ctx) : href
+    const rawText = String(rawValue)
+    const value = formatter ? formatter(rawText) : rawText
+    const baseHref =
+      typeof href === 'function' ? href(context) : href
+    const safeHref = appendInternalPathSegment(baseHref, rawText)
+    const linkClassName = cn(
+      'font-brk text-sm uppercase tracking-wide text-mac-blue decoration-dotted underline-offset-4 hover:underline dark:text-blue-400',
+      className
+    )
 
-    return (
-      <Link
-        href={`${resolvedHref}/${rawValue}`}
-        className={cn(
-          'font-brk text-sm tracking-wide uppercase hover:underline underline-offset-4 decoration-dotted text-mac-blue dark:text-blue-400',
-          className
-        )}>
+    return safeHref ? (
+      <Link href={safeHref} className={linkClassName}>
         {value}
       </Link>
+    ) : (
+      <span className={linkClassName}>{value}</span>
     )
   }
 
@@ -158,41 +223,40 @@ export const linkText = <T, K extends keyof T>(
   return LinkTextComponent
 }
 
-/**
- * Generic factory for reusable monetary cells.
- */
-export function moneyCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
-  const CellComponent = (ctx: CellContext<T, unknown>) => {
-    const rawValue = ctx.row.getValue(prop as string) as keyof T
-
+export function moneyCell<T>(
+  prop: keyof T,
+  options: CellOptions<T> = {}
+) {
+  const MoneyCellComponent = (
+    context: CellContext<T, unknown>
+  ) => {
+    const rawValue = context.row.getValue(String(prop))
     if (rawValue === null || rawValue === undefined) {
-      return (
-        <div className={`font-okxs ${options.className}`}>
-          {options.fallback ? (
-            <span>{options.fallback}</span>
-          ) : (
-            <span className='font-okxs text-base opacity-60'>····</span>
-          )}
-        </div>
-      )
+      return fallbackContent(options.fallback, options.className)
     }
 
-    const value = options.formatter ? options.formatter(rawValue, ctx) : rawValue
+    const numericValue = Number(rawValue)
+    const formattedValue = options.formatter
+      ? options.formatter(rawValue, context)
+      : Number.isFinite(numericValue)
+        ? currencyFormatter.format(numericValue)
+        : (options.fallback ?? '—')
 
     return (
       <div className='flex items-center justify-start'>
-        <div className={`w-full font-okxs text-base text-right mr-10 ${options.className}`}>
-          {Number(value).toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            maximumFractionDigits: 2
-          })}
+        <div
+          className={cn(
+            'mr-10 w-full text-right font-okxs text-base',
+            options.className
+          )}>
+          {formattedValue}
         </div>
       </div>
     )
   }
-  CellComponent.displayName = `SuperCell(${String(prop)})`
-  return CellComponent
+
+  MoneyCellComponent.displayName = `MoneyCell(${String(prop)})`
+  return MoneyCellComponent
 }
 
 export const priceCell = <T, K extends keyof T>(
@@ -202,89 +266,116 @@ export const priceCell = <T, K extends keyof T>(
   fallback?: ReactNode
 ) => {
   const cell = moneyCell<T>(prop, {
-    formatter: (v) => formatter(v as string),
+    formatter: (value) => formatter(String(value)),
     className,
     fallback
   })
-  cell.displayName = `TextCell(${String(prop)})`
+  cell.displayName = `PriceCell(${String(prop)})`
   return cell
 }
 
-/**
- * Generic factory for reusable numerical cells.
- */
-export function numberCell<T>(prop: keyof T, options: CellOptions<T> = {}) {
-  const CellComponent = (ctx: CellContext<T, unknown>) => {
-    const rawValue = ctx.row.getValue(prop as string) as keyof T
-
+export function numberCell<T>(
+  prop: keyof T,
+  options: CellOptions<T> = {}
+) {
+  const NumberCellComponent = (
+    context: CellContext<T, unknown>
+  ) => {
+    const rawValue = context.row.getValue(String(prop))
     if (rawValue === null || rawValue === undefined) {
-      return (
-        <div className={`font-okxs ${options.className}`}>
-          {options.fallback ? (
-            <span>{options.fallback}</span>
-          ) : (
-            <span className='font-okxs text-base opacity-60'>····</span>
-          )}
-        </div>
-      )
+      return fallbackContent(options.fallback, options.className)
     }
 
-    const value = options.formatter ? options.formatter(rawValue, ctx) : rawValue
+    const numericValue = Number(rawValue)
+    const formattedValue = options.formatter
+      ? options.formatter(rawValue, context)
+      : Number.isFinite(numericValue)
+        ? integerFormatter.format(numericValue)
+        : (options.fallback ?? '—')
 
     return (
       <div className='flex items-center justify-start'>
-        <div className={`w-full font-okxs text-base text-right mr-10 ${options.className}`}>
-          {Number(value).toFixed(0)}
+        <div
+          className={cn(
+            'mr-10 w-full text-right font-okxs text-base',
+            options.className
+          )}>
+          {formattedValue}
         </div>
       </div>
     )
   }
-  CellComponent.displayName = `SuperCell(${String(prop)})`
-  return CellComponent
+
+  NumberCellComponent.displayName = `NumberCell(${String(prop)})`
+  return NumberCellComponent
 }
 
-export const countCell = <T, K extends keyof T>(prop: K, className?: ClassName, fallback?: ReactNode) => {
-  const cell = numberCell<T>(prop, {
-    className,
-    fallback
-  })
-  cell.displayName = `TextCell(${String(prop)})`
-  return cell
-}
-
-export const dateCell = <T,>(prop: keyof T, className?: ClassName, fallback?: ReactNode) => {
-  const cell = superCell<T>(prop, {
-    className,
-    fallback,
-    formatter: (v) => formatEventDate(v as number, '')
-  })
-  cell.displayName = `DateCell(${String(prop)})`
-  return cell
-}
-export const booleanIconCell = <T, K extends keyof T>(
+export const countCell = <T, K extends keyof T>(
   prop: K,
-  icons: { trueIcon?: IconName; falseLabel?: IconName } = {},
+  className?: ClassName,
+  fallback?: ReactNode
+) => {
+  const cell = numberCell<T>(prop, { className, fallback })
+  cell.displayName = `CountCell(${String(prop)})`
+  return cell
+}
+
+export const dateCell = <T,>(
+  prop: keyof T,
   className?: ClassName,
   fallback?: ReactNode
 ) => {
   const cell = superCell<T>(prop, {
     className,
     fallback,
-    formatter: (v) => (
-      <div className='flex items-center h-6'>
-        <span className=''>
-          {v && icons.trueIcon ? (
-            <Icon name={icons.trueIcon} className='size-6 text-emerald-500' />
-          ) : (
-            <Icon name='x' className='size-6' />
-          )}
-        </span>
-      </div>
-    )
+    formatter: (value) => {
+      const timestamp = Number(value)
+      return Number.isFinite(timestamp)
+        ? formatEventDate(timestamp, '')
+        : '—'
+    }
   })
-  cell.displayName = `BooleanCell(${String(prop)})`
+  cell.displayName = `DateCell(${String(prop)})`
   return cell
 }
+
+export const booleanIconCell = <T, K extends keyof T>(
+  prop: K,
+  icons: {
+    trueIcon?: IconName
+    falseIcon?: IconName
+    /** @deprecated Use falseIcon. */
+    falseLabel?: IconName
+  } = {},
+  className?: ClassName,
+  fallback?: ReactNode
+) => {
+  const cell = superCell<T>(prop, {
+    className,
+    fallback,
+    formatter: (value) => {
+      const enabled = Boolean(value)
+      const iconName = enabled
+        ? (icons.trueIcon ?? 'check')
+        : (icons.falseIcon ?? icons.falseLabel ?? 'x')
+
+      return (
+        <div className='flex h-6 items-center'>
+          <Icon
+            name={iconName}
+            className={cn(
+              'size-6',
+              enabled && 'text-emerald-500'
+            )}
+          />
+        </div>
+      )
+    }
+  })
+  cell.displayName = `BooleanIconCell(${String(prop)})`
+  return cell
+}
+
 export const booleanCell = <T, K extends keyof T>(
   prop: K,
   labels: { trueLabel?: string; falseLabel?: string } = {},
@@ -294,195 +385,189 @@ export const booleanCell = <T, K extends keyof T>(
   const cell = superCell<T>(prop, {
     className,
     fallback,
-    formatter: (v) => (
-      <div className='flex items-center gap-x-2 h-4'>
-        <div
-          className={cn('hidden size-2 rounded-full bg-blue-500', {
-            'bg-orange-400': !v
-          })}
-        />
-        <span className='hidden text-xs font-brk'>
-          {v ? (labels.trueLabel ?? 'True') : (labels.falseLabel ?? 'False')}
-        </span>
-        <StatusBadge status={v ? (labels.trueLabel ?? 'True') : (labels.falseLabel ?? 'False')} />
-      </div>
+    formatter: (value) => (
+      <StatusBadge
+        status={
+          Boolean(value)
+            ? (labels.trueLabel ?? 'True')
+            : (labels.falseLabel ?? 'False')
+        }
+      />
     )
   })
   cell.displayName = `BooleanCell(${String(prop)})`
   return cell
 }
-const StatusBadge = ({ status }: { status: string }) => {
-  return (
-    <div className='flex flex-wrap gap-1'>
-      <span
-        data-slot='badge'
-        className='aria-invalid:ring-destructive/20 inline-flex w-fit shrink-0 items-center justify-center gap-2 dark:bg-greyed bg-vim/10 rounded-full whitespace-nowrap transition-all [&amp;&gt;svg]:pointer-events-none [&amp;&gt;svg]:size-3 px-2 py-0.5 text-foreground text-xs'>
-        <div className='flex items-center gap-1.5'>
-          <div className='size-2 rounded-full bg-amber-200' aria-hidden='true' />
-          <span className='font-brk'>{status}</span>
-        </div>
-      </span>
-    </div>
-  )
+
+const StatusBadge = ({ status }: { status: string }) => (
+  <span
+    data-slot='badge'
+    className='inline-flex w-fit shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full bg-vim/10 px-2 py-0.5 text-xs text-foreground dark:bg-greyed'>
+    <span
+      className='size-2 rounded-full bg-amber-200'
+      aria-hidden='true'
+    />
+    <span className='font-brk'>{status}</span>
+  </span>
+)
+
+interface EditableStatusOptions<T> {
+  labels?: { trueLabel?: string; falseLabel?: string }
+  className?: ClassName
+  onError?: (error: unknown, row: T) => void
 }
 
 /**
- * Editable status toggle cell that saves directly to Convex
- * Toggles between active/inactive (true/false) and saves immediately
+ * Boolean toggle cell. Persistence is injected explicitly so this generic
+ * component is not coupled to a database schema or mutation implementation.
  */
 export const editableStatusCell = <T,>(
   prop: keyof T,
-  labels: { trueLabel?: string; falseLabel?: string } = {},
-  className?: ClassName
+  onChange: CellCommitHandler<T, boolean>,
+  options: EditableStatusOptions<T> = {}
 ) => {
-  const EditableStatusComponent = (ctx: CellContext<T, unknown>, mutation: FunctionReference<'mutation'>) => {
+  const EditableStatusComponent = (
+    context: CellContext<T, unknown>
+  ) => {
     const [isUpdating, setIsUpdating] = useState(false)
-    const _patchMutation = useMutation(mutation)
-    const value = ctx.row.getValue(prop as string) as boolean
-    // Access _id from the row data (Convex adds this automatically)
-    const _id = (ctx.row.original as { _id: Id<'orders'> })._id
+    const [failed, setFailed] = useState(false)
+    const value = Boolean(context.row.getValue(String(prop)))
+    const row = context.row.original
 
     const handleToggle = useCallback(async () => {
+      if (isUpdating) return
+
+      setFailed(false)
       setIsUpdating(true)
       try {
-        if (value) {
-          // await patchMutation({
-          //   orderId: id,
-          //   // internalNotes: value ? 'Status updated' : undefined,
-          // })
-        }
+        await onChange(row, !value)
       } catch (error) {
-        console.error('Failed to update status:', error)
+        setFailed(true)
+        options.onError?.(error, row)
       } finally {
         setIsUpdating(false)
       }
-    }, [value])
+    }, [isUpdating, row, value])
 
     return (
       <button
-        onClick={handleToggle}
+        type='button'
+        onClick={() => void handleToggle()}
         disabled={isUpdating}
+        aria-pressed={value}
+        aria-label={
+          failed
+            ? 'Status update failed. Try toggling again.'
+            : undefined
+        }
+        data-error={failed || undefined}
+        title={failed ? 'Update failed. Try again.' : undefined}
         className={cn(
-          'flex items-center gap-1 rounded-full border transition-all',
-          'hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed',
-          'w-fit rounded-full flex items-center border-zinc-200 dark:border-zinc-700',
-          'border-[0.33px] py-0.5 px-1.5 capitalized font-brk text-xs tracking-tighter',
-          className
+          'flex w-fit items-center gap-1 rounded-full border border-zinc-200 px-1.5 py-0.5 font-brk text-xs tracking-tighter transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700',
+          options.className
         )}>
         {isUpdating ? (
-          <div className='size-2 mr-0.5 border-2 border-current border-t-transparent rounded-full animate-spin' />
+          <span className='mr-0.5 size-2 animate-spin rounded-full border-2 border-current border-t-transparent' />
         ) : (
-          <div
-            className={cn('size-2 mr-0.5 rounded-full bg-blue-500', {
-              'bg-orange-400': !value
-            })}
+          <span
+            className={cn(
+              'mr-0.5 size-2 rounded-full bg-orange-400',
+              value && 'bg-blue-500'
+            )}
           />
         )}
-        <span>{value ? (labels.trueLabel ?? 'Active') : (labels.falseLabel ?? 'Inactive')}</span>
+        <span>
+          {value
+            ? (options.labels?.trueLabel ?? 'Active')
+            : (options.labels?.falseLabel ?? 'Inactive')}
+        </span>
       </button>
     )
   }
-  EditableStatusComponent.displayName = `EditableStatusCell(${String(prop)})`
+
+  EditableStatusComponent.displayName =
+    `EditableStatusCell(${String(prop)})`
   return EditableStatusComponent
 }
 
-/**
- * Configuration for the generic toggle cell factory
- */
-type ToggleCellConfig<T, V> = {
-  /** The two values to toggle between [enabledValue, disabledValue] */
-  values: readonly [V, V]
-  /** Labels for each value state [enabledLabel, disabledLabel] */
+export interface ToggleCellConfig<T, Value> {
+  values: readonly [Value, Value]
   labels?: readonly [string, string]
-  /** Colors for each value state [enabledColor, disabledColor] */
-  colors?: readonly ['']
-  /** Build mutation args from row and new value */
-  getMutationArgs: (row: T, newValue: V) => Record<string, unknown>
-  /** Optional className for the button */
   className?: ClassName
+  onError?: (error: unknown, row: T, nextValue: Value) => void
 }
 
 /**
- * Generic factory for creating toggle cells that update Convex records.
- * Supports toggling between any two values (not just boolean).
- *
- * @example
- * // Toggle between 'active' and 'inactive' status strings
- * const StatusToggle = createToggleCell<Doc<'projects'>, 'active' | 'inactive'>(
- *   'status',
- *   api.projects.m.patch,
- *   {
- *     values: ['active', 'inactive'],
- *     labels: ['Active', 'Inactive'],
- *     colors: ['bg-emerald-500', 'bg-amber-500'],
- *     getMutationArgs: (row, newValue) => ({ id: row._id, status: newValue }),
- *   }
- * )
- *
- * @example
- * // Toggle between numeric priority levels
- * const PriorityToggle = createToggleCell<Doc<'tasks'>, 1 | 2>(
- *   'priority',
- *   api.tasks.m.update,
- *   {
- *     values: [1, 2],
- *     labels: ['High', 'Low'],
- *     colors: ['bg-red-500', 'bg-gray-400'],
- *     getMutationArgs: (row, newValue) => ({ id: row._id, priority: newValue }),
- *   }
- * )
+ * Two-value toggle with an injected persistence callback.
  */
-export const toggleCell = <T, V>(
+export const toggleCell = <T, Value>(
   prop: keyof T,
-  mutation: FunctionReference<'mutation', 'public'>,
-  config: ToggleCellConfig<T, V>
+  onChange: CellCommitHandler<T, Value>,
+  config: ToggleCellConfig<T, Value>
 ) => {
-  const {
-    values,
-    labels = [String(values[0]), String(values[1])],
-    colors = ['success', 'default'],
-    getMutationArgs,
-    className: _className
-  } = config
-
-  const ToggleCellComponent = (ctx: CellContext<T, unknown>) => {
+  const ToggleCellComponent = (
+    context: CellContext<T, unknown>
+  ) => {
     const [isUpdating, setIsUpdating] = useState(false)
-    const patchMutation = useMutation(mutation)
-    const currentValue = ctx.row.getValue(prop as string) as V
-    const row = ctx.row.original
-
-    // Determine which value is current and which to toggle to
-    const isFirstValue = currentValue === values[0]
-    const newValue = isFirstValue ? values[1] : values[0]
-    const _currentLabel = isFirstValue ? labels[0] : labels[1] ? colors[0] : colors[1]
+    const [failed, setFailed] = useState(false)
+    const currentValue = context.row.getValue(String(prop)) as Value
+    const row = context.row.original
+    const isFirstValue = Object.is(currentValue, config.values[0])
+    const nextValue = isFirstValue
+      ? config.values[1]
+      : config.values[0]
+    const currentLabel = isFirstValue
+      ? (config.labels?.[0] ?? String(config.values[0]))
+      : (config.labels?.[1] ?? String(config.values[1]))
 
     const handleToggle = useCallback(async () => {
+      if (isUpdating) return
+
+      setFailed(false)
       setIsUpdating(true)
       try {
-        const args = getMutationArgs(row, newValue)
-        await patchMutation(args)
+        await onChange(row, nextValue)
       } catch (error) {
-        console.error('Failed to toggle value:', error)
+        setFailed(true)
+        config.onError?.(error, row, nextValue)
       } finally {
         setIsUpdating(false)
       }
-    }, [row, newValue, patchMutation])
+    }, [isUpdating, nextValue, row])
 
     return (
-      <div className='px-0.5 flex justify-center'>
+      <div className='flex justify-center px-0.5'>
         <Button
+          type='button'
           size='icon'
           disabled={isUpdating}
-          onClick={handleToggle}
-          className={cn('h-6 w-6 aspect-square group/tb bg-alum/10', {
-            'opacity-85': !isFirstValue
-          })}>
+          onClick={() => void handleToggle()}
+          aria-label={`Set to ${String(nextValue)}`}
+          aria-pressed={isFirstValue}
+          data-error={failed || undefined}
+          title={
+            failed
+              ? 'Update failed. Try again.'
+              : `Current: ${currentLabel}`
+          }
+          className={cn(
+            'group/tb aspect-square h-6 w-6 bg-alum/10',
+            !isFirstValue && 'opacity-85',
+            config.className
+          )}>
           <Icon
-            name={isFirstValue ? 'circle-dash-line' : 'circle-check-line'}
-            className={cn('size-7 dark:text-mac-blue text-mac-blue dark:group-hover/tb:text-slate-600 ', {
-              'text-slate-300 group-hover/tb:text-slate-600 dark:text-slate-600 group-hover/tb:opacity-90':
-                !isFirstValue
-            })}
+            name={
+              isUpdating
+                ? 'spinner-ring'
+                : isFirstValue
+                  ? 'circle-dash-line'
+                  : 'circle-check-line'
+            }
+            className={cn(
+              'size-7 text-mac-blue dark:text-mac-blue dark:group-hover/tb:text-slate-600',
+              !isFirstValue &&
+                'text-slate-300 group-hover/tb:text-slate-600 group-hover/tb:opacity-90 dark:text-slate-600'
+            )}
           />
         </Button>
       </div>
@@ -491,97 +576,101 @@ export const toggleCell = <T, V>(
 
   ToggleCellComponent.displayName = `ToggleCell(${String(prop)})`
   return ToggleCellComponent
-  /*
-  <button
-          onClick={handleToggle}
-          disabled={isUpdating}
-          className={cn(
-            'flex items-center w-fit gap-0.5 py-0.5 px-2 rounded-full',
-            'border-[0.33px] border-zinc-200 dark:border-zinc-700',
-            'hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed',
-            'capitalize font-space text-sm tracking-tighter',
-            className,
-          )}>
-          {isUpdating ? (
-            <div className='size-2 mr-1.5 border border-current border-t-transparent rounded-full animate-spin' />
-          ) : (
-            <div className={cn('size-2 mr-1.5 rounded-full', currentColor)} />
-          )}
-          <span>{currentLabel}</span>
-        </button>
-  */
+}
+
+export interface EditableCellOptions<T> {
+  className?: ClassName
+  placeholder?: string
+  maxLength?: number
+  onError?: (error: unknown, row: T, nextValue: string) => void
 }
 
 /**
- * Editable remarks cell with inline textarea/input that saves to Convex
- * Saves on blur or Enter key (with Escape to cancel)
+ * Inline text editor. Ctrl/Cmd+Enter or blur commits; Escape cancels.
  */
-export const editableCell = <T,>(prop: keyof T, className?: ClassName, placeholder = 'Add notes...') => {
-  const EditableRemarksComponent = (ctx: CellContext<T, unknown>, mutation: FunctionReference<'mutation'>) => {
+export const editableCell = <T,>(
+  prop: keyof T,
+  onSave: CellCommitHandler<T, string>,
+  options: EditableCellOptions<T> = {}
+) => {
+  const EditableCellComponent = (
+    context: CellContext<T, unknown>
+  ) => {
+    const originalValue = String(
+      context.row.getValue(String(prop)) ?? ''
+    )
+    const row = context.row.original
     const [isEditing, setIsEditing] = useState(false)
     const [isUpdating, setIsUpdating] = useState(false)
+    const [failed, setFailed] = useState(false)
+    const [draftState, setDraftState] = useState({
+      source: originalValue,
+      value: originalValue
+    })
     const inputRef = useRef<HTMLTextAreaElement>(null)
-    const patchMutation = useMutation(mutation)
-    const originalValue = (ctx.row.getValue(prop as string) as string) ?? ''
-    // Access _id from the row data (Convex adds this automatically)
-    const id = (ctx.row.original as { _id: Id<'orders'> })._id
-    const [localValue, setLocalValue] = useState(originalValue)
+    const savingRef = useRef(false)
+    const localValue =
+      isEditing || draftState.source === originalValue
+        ? draftState.value
+        : originalValue
+    const setLocalValue = useCallback(
+      (value: string) => {
+        setDraftState({ source: originalValue, value })
+      },
+      [originalValue]
+    )
 
-    // Focus input when editing starts
     useEffect(() => {
-      if (isEditing && inputRef.current) {
-        inputRef.current.focus()
-        inputRef.current.select()
-      }
+      if (!isEditing) return
+      inputRef.current?.focus()
+      inputRef.current?.select()
     }, [isEditing])
 
     const handleSave = useCallback(async () => {
+      if (savingRef.current) return
       if (localValue === originalValue) {
         setIsEditing(false)
         return
       }
 
+      savingRef.current = true
+      setFailed(false)
       setIsUpdating(true)
       try {
-        if (localValue) {
-          await patchMutation({
-            orderId: id,
-            status: localValue as OrderStatus
-          })
-        }
-
+        await onSave(row, localValue)
         setIsEditing(false)
       } catch (error) {
-        console.error('Failed to update remarks:', error)
-        // Revert on error
+        setFailed(true)
         setLocalValue(originalValue)
         setIsEditing(false)
+        options.onError?.(error, row, localValue)
       } finally {
+        savingRef.current = false
         setIsUpdating(false)
       }
-    }, [id, localValue, originalValue, patchMutation])
+    }, [localValue, originalValue, row, setLocalValue])
 
     const handleCancel = useCallback(() => {
+      if (savingRef.current) return
       setLocalValue(originalValue)
+      setFailed(false)
       setIsEditing(false)
-    }, [originalValue])
-
-    const handleStartEditing = useCallback(() => {
-      setLocalValue(originalValue)
-      setIsEditing(true)
-    }, [originalValue])
+    }, [originalValue, setLocalValue])
 
     const handleKeyDown = useCallback(
-      (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-          e.preventDefault()
-          handleSave()
-        } else if (e.key === 'Escape') {
-          e.preventDefault()
+      (event: KeyboardEvent<HTMLTextAreaElement>) => {
+        if (
+          event.key === 'Enter' &&
+          (event.metaKey || event.ctrlKey)
+        ) {
+          event.preventDefault()
+          void handleSave()
+        } else if (event.key === 'Escape') {
+          event.preventDefault()
           handleCancel()
         }
       },
-      [handleSave, handleCancel]
+      [handleCancel, handleSave]
     )
 
     if (isEditing) {
@@ -590,159 +679,140 @@ export const editableCell = <T,>(prop: keyof T, className?: ClassName, placehold
           <textarea
             ref={inputRef}
             value={localValue}
-            onChange={(e) => setLocalValue(e.target.value)}
-            onBlur={handleSave}
+            onChange={(event) => setLocalValue(event.target.value)}
+            onBlur={() => void handleSave()}
             onKeyDown={handleKeyDown}
             disabled={isUpdating}
-            placeholder={placeholder}
+            maxLength={Math.max(
+              1,
+              Math.min(100_000, options.maxLength ?? 10_000)
+            )}
+            placeholder={options.placeholder ?? 'Add notes...'}
             rows={1}
             className={cn(
-              'w-full min-w-50 resize-none rounded-md px-2 py-1 text-xs md:text-sm',
-              'bg-background dark:bg-background/50 border border-primary/50',
-              'focus:outline-none focus:ring-2 focus:ring-primary/20',
-              'disabled:opacity-50 disabled:cursor-not-allowed',
-              className
+              'min-h-5 max-h-30 w-full min-w-50 resize-none rounded-md border border-primary/50 bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-background/50 md:text-sm',
+              options.className
             )}
-            style={{
-              minHeight: '20px',
-              maxHeight: '120px'
-            }}
           />
-          {isUpdating && (
-            <div className='absolute top-1 right-1 size-3 border-2 border-current border-t-transparent rounded-full animate-spin' />
-          )}
+          {isUpdating ? (
+            <span className='absolute top-1 right-1 size-3 animate-spin rounded-full border-2 border-current border-t-transparent' />
+          ) : null}
         </div>
       )
     }
 
     return (
       <button
-        onClick={handleStartEditing}
+        type='button'
+        onClick={() => {
+          setLocalValue(localValue)
+          setFailed(false)
+          setIsEditing(true)
+        }}
+        aria-label={
+          failed
+            ? 'Edit value. The previous update failed.'
+            : undefined
+        }
+        data-error={failed || undefined}
         className={cn(
-          'w-full min-w-50 text-left px-2 py-1 rounded-md',
-          'hover:bg-accent/50 transition-colors',
-          'text-xs md:text-sm text-muted-foreground',
-          'truncate',
-          className
+          'w-full min-w-50 truncate rounded-md px-2 py-1 text-left text-xs text-muted-foreground transition-colors hover:bg-accent/50 md:text-sm',
+          options.className
         )}
-        title={originalValue || placeholder}>
-        {originalValue || <span className='italic text-muted-foreground/60'>{placeholder}</span>}
+        title={
+          failed
+            ? 'Update failed. Try again.'
+            : localValue || options.placeholder || 'Add notes...'
+        }>
+        {localValue || (
+          <span className='italic text-muted-foreground/60'>
+            {options.placeholder ?? 'Add notes...'}
+          </span>
+        )}
       </button>
     )
   }
-  EditableRemarksComponent.displayName = `EditableRemarksCell(${String(prop)})`
-  return EditableRemarksComponent
+
+  EditableCellComponent.displayName =
+    `EditableCell(${String(prop)})`
+  return EditableCellComponent
 }
 
-type UserCellOptions<T> = {
-  /** Label text shown as the main link title (e.g. full name / display name). */
+export interface UserCellOptions<T> {
   getName: (row: T) => string | null | undefined
-  /** Optional avatar URL for the left-side AvatarImage. */
   getPhotoUrl?: (row: T) => string | null | undefined
-  /** Optional secondary line (e.g. gmail/email/phone). */
   getSecondary?: (row: T) => string | null | undefined
   /**
-   * URL builder for the link. If omitted, the cell will render name as plain text.
-   * Use this when different tables need different route params (e.g. legacyId vs _id).
+   * Builds a final same-origin path. Invalid or external values render as
+   * plain text. Capture route context outside the cell if it is needed.
    */
-  getHref?: (pathname: string, row: T) => string
+  getHref?: (row: T) => string | null | undefined
 }
 
 const getInitials = (name: string) => {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  const initials = parts
-    .map((p) => p[0] ?? '')
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0))
     .join('')
     .slice(0, 2)
     .toUpperCase()
-  return initials.length > 0 ? initials : '—'
+  return initials || '—'
 }
 
-/**
- * Factory to create a schema-safe "user row" cell.
- *
- * Usage:
- *   const LegacyUserCell = createUserCell<Doc<'legacyUsers'>>({...})
- *   const UserProfileCell = createUserCell<Doc<'userProfiles'>>({...})
- */
 export const createUserCell = <T,>(options: UserCellOptions<T>) => {
-  const UserCellComponent = (ctx: CellContext<T, unknown>) => {
-    const row = ctx.row.original
-    const pathname = usePathname()
-    const router = useRouter()
-
+  const UserCellComponent = (
+    context: CellContext<T, unknown>
+  ) => {
+    const row = context.row.original
     const name = options.getName(row) ?? '—'
     const photoUrl = options.getPhotoUrl?.(row) ?? null
     const secondary = options.getSecondary?.(row) ?? null
-    const href = options.getHref?.(pathname, row) ?? null
-    // const initials = getInitials(name)
-
-    const withViewTransition = useCallback((fn: () => void) => {
-      const doc = document as Document & {
-        startViewTransition?: (callback: () => void) => unknown
-      }
-      if (typeof doc.startViewTransition === 'function') {
-        doc.startViewTransition(() => {
-          fn()
-        })
-        return
-      }
-      fn()
-    }, [])
-
-    const onLinkClick = useCallback(
-      (e: ReactMouseEvent<HTMLAnchorElement>) => {
-        if (!href) return
-        // Allow open-in-new-tab, etc.
-        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
-          return
-        }
-        e.preventDefault()
-        withViewTransition(() => {
-          startTransition(() => {
-            router.push(href)
-          })
-        })
-      },
-      [href, router, withViewTransition]
-    )
+    const href = toSafeInternalHref(options.getHref?.(row) ?? '')
 
     return (
       <div className='flex items-center gap-3'>
         <Avatar className='size-9 shrink-0 border border-foreground/10 bg-background text-foreground shadow-sm dark:border-white/10 dark:bg-dark-table'>
-          <AvatarImage alt={name} src={photoUrl ?? undefined} />
+          <AvatarImage alt='' src={photoUrl ?? undefined} />
           <AvatarFallback>{getInitials(name)}</AvatarFallback>
         </Avatar>
-        <div className='flex flex-col min-w-0'>
+        <div className='flex min-w-0 flex-col'>
           {href ? (
             <Link
               href={href}
-              onClick={onLinkClick}
-              className='font-figtree uppercase hover:text-mac-blue text-sm truncate w-[35ch] max-w-[35ch]'>
+              className='w-[35ch] max-w-[35ch] truncate font-figtree text-sm uppercase hover:text-mac-blue'>
               {name}
             </Link>
           ) : (
-            <div className='font-figtree uppercase text-sm truncate w-[35ch] max-w-[35ch]'>{name}</div>
+            <span className='w-[35ch] max-w-[35ch] truncate font-figtree text-sm uppercase'>
+              {name}
+            </span>
           )}
-
-          {secondary ? <span className='font-mono text-xs text-muted-foreground truncate'>{secondary}</span> : null}
+          {secondary ? (
+            <span className='truncate font-mono text-xs text-muted-foreground'>
+              {secondary}
+            </span>
+          ) : null}
         </div>
       </div>
     )
   }
 
-  UserCellComponent.displayName = `UserCell`
+  UserCellComponent.displayName = 'UserCell'
   return UserCellComponent
 }
 
-export const UserCell = createUserCell<Doc<'users'>>({
-  getName: (u) => u.name,
-  getPhotoUrl: (u) => u.pictureUrl,
-  getSecondary: (u) => u.email ?? null
+export interface DefaultUserCellRow {
+  name?: string | null
+  pictureUrl?: string | null
+  email?: string | null
+}
+
+export const UserCell = createUserCell<DefaultUserCellRow>({
+  getName: (user) => user.name,
+  getPhotoUrl: (user) => user.pictureUrl,
+  getSecondary: (user) => user.email
 })
 
-export const UserProfileCell = createUserCell<Doc<'users'>>({
-  getName: (u) => u.name,
-  getPhotoUrl: (u) => u.pictureUrl,
-  getSecondary: (u) => u.email ?? null
-})
+export const UserProfileCell = UserCell

@@ -1,17 +1,22 @@
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import { Row } from '@tanstack/react-table'
-import { useCallback, useMemo } from 'react'
+import type { Row } from '@tanstack/react-table'
+import { useCallback, useMemo, useState } from 'react'
 import { Button } from '../ui/button'
-import type { ActionAlign, ActionConfig, ActionItem } from './create-column'
+import type {
+  ActionAlign,
+  ActionConfig,
+  ActionItem
+} from './create-column'
 
 interface Props<T> {
   row: Row<T>
@@ -26,21 +31,28 @@ const alignClassMap: Record<ActionAlign, string> = {
   end: 'justify-end'
 }
 
-const resolveRowCondition = <T,>(value: boolean | ((row: T) => boolean) | undefined, row: T): boolean => {
-  if (typeof value === 'function') {
-    return value(row)
-  }
+const resolveRowCondition = <T,>(
+  value: boolean | ((row: T) => boolean) | undefined,
+  row: T
+): boolean => {
+  if (typeof value === 'function') return value(row)
   return Boolean(value)
 }
 
-const toActionId = (label: string, index: number) => `${label.toLowerCase().replace(/\s+/g, '-')}-${index}`
+const toActionId = (label: string, index: number) =>
+  `${label.toLowerCase().replace(/\s+/g, '-')}-${index}`
 
 export const RowActions = <T,>({ row, actionConfig }: Props<T>) => {
   const rowData = row.original
   const align = actionConfig?.align ?? 'center'
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [pendingActionId, setPendingActionId] = useState<string | null>(
+    null
+  )
+  const [actionFailed, setActionFailed] = useState(false)
 
   const actions = useMemo<ResolvedAction<T>[]>(() => {
-    const configured: ActionItem<T>[] = actionConfig?.actions ?? []
+    const configured = actionConfig?.actions ?? []
     const legacyCustom: ActionItem<T>[] =
       actionConfig?.customActions?.map((action, index) => ({
         id: `custom-${index}`,
@@ -74,48 +86,60 @@ export const RowActions = <T,>({ row, actionConfig }: Props<T>) => {
       })
     }
 
+    const usedIds = new Set<string>()
     return [...configured, ...legacyCustom, ...legacyDefault]
-      .filter((action) => !resolveRowCondition(action.hidden, rowData))
-      .map((action, index) => ({
-        ...action,
-        id: action.id ?? toActionId(action.label, index)
-      }))
+      .filter(
+        (action) => !resolveRowCondition(action.hidden, rowData)
+      )
+      .map((action, index) => {
+        const baseId = action.id ?? toActionId(action.label, index)
+        let id = baseId
+        let suffix = index
+        while (usedIds.has(id)) {
+          id = `${baseId}-${suffix}`
+          suffix += 1
+        }
+        usedIds.add(id)
+        return { ...action, id }
+      })
   }, [actionConfig, rowData])
-
-  // const actionById = useMemo(() => {
-  //   return new Map(actions.map((action) => [action.id, action]))
-  // }, [actions])
 
   const groupedActions = useMemo(() => {
     const groups = new Map<string, ResolvedAction<T>[]>()
-    actions.forEach((action) => {
+
+    for (const action of actions) {
       const section = action.section ?? 'Actions'
       const sectionActions = groups.get(section) ?? []
       sectionActions.push(action)
       groups.set(section, sectionActions)
-    })
-    return Array.from(groups.entries()).map(([title, items]) => ({
-      title,
-      items
-    }))
+    }
+
+    return Array.from(groups, ([title, items]) => ({ title, items }))
   }, [actions])
 
   const runAction = useCallback(
-    (action: ActionItem<T>) => {
-      if (resolveRowCondition(action.disabled, rowData)) return
-      action.onClick(rowData)
-    },
-    [rowData]
-  )
+    async (action: ResolvedAction<T>) => {
+      if (
+        pendingActionId ||
+        resolveRowCondition(action.disabled, rowData)
+      ) {
+        return
+      }
 
-  // const handleMenuAction = useCallback(
-  //   (key: Key) => {
-  //     const action = actionById.get(String(key))
-  //     if (!action) return
-  //     runAction(action)
-  //   },
-  //   [actionById, runAction]
-  // )
+      setActionFailed(false)
+      setPendingActionId(action.id)
+      try {
+        await action.onClick(rowData)
+        setMenuOpen(false)
+      } catch (error) {
+        setActionFailed(true)
+        actionConfig?.onActionError?.(error, rowData, action)
+      } finally {
+        setPendingActionId(null)
+      }
+    },
+    [actionConfig, pendingActionId, rowData]
+  )
 
   const triggerConfig = actionConfig?.trigger
   const defaultTrigger = (
@@ -123,68 +147,115 @@ export const RowActions = <T,>({ row, actionConfig }: Props<T>) => {
       size={!triggerConfig?.label ? 'sm' : 'default'}
       variant='secondary'
       className={cn(
-        'shadow-none rounded-lg cursor-pointer hover:bg-terminal/10 dark:data-[state=open]:bg-terminal/50 data-[state=open]:bg-terminal/10',
+        'cursor-pointer rounded-lg shadow-none hover:bg-terminal/10 data-[popup-open]:bg-terminal/10 dark:data-[popup-open]:bg-terminal/50',
         triggerConfig?.className
       )}
       aria-label={triggerConfig?.label ?? 'Row actions'}>
-      {triggerConfig?.icon ? (
-        <Icon name={triggerConfig.icon} className='text-muted-foreground size-4' />
-      ) : (
-        <Icon name='document' className='text-muted-foreground size-4' />
-      )}
-      {triggerConfig?.label ? <span>{triggerConfig.label}</span> : null}
+      <Icon
+        name={
+          pendingActionId
+            ? 'spinner-ring'
+            : (triggerConfig?.icon ?? 'document')
+        }
+        className='size-4 text-muted-foreground'
+      />
+      {triggerConfig?.label ? (
+        <span>{triggerConfig.label}</span>
+      ) : null}
     </Button>
   )
 
   const trigger = triggerConfig?.render
     ? triggerConfig.render({
         row,
-        loading: false,
+        loading: pendingActionId !== null,
         defaultTrigger
       })
     : defaultTrigger
 
   const defaultDropdown = (
-    <DropdownMenu>
-      <DropdownMenuTrigger>{trigger}</DropdownMenuTrigger>
-      <DropdownMenuContent side='bottom' className='rounded-3xl border-origin md:min-w-44 p-1.5'>
-        <DropdownMenuSub aria-label='Row actions'>
+    <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
+      <DropdownMenuTrigger render={trigger} />
+      {menuOpen ? (
+        <DropdownMenuContent
+          side='bottom'
+          className='rounded-3xl border-origin p-1.5 md:min-w-44'>
           {groupedActions.map((group, groupIndex) => (
-            <DropdownMenuSubContent key={`${group.title}-${groupIndex}`}>
+            <DropdownMenuGroup key={group.title}>
+              {groupedActions.length > 1 ? (
+                <DropdownMenuLabel>{group.title}</DropdownMenuLabel>
+              ) : null}
               {group.items.map((action) => {
-                const isDestructive = action.variant === 'destructive'
-                const isDisabled = resolveRowCondition(action.disabled, rowData)
+                const isDestructive =
+                  action.variant === 'destructive'
+                const isPending = pendingActionId === action.id
+                const isDisabled =
+                  pendingActionId !== null ||
+                  resolveRowCondition(action.disabled, rowData)
 
                 return (
                   <DropdownMenuItem
                     key={action.id}
-                    className={cn('h-10 rounded-xl', isDestructive && 'text-danger', action.className, {
-                      'pointer-events-none opacity-50': isDisabled
-                    })}>
+                    variant={
+                      isDestructive ? 'destructive' : 'default'
+                    }
+                    disabled={isDisabled}
+                    onClick={() => void runAction(action)}
+                    className={cn(
+                      'h-10 rounded-xl',
+                      action.className
+                    )}>
                     <span className='inline-flex w-4 shrink-0 items-center justify-center'>
-                      {action.icon ? (
-                        <Icon name={action.icon} className={cn('size-4', isDestructive && 'text-danger')} />
+                      {isPending ? (
+                        <Icon name='spinner-ring' className='size-4' />
+                      ) : action.icon ? (
+                        <Icon
+                          name={action.icon}
+                          className={cn(
+                            'size-4',
+                            isDestructive && 'text-danger'
+                          )}
+                        />
                       ) : null}
                     </span>
                     <span>{action.label}</span>
                     {action.shortcut ? (
-                      <span className='text-xs opacity-70 min-w-10 text-right ml-auto'>{action.shortcut}</span>
+                      <span className='ml-auto min-w-10 text-right text-xs opacity-70'>
+                        {action.shortcut}
+                      </span>
                     ) : null}
                   </DropdownMenuItem>
                 )
               })}
-            </DropdownMenuSubContent>
+              {groupIndex < groupedActions.length - 1 ? (
+                <DropdownMenuSeparator />
+              ) : null}
+            </DropdownMenuGroup>
           ))}
-        </DropdownMenuSub>
-      </DropdownMenuContent>
+          {actionFailed ? (
+            <p
+              role='alert'
+              className='px-3 py-2 text-xs text-destructive'>
+              Action failed. Please try again.
+            </p>
+          ) : null}
+        </DropdownMenuContent>
+      ) : null}
     </DropdownMenu>
   )
 
   const defaultButtons = (
-    <div className={cn('flex w-full items-center gap-1', alignClassMap[align])}>
+    <div
+      className={cn(
+        'flex w-full items-center gap-1',
+        alignClassMap[align]
+      )}>
       {actions.map((action) => {
         const isIconButton = action.appearance === 'icon-button'
-        const isDisabled = resolveRowCondition(action.disabled, rowData)
+        const isPending = pendingActionId === action.id
+        const isDisabled =
+          pendingActionId !== null ||
+          resolveRowCondition(action.disabled, rowData)
 
         return (
           <Button
@@ -192,15 +263,33 @@ export const RowActions = <T,>({ row, actionConfig }: Props<T>) => {
             size={isIconButton ? 'sm' : 'default'}
             variant='secondary'
             disabled={isDisabled}
-            className={cn('h-8 rounded-lg', isIconButton ? 'w-8 min-w-8' : 'px-2 gap-2', action.className)}
-            onClick={() => runAction(action)}>
+            aria-label={isIconButton ? action.label : undefined}
+            className={cn(
+              'h-8 rounded-lg',
+              isIconButton ? 'min-w-8 w-8' : 'gap-2 px-2',
+              action.className
+            )}
+            onClick={() => void runAction(action)}>
             <span className='inline-flex w-4 shrink-0 items-center justify-center'>
-              {action.icon ? <Icon name={action.icon} className='size-4' /> : null}
+              {isPending ? (
+                <Icon name='spinner-ring' className='size-4' />
+              ) : action.icon ? (
+                <Icon name={action.icon} className='size-4' />
+              ) : null}
             </span>
-            {!isIconButton ? <span className='whitespace-nowrap text-sm'>{action.label}</span> : null}
+            {!isIconButton ? (
+              <span className='whitespace-nowrap text-sm'>
+                {action.label}
+              </span>
+            ) : null}
           </Button>
         )
       })}
+      {actionFailed ? (
+        <span role='alert' className='sr-only'>
+          Action failed. Please try again.
+        </span>
+      ) : null}
     </div>
   )
 
@@ -213,7 +302,8 @@ export const RowActions = <T,>({ row, actionConfig }: Props<T>) => {
     })
   }
 
-  const mode = actionConfig?.mode ?? 'dropdown'
-  if (mode === 'buttons') return defaultButtons
-  return defaultDropdown
+  if (actions.length === 0) return null
+  return actionConfig?.mode === 'buttons'
+    ? defaultButtons
+    : defaultDropdown
 }

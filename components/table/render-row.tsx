@@ -1,86 +1,78 @@
 import { cn } from '@/lib/utils'
-import { Row, type RowSelectionState } from '@tanstack/react-table'
-import { useQueryState } from 'nuqs'
-import type { MouseEvent } from 'react'
-import { useCallback, useMemo } from 'react'
+import type { Row } from '@tanstack/react-table'
+import { memo, type MouseEvent } from 'react'
 import { TableRow } from '../ui/table'
-import { createRowSelectionParser } from './parsers'
 import { RenderCell } from './render-cell'
 
 interface RenderRowProps<T> {
   row: Row<T>
-  editingRowId: string | null
-  selectedItemId?: string | null
+  isActive: boolean
+  isEditing: boolean
+  isPinned: boolean
+  isSelected: boolean
   showSelectColumn: boolean
+  /** Forces a render (without remounting) when the visible cell set changes. */
+  visibleColumnSignature: string
 }
 
-export const RenderRow = <T,>({ row, editingRowId, showSelectColumn }: RenderRowProps<T>) => {
-  // const rowSelectionParser = useMemo(() => createRowSelectionParser(), [createRowSelectionParser])
-  const [rowSelectionParam, setRowSelectionParam] = useQueryState('selected', createRowSelectionParser())
+const RenderRowInner = <T,>({
+  row,
+  isActive,
+  isEditing,
+  isPinned,
+  isSelected,
+  showSelectColumn,
+  visibleColumnSignature
+}: RenderRowProps<T>) => {
+  // Read the signature so React Compiler and future refactors retain this
+  // deliberate invalidation dependency.
+  void visibleColumnSignature
 
-  const isEditing = editingRowId === row.id
-  const isPinned = row.getIsPinned() === 'top'
+  const handleRowClick = (event: MouseEvent<HTMLTableRowElement>) => {
+    const target = event.target
 
-  const isSelected = useMemo(() => (rowSelectionParam ?? {})[row.id] === true, [row.id, rowSelectionParam])
+    if (
+      target instanceof HTMLElement &&
+      target.closest(
+        'button, input, select, textarea, a, [role="button"], [role="menuitem"]'
+      )
+    ) {
+      return
+    }
 
-  const handleRowClick = useCallback(
-    (e: MouseEvent<HTMLTableRowElement>) => {
-      // Don't toggle selection if clicking on interactive elements
-      if (
-        e.target instanceof HTMLElement &&
-        (e.target.closest('button') ||
-          e.target.closest('input') ||
-          e.target.closest('a') ||
-          e.target.closest('[role="button"]'))
-      ) {
-        return
-      }
+    if (showSelectColumn && row.getCanSelect()) {
+      row.toggleSelected()
+    }
+  }
 
-      // Only toggle if select mode is on and row can be selected
-      if (showSelectColumn && row.getCanSelect()) {
-        const currentSelection = rowSelectionParam ?? {}
-        const isCurrentlySelected = currentSelection[row.id] === true
-
-        const nextSelection: RowSelectionState = { ...currentSelection }
-
-        if (isCurrentlySelected) {
-          delete nextSelection[row.id]
-        } else {
-          nextSelection[row.id] = true
-        }
-
-        setRowSelectionParam(nextSelection)
-      }
-    },
-    [row, rowSelectionParam, showSelectColumn, setRowSelectionParam]
-  )
+  const isHighlighted = isEditing || isActive
 
   return (
     <TableRow
-      key={row.id}
-      // data-state={row.getIsSelected() && 'selected'}
+      data-state={isSelected ? 'selected' : undefined}
       className={cn(
-        'group/row h-10 text-foreground border-y border-y-dotted dark:border-greyed dark:hover:bg-background/80 active:bg-background/20',
-        'bg-sidebar/5 hover:bg-sidebar border-y-dark-table/10 dark:border-y-dark-table/40 hover:border-y-dark-table/30 transition-colors duration-75',
+        'group/row h-10 border-y border-y-dotted border-y-dark-table/10 bg-sidebar/5 text-foreground transition-colors duration-75 hover:border-y-dark-table/30 hover:bg-sidebar active:bg-background/20 dark:border-greyed dark:border-y-dark-table/40 dark:hover:bg-background/80',
         {
-          // Apply editing styles - same as hover but persistent
-          'dark:bg-blue-200/50 last:rounded-tr-2xl': isEditing,
-          // Apply selected styles when viewer is open - same as hover but persistent
-          ' border-y-dark-table/30 bg-sidebar hover:bg-sidebar dark:bg-mac-blue/20 last:rounded-tr-2xl':
-            isSelected && !isEditing,
+          'last:rounded-tr-2xl dark:bg-blue-200/50': isHighlighted,
+          'border-y-dark-table/30 bg-sidebar hover:bg-sidebar last:rounded-tr-2xl dark:bg-mac-blue/20':
+            isSelected && !isHighlighted,
           'border-y-light-gray bg-sky-300/20 hover:bg-brand/10 dark:border-y-sky-300/15 dark:bg-background/20 dark:hover:bg-background/30':
-            isPinned && !isEditing && !isSelected,
-          // Add cursor pointer when select mode is on
+            isPinned && !isHighlighted && !isSelected,
           'cursor-pointer': showSelectColumn && row.getCanSelect()
         }
       )}
       onClick={handleRowClick}>
-      {row
-        .getAllCells()
-        .filter((cell) => cell.column.getIsVisible())
-        .map((cell) => (
-          <RenderCell key={cell.id} cell={cell} isEditing={isSelected || showSelectColumn} />
-        ))}
+      {row.getVisibleCells().map((cell) => (
+        <RenderCell
+          key={cell.id}
+          cell={cell}
+          isEditing={isSelected || showSelectColumn || isHighlighted}
+        />
+      ))}
     </TableRow>
   )
 }
+
+RenderRowInner.displayName = 'RenderRow'
+
+export const RenderRow = memo(RenderRowInner) as typeof RenderRowInner

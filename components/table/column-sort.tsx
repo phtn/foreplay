@@ -1,44 +1,36 @@
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import type { CoreHeader, Renderable, SortingState } from '@tanstack/react-table'
-import { useQueryState } from 'nuqs'
-import type { JSX, ReactNode } from 'react'
-import { useMemo } from 'react'
-import { createSortingParser } from './parsers'
+import type {
+  CoreHeader,
+  Renderable,
+  SortDirection
+} from '@tanstack/react-table'
+import { memo, type JSX, type ReactNode } from 'react'
 
 interface Props<TData, TValue> {
   header: CoreHeader<TData, TValue>
   flexRender: <T extends object>(Comp: Renderable<T>, props: T) => ReactNode | JSX.Element
+  sorted: SortDirection | false
 }
-export const ColumnSort = <TData, TValue>({ header, flexRender }: Props<TData, TValue>) => {
-  const sortingParser = useMemo(() => createSortingParser(), [])
-  const [sortingParam, setSortingParam] = useQueryState('sort', sortingParser)
-  const currentSort = sortingParam?.[0]
-  const isActiveSortColumn = currentSort?.id === header.column.id
-  const sorted = isActiveSortColumn ? (currentSort?.desc ? 'desc' : 'asc') : false
-
+const ColumnSortComponent = <TData, TValue>({
+  header,
+  flexRender,
+  sorted
+}: Props<TData, TValue>) => {
   const handleSort = () => {
     if (!header.column.getCanSort()) return
-
-    const nextSorting: SortingState = !isActiveSortColumn
-      ? [{ id: header.column.id, desc: false }]
-      : [{ id: header.column.id, desc: !(currentSort?.desc ?? false) }]
-
-    setSortingParam(nextSorting)
+    header.column.toggleSorting(undefined, false)
   }
 
   return header.isPlaceholder ? null : header.column.getCanSort() ? (
-    <div
-      className={cn(header.column.getCanSort() && 'flex h-full cursor-pointer items-center gap-1.5 select-none')}
+    <button
+      type='button'
+      className={cn(
+        'relative flex h-full w-full cursor-pointer items-center gap-1.5 text-left select-none'
+      )}
       onClick={handleSort}
-      onKeyDown={(e) => {
-        // Enhanced keyboard handling for sorting
-        if (header.column.getCanSort() && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault()
-          handleSort()
-        }
-      }}
-      tabIndex={header.column.getCanSort() ? 0 : undefined}>
+      aria-label={`Sort by ${header.column.id}${sorted ? `, currently ${sorted === 'asc' ? 'ascending' : 'descending'}` : ''}`}
+      >
       {flexRender(header.column.columnDef.header, header.getContext())}
       {sorted === 'asc' ? (
         <Icon
@@ -53,8 +45,14 @@ export const ColumnSort = <TData, TValue>({ header, flexRender }: Props<TData, T
           className='absolute rotate-45 left-2 size-4 shrink-0 text-amber-500 dark:opacity-90'
         />
       ) : null}
-    </div>
+    </button>
   ) : (
     flexRender(header.column.columnDef.header, header.getContext())
   )
 }
+
+ColumnSortComponent.displayName = 'ColumnSort'
+
+export const ColumnSort = memo(
+  ColumnSortComponent
+) as typeof ColumnSortComponent

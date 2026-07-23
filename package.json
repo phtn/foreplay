@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "test:table": "bun test components/table/*.test.ts",
     "postinstall": "node scripts/tailwind-patch.mjs"
   },
   "dependencies": {

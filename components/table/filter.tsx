@@ -4,55 +4,75 @@ import { Button as BaseButton, Checkbox } from '@base-ui/react'
 import { Popover } from '@base-ui/react/popover'
 import type { ColumnFiltersState } from '@tanstack/react-table'
 import { Column } from '@tanstack/react-table'
-import { useQueryState } from 'nuqs'
-import { useId, useMemo } from 'react'
+import { memo, useId, useMemo, useState } from 'react'
+import { normalizeText } from './filter-fns'
 import { getColumnHeaderText, getFilterValueLabel, getFilterValueToken } from './filter-utils'
-import { createColumnFiltersParser } from './parsers'
+import { TABLE_QUERY_LIMITS } from './parsers'
 
 interface Props<T> {
   columns: Column<T, unknown>[]
-  activeFilterColumns?: Column<T, unknown>[]
+  activeFilterColumns: Column<T, unknown>[]
+  columnFilters: ColumnFiltersState
+  facetingData: T[]
+  globalFilter: string
   onAddFilterColumn?: (columnId: string) => void
   onRemoveFilterColumn?: (columnId: string) => void
-  isMobile: boolean
 }
 
 type FilterOption = {
   count: number
   label: string
-  rawValue: unknown
+  searchText: string
   token: string
 }
 
-export const Filter = <T,>({
+const DEFAULT_FACET_OPTION_LIMIT = 200
+
+const FilterComponent = <T,>({
   columns,
-  activeFilterColumns = [],
+  activeFilterColumns,
+  columnFilters,
+  facetingData,
+  globalFilter,
   onAddFilterColumn,
   onRemoveFilterColumn
 }: Props<T>) => {
   const baseId = useId()
-
-  const columnFiltersParser = useMemo(() => createColumnFiltersParser(), [])
-  const [columnFiltersParam] = useQueryState('filters', columnFiltersParser)
-  const filtersFromUrl = useMemo(() => (columnFiltersParam ?? []) as ColumnFiltersState, [columnFiltersParam])
+  const [optionQueries, setOptionQueries] = useState<Record<string, string>>({})
 
   const filterableColumns = useMemo(
     () => columns.filter((col) => col.getCanFilter() && col.id !== 'select' && col.id !== 'actions'),
     [columns]
   )
 
+  const activeFilterIds = useMemo(
+    () => new Set(activeFilterColumns.map((column) => column.id)),
+    [activeFilterColumns]
+  )
+
   const availableColumns = useMemo(
-    () => filterableColumns.filter((col) => !activeFilterColumns.some((activeCol) => activeCol.id === col.id)),
-    [filterableColumns, activeFilterColumns]
+    () => filterableColumns.filter((column) => !activeFilterIds.has(column.id)),
+    [activeFilterIds, filterableColumns]
   )
 
   const activeFiltersData = useMemo(() => {
+    // TanStack columns are stable objects whose faceted maps change when the
+    // backing data or global filter changes.
+    void facetingData
+    void globalFilter
+
     return activeFilterColumns.map((column) => {
       const facetedValues = column.getFacetedUniqueValues()
-      const filterInUrl = filtersFromUrl.find((f) => f.id === column.id)
-      const selectedValues = (filterInUrl?.value ?? column.getFilterValue()) as (string | number | boolean)[]
-      const meta = column.columnDef.meta as { filterOptions?: unknown[] } | undefined
+      const controlledFilter = columnFilters.find((filter) => filter.id === column.id)
+      const selectedValues = (controlledFilter?.value ?? []) as (string | number | boolean)[]
+      const meta = column.columnDef.meta as
+        | { filterOptions?: unknown[]; filterOptionLimit?: number }
+        | undefined
       const metaFilterOptions = meta?.filterOptions
+      const optionLimit = Math.max(
+        1,
+        Math.min(1_000, meta?.filterOptionLimit ?? DEFAULT_FACET_OPTION_LIMIT)
+      )
 
       const countByToken = new Map<string, number>()
       const rawValueByToken = new Map<string, unknown>()
@@ -66,30 +86,37 @@ export const Filter = <T,>({
       }
 
       const optionSource = Array.isArray(metaFilterOptions) ? metaFilterOptions : Array.from(rawValueByToken.values())
+      const uniqueOptions = new Map<string, FilterOption>()
 
-      const uniqueValues = optionSource
-        .map((rawValue) => {
-          const token = getFilterValueToken(rawValue)
-          return {
-            rawValue,
-            token,
-            label: getFilterValueLabel(rawValue),
-            count: countByToken.get(token) ?? 0
-          } satisfies FilterOption
+      for (const rawValue of optionSource) {
+        const token = getFilterValueToken(rawValue)
+        if (!token || uniqueOptions.has(token)) continue
+        const label = getFilterValueLabel(rawValue)
+        uniqueOptions.set(token, {
+          token,
+          label,
+          searchText: normalizeText(label),
+          count: countByToken.get(token) ?? 0
         })
-        .filter(
-          (option, index, options) =>
-            option.token.length > 0 && options.findIndex((candidate) => candidate.token === option.token) === index
-        )
-        .sort((a, b) => a.label.localeCompare(b.label))
+      }
+
+      const uniqueValues = Array.from(uniqueOptions.values()).sort((a, b) =>
+        a.label.localeCompare(b.label)
+      )
 
       return {
         column,
+        optionLimit,
         selectedValues: Array.isArray(selectedValues) ? selectedValues : [],
         uniqueValues
       }
     })
-  }, [activeFilterColumns, filtersFromUrl])
+  }, [
+    activeFilterColumns,
+    columnFilters,
+    facetingData,
+    globalFilter
+  ])
 
   const totalActiveFilters = useMemo(() => {
     return activeFiltersData.reduce((total, filterData) => {
@@ -184,59 +211,142 @@ export const Filter = <T,>({
                       </BaseButton>
                     </div>
 
+                    {filterData.uniqueValues.length > filterData.optionLimit ? (
+                      <input
+                        type='search'
+                        value={optionQueries[filterData.column.id] ?? ''}
+                        onChange={(event) => {
+                          const query = event.target.value.slice(
+                            0,
+                            TABLE_QUERY_LIMITS.tokenCharacters
+                          )
+                          setOptionQueries((current) => ({
+                            ...current,
+                            [filterData.column.id]: query
+                          }))
+                        }}
+                        maxLength={TABLE_QUERY_LIMITS.tokenCharacters}
+                        placeholder='Find a value'
+                        aria-label={`Find ${getColumnHeaderText(filterData.column)} filter value`}
+                        className='mb-2 h-8 w-full rounded-sm border border-dark-gray/20 bg-background px-2 font-brk text-xs outline-none'
+                      />
+                    ) : null}
+
                     <div className='max-h-40 overflow-y-auto scrollbar-gutter-[stable]'>
-                      {filterData.uniqueValues.map((option, index) => {
-                        const id = `v-${baseId}-${columnIndex}-${index}`
-                        const isChecked = filterData.selectedValues.some(
-                          (selected) => getFilterValueToken(selected) === option.token
+                      {(() => {
+                        const query = (optionQueries[filterData.column.id] ?? '')
+                        const normalizedQuery = normalizeText(query)
+                        const matchingOptions = normalizedQuery
+                          ? filterData.uniqueValues.filter((option) =>
+                              option.searchText.includes(
+                                normalizedQuery
+                              )
+                            )
+                          : filterData.uniqueValues
+                        const renderedOptions = matchingOptions.slice(
+                          0,
+                          filterData.optionLimit
                         )
+                        const hiddenOptionCount =
+                          matchingOptions.length - renderedOptions.length
 
                         return (
-                          <div
-                            key={id}
-                            className={cn(
-                              'ml-5 flex h-8 items-center rounded-sm px-1.5 font-brk hover:bg-dark-table/10 dark:hover:bg-origin/30',
-                              {
-                                'bg-indigo-500 text-white opacity-100 hover:bg-indigo-400 dark:bg-origin/80 dark:text-indigo-400 dark:hover:bg-origin/50':
-                                  isChecked
-                              }
-                            )}>
-                            <Checkbox.Root
-                              id={id}
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                const column = activeFilterColumns.find((col) => col.id === filterData.column.id)
-                                if (!column) return
+                          <>
+                            {renderedOptions.map((option, index) => {
+                              const id = `v-${baseId}-${columnIndex}-${index}`
+                              const isChecked =
+                                filterData.selectedValues.some(
+                                  (selected) =>
+                                    getFilterValueToken(selected) ===
+                                    option.token
+                                )
 
-                                const currentFilter = column.getFilterValue() as (string | number | boolean)[]
-                                const nextFilterValue = currentFilter ? [...currentFilter] : []
+                              return (
+                                <div
+                                  key={option.token}
+                                  className={cn(
+                                    'ml-5 flex h-8 items-center rounded-sm px-1.5 font-brk hover:bg-dark-table/10 dark:hover:bg-origin/30',
+                                    {
+                                      'bg-indigo-500 text-white opacity-100 hover:bg-indigo-400 dark:bg-origin/80 dark:text-indigo-400 dark:hover:bg-origin/50':
+                                        isChecked
+                                    }
+                                  )}>
+                                  <Checkbox.Root
+                                    id={id}
+                                    checked={isChecked}
+                                    aria-label={`${isChecked ? 'Remove' : 'Add'} ${option.label} filter`}
+                                    className='mr-2 flex size-4 shrink-0 items-center justify-center rounded-sm'
+                                    onCheckedChange={(checked) => {
+                                      const nextFilterValue = [
+                                        ...filterData.selectedValues
+                                      ]
 
-                                if (checked) {
-                                  const exists = nextFilterValue.some(
-                                    (value) => getFilterValueToken(value) === option.token
-                                  )
-                                  if (!exists) {
-                                    nextFilterValue.push(option.token)
-                                  }
-                                } else {
-                                  const nextIndex = nextFilterValue.findIndex(
-                                    (value) => getFilterValueToken(value) === option.token
-                                  )
-                                  if (nextIndex > -1) {
-                                    nextFilterValue.splice(nextIndex, 1)
-                                  }
-                                }
+                                      if (checked) {
+                                        const exists =
+                                          nextFilterValue.some(
+                                            (value) =>
+                                              getFilterValueToken(
+                                                value
+                                              ) === option.token
+                                          )
+                                        if (!exists) {
+                                          nextFilterValue.push(
+                                            option.token
+                                          )
+                                        }
+                                      } else {
+                                        const nextIndex =
+                                          nextFilterValue.findIndex(
+                                            (value) =>
+                                              getFilterValueToken(
+                                                value
+                                              ) === option.token
+                                          )
+                                        if (nextIndex > -1) {
+                                          nextFilterValue.splice(
+                                            nextIndex,
+                                            1
+                                          )
+                                        }
+                                      }
 
-                                column.setFilterValue(nextFilterValue.length > 0 ? nextFilterValue : undefined)
-                              }}
-                            />
-                            <label htmlFor={id} className='flex grow justify-between gap-2 font-brk text-xs'>
-                              <span className='truncate'>{option.label}</span>
-                              <span className='shrink-0 text-xs'>{option.count}</span>
-                            </label>
-                          </div>
+                                      filterData.column.setFilterValue(
+                                        nextFilterValue.length > 0
+                                          ? nextFilterValue
+                                        : undefined
+                                      )
+                                    }}>
+                                    <Icon
+                                      name={
+                                        isChecked
+                                          ? 'check'
+                                          : 'checkbox-unchecked'
+                                      }
+                                      className='size-4'
+                                    />
+                                  </Checkbox.Root>
+                                  <label
+                                    htmlFor={id}
+                                    className='flex grow justify-between gap-2 font-brk text-xs'>
+                                    <span className='truncate'>
+                                      {option.label}
+                                    </span>
+                                    <span className='shrink-0 text-xs'>
+                                      {option.count}
+                                    </span>
+                                  </label>
+                                </div>
+                              )
+                            })}
+                            {hiddenOptionCount > 0 ? (
+                              <div className='px-2 py-1 text-center font-brk text-[10px] text-muted-foreground'>
+                                {hiddenOptionCount} more value
+                                {hiddenOptionCount === 1 ? '' : 's'} — refine the search
+                              </div>
+                            ) : null}
+                          </>
                         )
-                      })}
+                      })()}
                     </div>
                   </div>
                 ))}
@@ -255,3 +365,7 @@ export const Filter = <T,>({
     </Popover.Root>
   )
 }
+
+FilterComponent.displayName = 'Filter'
+
+export const Filter = memo(FilterComponent) as typeof FilterComponent

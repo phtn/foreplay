@@ -1,98 +1,102 @@
-import {Icon} from '@/lib/icons'
-import {cn} from '@/lib/utils'
-import {Input} from '@base-ui/react'
-import {Column} from '@tanstack/react-table'
+import { Icon } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { Input } from '@base-ui/react'
+import type { Column } from '@tanstack/react-table'
 import {
-  ChangeEvent,
-  forwardRef,
-  useCallback,
   useEffect,
   useEffectEvent,
   useId,
+  memo,
+  useRef,
+  type ChangeEvent,
+  type RefObject
 } from 'react'
+import { TABLE_QUERY_LIMITS } from './parsers'
 
 interface Props<T> {
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  onChange: (event: ChangeEvent<HTMLInputElement>) => void
   onClear?: VoidFunction
   value: string
   col?: Column<T, unknown>
+  ref?: RefObject<HTMLInputElement | null>
 }
 
-export const Search = forwardRef<HTMLInputElement, Props<unknown>>(
-  ({col, value, onChange, onClear}, ref) => {
-    const id = useId()
-    const hasValue =
-      value.trim().length > 0 || Boolean(col?.getFilterValue?.()?.toString())
+const SearchComponent = ({
+  col,
+  value,
+  onChange,
+  onClear,
+  ref
+}: Props<unknown>) => {
+  const id = useId()
+  const fallbackRef = useRef<HTMLInputElement>(null)
+  const inputRef = ref ?? fallbackRef
+  const hasValue =
+    value.trim().length > 0 || Boolean(col?.getFilterValue?.()?.toString())
 
-    const handleKeyDown = useCallback(
-      (event: KeyboardEvent) => {
-        // Don't trigger if user is typing in an input or textarea
-        const target = event.target as HTMLElement
-        const isTyping =
-          target.tagName === 'INPUT' ||
-          target.tagName === 'TEXTAREA' ||
-          target.isContentEditable
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (event.defaultPrevented) return
 
-        if (
-          event.key === '/' &&
-          !isTyping &&
-          ref &&
-          'current' in ref &&
-          ref.current &&
-          document.activeElement !== ref.current
-        ) {
-          event.preventDefault()
-          ref.current.focus()
-        }
-      },
-      [ref],
-    )
+    const target = event.target
+    const isTyping =
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable)
 
-    // Use useEffectEvent for stable callback reference
-    const onKeyDown = useEffectEvent(handleKeyDown)
+    if (
+      event.key === '/' &&
+      !isTyping &&
+      inputRef.current &&
+      document.activeElement !== inputRef.current
+    ) {
+      event.preventDefault()
+      inputRef.current.focus()
+    }
+  })
 
-    useEffect(() => {
-      document.addEventListener('keydown', onKeyDown, true)
-      return () => document.removeEventListener('keydown', onKeyDown, true)
-    }, [])
+  useEffect(() => {
+    document.addEventListener('keydown', onKeyDown, true)
+    return () => document.removeEventListener('keydown', onKeyDown, true)
+  }, [])
 
-    return (
-      <div className='relative w-full min-w-0 md:w-auto'>
-        <Input
-          id={`input-${id}`}
-          ref={ref}
-          className={cn(
-            'peer h-8 dark:bg-background/40 w-full min-w-0 md:w-48 md:min-w-60 bg-sidebar ps-3 rounded-sm outline-0 border-none placeholder:text-foreground/60 placeholder:font-brk font-brk text-sm',
-            hasValue && 'pe-10',
-          )}
-          value={value}
-          onChange={onChange}
-          placeholder='Search'
-          type='text'
-          inputMode='text'
-          aria-label='Search'
-        />
-        <div className='text-foreground/80 pointer-events-none absolute inset-y-0 inset-e-0 flex items-center justify-center pe-2 peer-disabled:opacity-50'>
-          <Icon name='slash' aria-hidden='true' className='size-5' />
-        </div>
-        {hasValue && (
-          <button
-            className='text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 inset-e-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50'
-            aria-label='Clear filter'
-            onClick={() => {
-              col?.setFilterValue('')
-              onClear?.()
-              if (ref && 'current' in ref && ref.current) {
-                ref.current.focus()
-              }
-            }}
-          >
-            <Icon name='x' size={16} aria-hidden='true' />
-          </button>
+  return (
+    <div className='relative w-full min-w-0 md:w-auto'>
+      <Input
+        id={id}
+        ref={inputRef}
+        className={cn(
+          'peer h-8 w-full min-w-0 rounded-sm border-none bg-sidebar ps-3 font-brk text-sm outline-0 placeholder:font-brk placeholder:text-foreground/60 md:w-48 md:min-w-60 dark:bg-background/40',
+          hasValue && 'pe-10'
         )}
+        value={value}
+        onChange={onChange}
+        maxLength={TABLE_QUERY_LIMITS.searchCharacters}
+        placeholder='Search'
+        type='search'
+        inputMode='search'
+        aria-label='Search'
+      />
+      <div className='pointer-events-none absolute inset-y-0 inset-e-0 flex items-center justify-center pe-2 text-foreground/80 peer-disabled:opacity-50'>
+        <Icon name='slash' aria-hidden='true' className='size-5' />
       </div>
-    )
-  },
-)
+      {hasValue ? (
+        <button
+          type='button'
+          className='absolute inset-y-0 inset-e-0 flex h-full w-9 items-center justify-center rounded-e-md text-muted-foreground/80 transition-[color,box-shadow] outline-none hover:text-foreground focus:z-10 focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50'
+          aria-label='Clear filter'
+          onClick={() => {
+            col?.setFilterValue('')
+            onClear?.()
+            inputRef.current?.focus()
+          }}>
+          <Icon name='x' size={16} aria-hidden='true' />
+        </button>
+      ) : null}
+    </div>
+  )
+}
 
-Search.displayName = 'SearchFilter'
+SearchComponent.displayName = 'SearchFilter'
+
+export const Search = memo(SearchComponent)

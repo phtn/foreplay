@@ -1,6 +1,6 @@
-import {cn} from '@/lib/utils'
-import {Cell, flexRender} from '@tanstack/react-table'
-import {TableCell} from '../ui/table'
+import { cn } from '@/lib/utils'
+import { flexRender, type Cell } from '@tanstack/react-table'
+import { TableCell } from '../ui/table'
 
 interface RenderCellProps<TData, TValue> {
   cell: Cell<TData, TValue>
@@ -9,25 +9,20 @@ interface RenderCellProps<TData, TValue> {
 
 export const RenderCell = <TData, TValue>({
   cell,
-  isEditing,
+  isEditing
 }: RenderCellProps<TData, TValue>) => {
   const cellSize = cell.column.getSize()
 
   return (
     <TableCell
-      key={cell.id}
       style={{
-        width: `${cellSize}px`,
-        minWidth: `${cellSize}px`,
-        maxWidth: `${cellSize}px`,
+        width: cellSize,
+        minWidth: cellSize,
+        maxWidth: cellSize
       }}
       className={cn(
-        'last:py-0 overflow-hidden',
-        'transition-colors duration-300',
-        {
-          // Apply editing cell styles - same as hover but persistent
-          'dark:bg-background/10': isEditing,
-        },
+        'overflow-hidden last:py-0',
+        isEditing && 'dark:bg-background/10'
       )}>
       {flexRender(cell.column.columnDef.cell, cell.getContext())}
     </TableCell>

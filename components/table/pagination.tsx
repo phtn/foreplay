@@ -1,6 +1,6 @@
 import { Icon } from '@/lib/icons'
 import { PaginationState } from '@tanstack/react-table'
-import { useId, useMemo } from 'react'
+import { memo, useId, useMemo } from 'react'
 import { Button } from '../ui/button'
 
 const DEFAULT_PAGE_SIZES = [10, 15, 25, 50, 100] as const
@@ -20,8 +20,23 @@ interface Props {
   setPageSize: (v: string) => void
   pageControl: PageControl
 }
-export const Paginator = ({ state, rowCount, setPageSize, pageControl }: Props) => {
+const PaginatorComponent = ({
+  state,
+  rowCount,
+  setPageSize,
+  pageControl
+}: Props) => {
   const id = useId()
+  const pageCount = Math.max(1, Math.ceil(rowCount / state.pageSize))
+  const currentPage = Math.min(state.pageIndex + 1, pageCount)
+  const rangeStart =
+    rowCount === 0
+      ? 0
+      : Math.min(state.pageIndex * state.pageSize + 1, rowCount)
+  const rangeEnd = Math.min(
+    state.pageIndex * state.pageSize + state.pageSize,
+    rowCount
+  )
   const pageSizeOptions = useMemo(() => {
     const current = state.pageSize
     const inDefaults = DEFAULT_PAGE_SIZES.some((s) => s === current)
@@ -32,14 +47,14 @@ export const Paginator = ({ state, rowCount, setPageSize, pageControl }: Props) 
     <div className='flex flex-1 grow-0 flex-wrap items-center justify-between gap-2 border-t bg-linear-to-r from-transparent via-sidebar to-transparent px-2 py-2 md:mt-0 md:flex-nowrap md:px-0 md:pb-4 md:pt-1'>
       {/* Results per page */}
       <div className='flex min-w-0 items-center gap-2 md:w-fit md:justify-between md:gap-8 md:px-6'>
-        <label htmlFor={id} className='font-clash tracking-tight text-sm md:text-base'>
+        <div className='font-clash tracking-tight text-sm md:text-base'>
           <span className='font-medium'>{rowCount}</span>
           <span className='opacity-80 ml-1 font-ios tracking-tighter'>items</span>
-        </label>
+        </div>
         <div className='flex w-fit items-center rounded-lg py-1.5 dark:hover:bg-background/10 dark:focus-visible:bg-background/15 md:space-x-1 md:px-3'>
-          <label htmlFor='showing-rows' className='font-okxs tracking-tight md:mx-auto flex items-center'>
+          <label htmlFor={id} className='font-okxs tracking-tight md:mx-auto flex items-center'>
             <select
-              id='showing-rows'
+              id={id}
               value={state.pageSize.toString()}
               onChange={(event) => {
                 setPageSize(event.target.value)
@@ -57,13 +72,16 @@ export const Paginator = ({ state, rowCount, setPageSize, pageControl }: Props) 
         </div>
       </div>
       {/* Page number information */}
-      <div className='hidden _flex px-2 md:px-4 text-muted-foreground grow justify-end text-sm whitespace-nowrap'>
+      <div className='flex grow justify-end px-2 text-sm whitespace-nowrap text-muted-foreground md:px-4'>
         <p className='text-muted-foreground text-sm whitespace-nowrap' aria-live='polite'>
           <span className='text-foreground'>
-            {state.pageIndex * state.pageSize + 1}-
-            {Math.min(Math.max(state.pageIndex * state.pageSize + state.pageSize, 0), rowCount)}
+            {rangeStart}-{rangeEnd}
           </span>{' '}
           of <span className='text-foreground'>{rowCount}</span>
+          <span className='hidden md:inline'>
+            {' '}
+            · page {currentPage} of {pageCount}
+          </span>
         </p>
       </div>
 
@@ -91,6 +109,10 @@ export const Paginator = ({ state, rowCount, setPageSize, pageControl }: Props) 
     </div>
   )
 }
+
+PaginatorComponent.displayName = 'Paginator'
+
+export const Paginator = memo(PaginatorComponent)
 
 // const SelectRows = () => (
 //   <Select

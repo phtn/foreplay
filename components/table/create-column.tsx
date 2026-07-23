@@ -1,4 +1,3 @@
-import { useMobile } from '@/hooks/use-mobile'
 import { Icon, IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { Checkbox } from '@base-ui/react/checkbox'
@@ -7,15 +6,10 @@ import {
   type ColumnDef,
   type FilterFn,
   type Row,
-  type RowPinningState,
-  type RowSelectionState,
   type Table
 } from '@tanstack/react-table'
-import { AnimatePresence, motion } from 'motion/react'
-import { useQueryState } from 'nuqs'
-import { type ChangeEvent, type ReactNode, useMemo } from 'react'
+import { type ReactElement, type ReactNode } from 'react'
 import { filterFn, globalFilterFn, groupFilter, multiSelectFilterFn } from './filter-fns'
-import { createRowPinningParser, createRowSelectionParser } from './parsers'
 import { RowActions } from './row-actions'
 export { filterFn, globalFilterFn, groupFilter, multiSelectFilterFn }
 
@@ -34,13 +28,20 @@ export interface BulkEditorConfig<T> {
 
 export interface ColumnMeta<T> extends Record<string, unknown> {
   filterOptions?: Array<string | number | boolean>
+  /** Maximum faceted options mounted at once. Search still covers all options. */
+  filterOptionLimit?: number
+  /**
+   * Explicitly opts this field into the bulk editor. Keep sensitive or
+   * server-managed fields omitted; backend mutations must still allow-list and
+   * validate every submitted key.
+   */
   bulkEditor?: boolean | BulkEditorConfig<T>
 }
 
 export interface ColumnConfig<T> {
   id: string
   header: ReactNode
-  accessorKey: keyof T
+  accessorKey: Extract<keyof T, string>
   /**
    * Cell renderer function that receives CellContext
    *
@@ -88,14 +89,18 @@ export interface ActionItem<T> {
   className?: string
   hidden?: boolean | ((row: T) => boolean)
   disabled?: boolean | ((row: T) => boolean)
-  onClick: (row: T) => void
+  onClick: (row: T) => void | Promise<void>
 }
 
 export interface ActionTriggerConfig<T> {
   icon?: IconName
   label?: string
   className?: string
-  render?: (ctx: { row: Row<T>; loading: boolean; defaultTrigger: ReactNode }) => ReactNode
+  render?: (ctx: {
+    row: Row<T>
+    loading: boolean
+    defaultTrigger: ReactElement
+  }) => ReactElement
 }
 
 export interface ActionConfig<T> {
@@ -117,10 +122,11 @@ export interface ActionConfig<T> {
   customActions?: Array<{
     label: string
     icon?: IconName
-    onClick: (row: T) => void
+    onClick: (row: T) => void | Promise<void>
     variant?: 'default' | 'destructive'
     shortcut?: string
   }>
+  onActionError?: (error: unknown, row: T, action: ActionItem<T>) => void
 }
 
 // Generic column factory function
@@ -128,23 +134,47 @@ export const createColumns = <T,>(
   columnConfigs: ColumnConfig<T>[],
   actionConfig?: ActionConfig<T>,
   showSelectColumn: boolean = false,
-  showPinColumn: boolean = false,
-  rowPinningParamKey: string = 'pinnedRows'
+  showPinColumn: boolean = false
 ): ColumnDef<T>[] => {
+  const reservedColumnIds = new Set([
+    'select',
+    'pin-row',
+    'actions',
+    '__proto__',
+    'constructor',
+    'prototype'
+  ])
+  const configuredColumnIds = new Set<string>()
+
+  for (const config of columnConfigs) {
+    if (
+      config.id.trim().length === 0 ||
+      reservedColumnIds.has(config.id) ||
+      configuredColumnIds.has(config.id)
+    ) {
+      throw new Error(
+        `DataTable column id "${config.id}" is empty, reserved, or duplicated. Column ids must be non-empty and unique.`
+      )
+    }
+    configuredColumnIds.add(config.id)
+  }
+
   const columns: ColumnDef<T>[] = []
 
-  // Always add select column but control visibility through animation
-  columns.push({
-    id: 'select',
-    header: ({ table }) => <SelectAllCheckbox table={table} isVisible={showSelectColumn} />,
-    cell: ({ row }) => <SelectRowCheckbox row={row} isVisible={showSelectColumn} />,
-    size: 50,
-    enableHiding: false,
-    enableSorting: false,
-    meta: {
-      isVisible: showSelectColumn
-    }
-  })
+  // Avoid mounting a checkbox and animation tree for every row until selection
+  // is actually enabled.
+  if (showSelectColumn) {
+    columns.push({
+      id: 'select',
+      header: ({ table }) => <SelectAllCheckbox table={table} />,
+      cell: ({ row }) => <SelectRowCheckbox row={row} />,
+      size: 50,
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableGlobalFilter: false
+    })
+  }
 
   if (showPinColumn) {
     columns.push({
@@ -170,11 +200,12 @@ export const createColumns = <T,>(
           </button>
         )
       },
-      cell: ({ row }) => <PinRowButton row={row} pinParamKey={rowPinningParamKey} />,
+      cell: ({ row }) => <PinRowButton row={row} />,
       size: 42,
       enableHiding: false,
       enableSorting: false,
-      enableColumnFilter: false
+      enableColumnFilter: false,
+      enableGlobalFilter: false
     })
   }
 
@@ -222,18 +253,21 @@ export const createColumns = <T,>(
           </div>
         ),
       cell: ({ row }) => <RowActions row={row} actionConfig={actionConfig} />,
-      size: actionConfig?.columnSize ?? 0,
-      enableHiding: false
+      size:
+        actionConfig?.columnSize ??
+        (actionConfig?.mode === 'buttons' ? 160 : 64),
+      enableHiding: false,
+      enableSorting: false,
+      enableColumnFilter: false,
+      enableGlobalFilter: false
     })
   }
 
   return columns
 }
 
-const PinRowButton = <T,>({ row, pinParamKey }: { row: Row<T>; pinParamKey: string }) => {
-  const rowPinningParser = useMemo(() => createRowPinningParser(), [])
-  const [rowPinningParam] = useQueryState(pinParamKey, rowPinningParser)
-  const isPinned = ((rowPinningParam as RowPinningState | null)?.top ?? []).includes(row.id)
+const PinRowButton = <T,>({ row }: { row: Row<T> }) => {
+  const isPinned = row.getIsPinned() === 'top'
   const canPin = row.getCanPin()
 
   return (
@@ -257,97 +291,58 @@ const PinRowButton = <T,>({ row, pinParamKey }: { row: Row<T>; pinParamKey: stri
   )
 }
 
-// Fake change event for TanStack table toggle handlers (expect e.target.checked)
-const fakeChangeEvent = (checked: boolean): ChangeEvent<HTMLInputElement> =>
-  ({ target: { checked } }) as ChangeEvent<HTMLInputElement>
-
-// Select all checkbox component for table header.
-// Subscribes to the selection search param so it re-renders when the URL
-// changes; derives isSome/isAll from param + current page row IDs.
-function SelectAllCheckbox<T>({ table, isVisible }: { table: Table<T>; isVisible: boolean }) {
-  const rowSelectionParser = useMemo(() => createRowSelectionParser(), [])
-  const [rowSelectionParam] = useQueryState('selected', rowSelectionParser)
-  const selection = (rowSelectionParam ?? {}) as RowSelectionState
-
-  const pageRowIds = table.getRowModel().rows.map((r) => r.id)
-  const selectedOnPage = pageRowIds.filter((id) => selection[id] === true)
-  const isAll = pageRowIds.length > 0 && selectedOnPage.length === pageRowIds.length
-  const isSome = selectedOnPage.length > 0 && selectedOnPage.length < pageRowIds.length
-
-  const isMobile = useMobile()
+function SelectAllCheckbox<T>({ table }: { table: Table<T> }) {
+  const isAll = table.getIsAllPageRowsSelected()
+  const isSome = table.getIsSomePageRowsSelected()
 
   return (
-    <AnimatePresence mode='wait'>
-      {isVisible && (
-        <motion.div
-          initial={{ opacity: 0.2, x: isMobile ? -8 : 0 }}
-          animate={{ opacity: 1, x: isMobile ? -4 : 2 }}
-          className={cn('w-9 md:w-10 flex justify-center items-center')}>
-          <Checkbox.Root
-            checked={isAll}
-            indeterminate={isSome}
-            onCheckedChange={(checked) => {
-              const handler = table.getToggleAllPageRowsSelectedHandler()
-              handler(fakeChangeEvent(!!checked))
-            }}
-            className='w-4 md:w-8 h-4 rounded-[2.75px] bg-sidebar flex justify-center items-center md:mr-4.5 md:ml-2'>
-            <Icon
-              name={isSome ? 'minus' : isAll ? 'checkbox-checked' : 'checkbox-unchecked'}
-              className={cn('size-7 shrink-0', {
-                'dark:text-amber-400 text-amber-500': isSome,
-                'text-foreground size-5': isAll,
-                'rotate-0 size-5 text-foreground': !isAll && !isSome
-              })}
-            />
-          </Checkbox.Root>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className='flex w-9 items-center justify-center md:w-10 md:translate-x-0.5'>
+      <Checkbox.Root
+        checked={isAll}
+        indeterminate={isSome}
+        onCheckedChange={(checked) =>
+          table.toggleAllPageRowsSelected(Boolean(checked))
+        }
+        aria-label='Select all rows on this page'
+        className='flex h-4 w-4 items-center justify-center rounded-[2.75px] bg-sidebar md:mr-4.5 md:ml-2 md:w-8'>
+        <Icon
+          name={
+            isSome
+              ? 'minus'
+              : isAll
+                ? 'checkbox-checked'
+                : 'checkbox-unchecked'
+          }
+          className={cn('size-7 shrink-0', {
+            'text-amber-500 dark:text-amber-400': isSome,
+            'size-5 text-foreground': isAll,
+            'size-5 rotate-0 text-foreground': !isAll && !isSome
+          })}
+        />
+      </Checkbox.Root>
+    </div>
   )
 }
 
-// Select row checkbox component for table cells
-const SelectRowCheckbox = <T,>({ row, isVisible }: { row: Row<T>; isVisible: boolean }) => {
-  const [rowSelectionParam, setRowSelectionParam] = useQueryState('selected', createRowSelectionParser())
-
-  const isMobile = useMobile()
-
-  const isChecked = useMemo(() => (rowSelectionParam ?? {})[row.id] === true, [row.id, rowSelectionParam])
-
-  const handleCheckedChange = (checked: boolean) => {
-    const currentSelection = rowSelectionParam ?? {}
-    const nextSelection = { ...currentSelection }
-
-    if (checked) {
-      nextSelection[row.id] = true
-    } else {
-      delete nextSelection[row.id]
-    }
-
-    setRowSelectionParam(nextSelection)
-  }
+const SelectRowCheckbox = <T,>({ row }: { row: Row<T> }) => {
+  const isChecked = row.getIsSelected()
 
   return (
-    <AnimatePresence mode='wait'>
-      {isVisible && (
-        <motion.div
-          initial={{ scale: 1, x: 10 }}
-          animate={{ scale: 1, x: isMobile ? 3 : 9 }}
-          className={cn('w-4 md:w-5 md:-ml-1 flex items-center justify-center')}>
-          <Checkbox.Root
-            checked={isChecked}
-            disabled={!row.getCanSelect()}
-            onCheckedChange={handleCheckedChange}
-            className={cn('w-6 flex justify-center items-center')}>
-            <Icon
-              name={isChecked ? 'check' : 'checkbox-unchecked'}
-              className={cn('h-5 w-5 aspect-square rounded-sm', {
-                'bg-dark-gray dark:bg-mac-blue/80 opacity-100 text-background dark:text-white': isChecked
-              })}
-            />
-          </Checkbox.Root>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div className='flex w-4 translate-x-1 items-center justify-center md:-ml-1 md:w-5 md:translate-x-2'>
+      <Checkbox.Root
+        checked={isChecked}
+        disabled={!row.getCanSelect()}
+        onCheckedChange={(checked) => row.toggleSelected(Boolean(checked))}
+        aria-label={isChecked ? `Deselect row ${row.id}` : `Select row ${row.id}`}
+        className='flex w-6 items-center justify-center'>
+        <Icon
+          name={isChecked ? 'check' : 'checkbox-unchecked'}
+          className={cn('aspect-square h-5 w-5 rounded-sm', {
+            'bg-dark-gray text-background opacity-100 dark:bg-mac-blue/80 dark:text-white':
+              isChecked
+          })}
+        />
+      </Checkbox.Root>
+    </div>
   )
 }
