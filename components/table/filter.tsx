@@ -7,7 +7,7 @@ import { Column } from '@tanstack/react-table'
 import { useQueryState } from 'nuqs'
 import { useId, useMemo } from 'react'
 import { getColumnHeaderText, getFilterValueLabel, getFilterValueToken } from './filter-utils'
-import { createColumnFiltersParser } from './parsers-v2'
+import { createColumnFiltersParser } from './parsers'
 
 interface Props<T> {
   columns: Column<T, unknown>[]

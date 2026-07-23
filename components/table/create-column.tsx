@@ -15,7 +15,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useQueryState } from 'nuqs'
 import { type ChangeEvent, type ReactNode, useMemo } from 'react'
 import { filterFn, globalFilterFn, groupFilter, multiSelectFilterFn } from './filter-fns'
-import { createRowPinningParser, createRowSelectionParser } from './parsers-v2'
+import { createRowPinningParser, createRowSelectionParser } from './parsers'
 import { RowActions } from './row-actions'
 export { filterFn, globalFilterFn, groupFilter, multiSelectFilterFn }
 

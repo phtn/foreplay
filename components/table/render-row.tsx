@@ -4,7 +4,7 @@ import { useQueryState } from 'nuqs'
 import type { MouseEvent } from 'react'
 import { useCallback, useMemo } from 'react'
 import { TableRow } from '../ui/table'
-import { createRowSelectionParser } from './parsers-v2'
+import { createRowSelectionParser } from './parsers'
 import { RenderCell } from './render-cell'
 
 interface RenderRowProps<T> {

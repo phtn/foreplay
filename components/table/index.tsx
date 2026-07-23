@@ -26,16 +26,16 @@ import { useMobile } from '@/hooks/use-mobile'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { parseAsBoolean } from 'nuqs/server'
-import { ColumnSort } from './column-sort-v2'
-import { ColumnView } from './column-view-v3'
+import { ColumnSort } from './column-sort'
+import { ColumnView } from './column-view'
 import { ColumnVisibilityProvider, useColumnVisibility } from './column-visibility-context'
 import { ActionConfig, ColumnConfig, createColumns, globalFilterFn } from './create-column'
-import { DeleteButton } from './delete-row-v2'
-import { EmptyTable } from './empty-table-v2'
-import { Filter } from './filter-v2'
+import { DeleteButton } from './delete-row'
+import { EmptyTable } from './empty-table'
+import { Filter } from './filter'
 import { HyperWrap } from './hyper-wrap'
 import { MultiSelect } from './multi-select'
-import { PageControl, Paginator } from './pagination-v2'
+import { PageControl, Paginator } from './pagination'
 import {
   createColumnFiltersParser,
   createColumnVisibilityParser,
@@ -46,9 +46,9 @@ import {
   createSortingParser,
   searchParser,
   selectModeParser
-} from './parsers-v2'
+} from './parsers'
 import { RenderRow } from './render-row'
-import { Search } from './search-v2'
+import { Search } from './search'
 import { SelectToggle } from './select-toggle'
 import { CenterTableToolbar, LeftTableToolbar, RightTableToolbar } from './toolbar'
 import { ViewStyleGroup } from './view-style-group'

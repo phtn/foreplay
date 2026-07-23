@@ -4,7 +4,7 @@ import type { CoreHeader, Renderable, SortingState } from '@tanstack/react-table
 import { useQueryState } from 'nuqs'
 import type { JSX, ReactNode } from 'react'
 import { useMemo } from 'react'
-import { createSortingParser } from './parsers-v2'
+import { createSortingParser } from './parsers'
 
 interface Props<TData, TValue> {
   header: CoreHeader<TData, TValue>
