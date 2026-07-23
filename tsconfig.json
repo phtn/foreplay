@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "gts/*": ["./gts/build/dev/javascript/gts/*"]
     }
   },
   "include": [

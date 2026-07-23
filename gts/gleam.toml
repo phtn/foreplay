@@ -1,0 +1,17 @@
+name = "gts"
+version = "1.0.0"
+target = "javascript"
+
+description = "gleam typescript bindings"
+# licences = ["Apache-2.0"]
+repository = { type = "github", user = "phtn", repo = "foreplay" }
+links = [{ title = "Website", href = "https://foreplay.pro" }]
+
+[javascript]
+typescript_declarations = true
+
+[dependencies]
+gleam_stdlib = ">= 1.0.0 and < 2.0.0"
+
+[dev_dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"

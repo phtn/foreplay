@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
-    "build": "next build --turbo",
-    "start": "next start",
+    "gleam:build": "cd gts && gleam build",
+    "dev": "bun run gleam:build && next dev --turbo",
+    "build": "bun run gleam:build && next build --turbo",
+    "start": "bun run gleam:build && next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
+    "test:gts": "cd gts && gleam test",
     "test:table": "bun test components/table/*.test.ts",
     "postinstall": "node scripts/tailwind-patch.mjs"
   },
@@ -48,6 +50,7 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@chouquette/gleam": "1.17.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -62,6 +65,7 @@
     "unrs-resolver"
   ],
   "trustedDependencies": [
+    "@chouquette/gleam",
     "sharp",
     "unrs-resolver"
   ]

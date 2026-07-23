@@ -1,9 +1,9 @@
 ---
-name: gleam-portability-analyzer
+name: gleamability
 description: Scans a JS/TS codebase (or set of files) to find which files would benefit from being ported to Gleam and compiled back to JS, then writes Gleam sketches for the best candidates. Use this whenever the user asks to find "gleamable" files, wants to know which JS/TS modules are good candidates for porting to Gleam, mentions evaluating a codebase for Gleam migration, or asks for a Gleam rewrite/sketch of specific files. Trigger even if they just say something like "which of my files would be better in Gleam" or "help me start migrating to Gleam" without using the word "gleamable" explicitly.
 ---
 
-# Gleam Portability Analyzer
+# Gleamability - Gleam Portability Analyzer
 
 Finds JS/TS files that are strong candidates for porting to [Gleam](https://gleam.run)
 (a statically-typed functional language that compiles to JS) and produces a
@@ -18,6 +18,7 @@ a Gleam sketch.
 
 If not already clear from the request, confirm (don't over-ask — one
 question is fine, default to reasonable choices):
+
 - Target directory or list of files to scan (default: current project root
   the user is working in).
 - Roughly how many top candidates they want sketches for (default: top 5).
@@ -31,6 +32,7 @@ node scripts/analyze.js <targetDir> --json /tmp/gleam-report.json --top 15
 ```
 
 Options:
+
 - `--top N` — how many results to print to stdout (the JSON always contains
   everything).
 - `--json <path>` — write the full ranked report as JSON (recommended —
@@ -39,13 +41,13 @@ Options:
   four).
 
 The scanner ignores `node_modules`, `dist`, `build`, `out`, `.git`, `.next`,
-`coverage`, `.turbo`, and `.d.ts` files automatically.
+`assets`, `coverage`, `convex`, `.turbo`, and `.d.ts` files automatically.
 
 Each file gets a `score` (0–100), a `tier` (`Strong candidate` /
 `Possible candidate` / `Low priority` / `Not a fit`), and lists of the
 specific `positiveSignals` / `negativeSignals` / `disqualifiers` that drove
 the score. Read `/mnt/skills/.../references/gleam-criteria.md` (path will be
-under wherever this skill is installed) to understand *why* each signal
+under wherever this skill is installed) to understand _why_ each signal
 matters — you'll need that reasoning for step 3.
 
 This is a heuristic regex-based pass, not a real parser — treat the ranking
@@ -56,6 +58,7 @@ reasons are correctly excluded almost all the time; borderline scores in the
 ## Step 3 — Review top candidates and explain
 
 For each of the top N candidates (skip anything tiered `Not a fit`):
+
 1. Open and actually read the file — don't just trust the score.
 2. Confirm or correct the scanner's verdict in plain language: what the file
    does, which signals justify porting it, and anything the scanner couldn't
@@ -84,11 +87,12 @@ than guessing from memory.
 ## Step 5 — Deliver the report
 
 Produce a single Markdown report containing:
+
 - A ranked table (file, score, tier, one-line reason) for everything above
   `Low priority`.
 - For each top candidate: the explanation from Step 3 and the Gleam sketch
   from Step 4, in a fenced ```gleam code block.
-- A short closing note on which 1–2 files would be the best *first* port
+- A short closing note on which 1–2 files would be the best _first_ port
   (smallest risk, highest signal) if the user wants to start incrementally.
 
 This is a substantial, save-worthy document — create it as a markdown file

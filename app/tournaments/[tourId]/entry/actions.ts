@@ -7,6 +7,17 @@ import { getVerifiedAdminSession, getVerifiedFirebaseSession } from '@/lib/fireb
 import { buildFirebaseSubscriptionUserIds, buildFirebaseUserId } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
+import { Result$Error$0, Result$Ok$0 } from 'gts/gleam.mjs'
+import {
+  prepare_tournament_subscription,
+  prepared_contact_email,
+  prepared_contact_phone,
+  prepared_division,
+  prepared_handicap_index,
+  prepared_payment_amount,
+  prepared_team_name,
+  prepared_total_players
+} from 'gts/tournament_entry.mjs'
 
 type CreateTournamentSubscriptionInput = {
   tourId: string
@@ -33,9 +44,42 @@ type ReceiptTargetInput = {
 
 const adminOverrideContentType = 'image/svg+xml;charset=utf-8'
 
-const trimOrUndefined = (value: string | undefined) => {
-  const trimmed = value?.trim()
-  return trimmed ? trimmed : undefined
+const optionalString = (value: string) => value || undefined
+
+const prepareCreateTournamentSubscription = (input: CreateTournamentSubscriptionInput) => {
+  const result = prepare_tournament_subscription(
+    input.teamName ?? '',
+    input.email,
+    input.phone ?? '',
+    input.playerCount,
+    input.paymentAmount,
+    input.handicapIndex ?? '',
+    input.division ?? ''
+  )
+  const error = Result$Error$0(result)
+
+  if (error !== undefined) {
+    return { ok: false, error } as const
+  }
+
+  const prepared = Result$Ok$0(result)
+
+  if (!prepared) {
+    return { ok: false, error: 'Unable to validate this entry request.' } as const
+  }
+
+  return {
+    ok: true,
+    value: {
+      teamName: optionalString(prepared_team_name(prepared)),
+      contactEmail: prepared_contact_email(prepared),
+      contactPhone: optionalString(prepared_contact_phone(prepared)),
+      totalPlayers: prepared_total_players(prepared),
+      paymentAmount: prepared_payment_amount(prepared),
+      handicapIndex: optionalString(prepared_handicap_index(prepared)),
+      division: optionalString(prepared_division(prepared))
+    }
+  } as const
 }
 
 const actionError = (error: unknown, fallback: string, operation: string) => {
@@ -56,25 +100,10 @@ const actionError = (error: unknown, fallback: string, operation: string) => {
 }
 
 export async function createTournamentSubscription(input: CreateTournamentSubscriptionInput) {
-  const email = input.email.trim().toLowerCase()
-  const phone = input.phone?.trim()
-  const totalPlayers = Number.parseInt(input.playerCount, 10)
-  const paymentAmount = Math.max(0, Math.round(input.paymentAmount))
+  const prepared = prepareCreateTournamentSubscription(input)
 
-  if (!email) {
-    return { ok: false, error: 'Contact email is required.' } as const
-  }
-
-  if (!Number.isFinite(totalPlayers) || totalPlayers < 1) {
-    return { ok: false, error: 'Enter at least one player.' } as const
-  }
-
-  if (totalPlayers > 20) {
-    return { ok: false, error: 'You can add up to 20 players per entry.' } as const
-  }
-
-  if (!Number.isFinite(paymentAmount)) {
-    return { ok: false, error: 'Payment amount is invalid.' } as const
+  if (!prepared.ok) {
+    return prepared
   }
 
   try {
@@ -89,13 +118,13 @@ export async function createTournamentSubscription(input: CreateTournamentSubscr
       ownerUserIds: buildFirebaseSubscriptionUserIds(session.decodedToken),
       tournamentId: input.tourId,
       formId: input.formId,
-      teamName: trimOrUndefined(input.teamName),
-      contactEmail: email,
-      contactPhone: trimOrUndefined(phone),
-      totalPlayers,
-      paymentAmount,
-      handicapIndex: trimOrUndefined(input.handicapIndex),
-      division: trimOrUndefined(input.division)
+      teamName: prepared.value.teamName,
+      contactEmail: prepared.value.contactEmail,
+      contactPhone: prepared.value.contactPhone,
+      totalPlayers: prepared.value.totalPlayers,
+      paymentAmount: prepared.value.paymentAmount,
+      handicapIndex: prepared.value.handicapIndex,
+      division: prepared.value.division
     })
 
     return { ok: true, value: result } as const
