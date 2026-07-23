@@ -2,6 +2,7 @@ const MODERN_COLOR_FUNCTION =
   /(?:color(?:-mix)?|lab|lch|oklab|oklch)\(/i
 const MAX_CANVAS_DIMENSION = 16_000
 const MAX_CANVAS_AREA = 64_000_000
+const MAX_TICKET_EXPORT_SCALE = 4
 
 const colorProperties = [
   'accent-color',
@@ -130,14 +131,14 @@ export function hasModernColorFunction(value: string) {
 export function getTicketExportScale(
   width: number,
   height: number,
-  devicePixelRatio: number
+  requestedScale = MAX_TICKET_EXPORT_SCALE
 ) {
   const safeWidth = Math.max(Math.ceil(width), 1)
   const safeHeight = Math.max(Math.ceil(height), 1)
-  const safeDeviceScale =
-    Number.isFinite(devicePixelRatio) && devicePixelRatio > 0
-      ? devicePixelRatio
-      : 1
+  const safeRequestedScale =
+    Number.isFinite(requestedScale) && requestedScale > 0
+      ? Math.min(requestedScale, MAX_TICKET_EXPORT_SCALE)
+      : MAX_TICKET_EXPORT_SCALE
   const dimensionScale =
     MAX_CANVAS_DIMENSION / Math.max(safeWidth, safeHeight)
   const areaScale = Math.sqrt(
@@ -146,7 +147,7 @@ export function getTicketExportScale(
 
   return Math.max(
     Number.EPSILON,
-    Math.min(2, safeDeviceScale, dimensionScale, areaScale)
+    Math.min(safeRequestedScale, dimensionScale, areaScale)
   )
 }
 
@@ -170,8 +171,7 @@ export async function downloadElementAsPng(element: HTMLElement, filename: strin
   const exportHeight = Math.max(element.scrollHeight, 1)
   const exportScale = getTicketExportScale(
     exportWidth,
-    exportHeight,
-    window.devicePixelRatio
+    exportHeight
   )
   const canvas = await html2canvas(element, {
     allowTaint: false,

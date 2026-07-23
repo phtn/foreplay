@@ -66,7 +66,7 @@ export function LoginForm() {
     try {
       const nextUser = user ?? (await signInWithGoogle()).user
       await syncFirebaseSession(nextUser)
-      router.replace('/')
+      router.replace('/tournaments/som-2026')
     } catch (error) {
       setErrorMessage(getFirebaseAuthErrorMessage(error))
       setSubmissionKind(null)

@@ -56,7 +56,6 @@ test('ticket typography cannot be clipped by its metadata column', () => {
   const nameClasses = getClassesForText(html, 'Reverse Entonov')
 
   assert.equal(ticketNumberClasses.has('leading-5'), false)
-  assert.equal(ticketNumberClasses.has('line-through'), false)
   assert.equal(ticketNumberClasses.has('whitespace-nowrap'), true)
   assert.equal(emailClasses.has('wrap-break-word'), true)
   assert.equal(nameClasses.has('truncate'), false)

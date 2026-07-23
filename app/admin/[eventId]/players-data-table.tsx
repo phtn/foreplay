@@ -283,8 +283,8 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
       />
       {menuOpen ? (
         <DropdownMenuContent align='end' className='w-64 rounded-xl'>
-          <DropdownMenuGroup>
-            <DropdownMenuLabel className='font-okx font-medium text-sky-800 border-b border-border/50 text-sm'>
+          <DropdownMenuGroup className='space-y-2'>
+            <DropdownMenuLabel className='font-okx font-medium text-sky-800 dark:text-sky-500 border-b border-border/60 text-sm'>
               Status Options
             </DropdownMenuLabel>
             {statusMenuActions.map((action) => {
@@ -302,14 +302,20 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
 
               return (
                 <DropdownMenuItem
+                  className={cn(isCurrent && 'bg-sky-500/8')}
                   key={action.id}
                   variant={action.variant}
                   disabled={isPending || isCurrent || cancelBlocked}
                   onClick={() => runAction(action.id)}>
-                  <Icon name={actionPending ? 'spinner-ring' : isCurrent ? 'check' : action.icon} className='size-4' />
-                  <span className='whitespace-nowrap'>{actionLabel}</span>
+                  <Icon
+                    name={actionPending ? 'spinner-ring' : isCurrent ? 'check' : action.icon}
+                    className={cn('size-4', { 'text-sky-800 dark:text-sky-500 opacity-100': isCurrent })}
+                  />
+                  <span className={cn('whitespace-nowrap capitalize', { '': isCurrent })}>{actionLabel}</span>
                   {isCurrent ? (
-                    <span className='ml-auto text-[10px] uppercase tracking-wider text-muted-foreground'>Current</span>
+                    <span className='ml-auto font-ios text-foreground/80 text-[10px] uppercase tracking-widest'>
+                      Current
+                    </span>
                   ) : null}
                 </DropdownMenuItem>
               )
@@ -317,7 +323,7 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem disabled={isPending || !row.canUndo} onClick={() => runAction('undo')}>
-            <Icon name={pendingAction === 'undo' ? 'spinner-ring' : 'refresh'} className='size-4' />
+            <Icon name={pendingAction === 'undo' ? 'spinner-ring' : 'undo-variant'} className='size-4' />
             <span>Undo last update</span>
           </DropdownMenuItem>
           {actionError ? (

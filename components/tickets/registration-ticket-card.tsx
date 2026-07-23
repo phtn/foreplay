@@ -11,6 +11,8 @@ import { cn } from '@/lib/utils'
 import { useQuery } from 'convex/react'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
+const TICKET_QR_SOURCE_SIZE = 512
+
 interface RegistrationTicketCardProps {
   className?: string
   deletePending?: boolean
@@ -68,7 +70,7 @@ export function RegistrationTicketCard({
       ecLevel: 'M' as const,
       fill: checkedIn ? '#047857' : '#334155',
       background: '#ffffff',
-      size: 180
+      size: TICKET_QR_SOURCE_SIZE
     }),
     [checkedIn, registration.gatePassPayload]
   )

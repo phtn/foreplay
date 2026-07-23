@@ -23,10 +23,10 @@ test('recognizes browser color functions that html2canvas cannot parse reliably'
   assert.equal(hasModernColorFunction('rgb(255 0 0)'), false)
 })
 
-test('keeps ticket canvas exports inside browser dimension and area limits', () => {
-  assert.equal(getTicketExportScale(800, 600, 2), 2)
+test('uses a high-resolution scale within browser dimension and area limits', () => {
+  assert.equal(getTicketExportScale(800, 600), 4)
 
-  const scale = getTicketExportScale(2_000, 40_000, 3)
+  const scale = getTicketExportScale(2_000, 40_000)
   assert.ok(scale > 0)
   assert.ok(2_000 * scale <= 16_000)
   assert.ok(40_000 * scale <= 16_000)
@@ -34,8 +34,7 @@ test('keeps ticket canvas exports inside browser dimension and area limits', () 
 
   const hugeScale = getTicketExportScale(
     1_000_000,
-    1_000_000,
-    3
+    1_000_000
   )
   assert.ok(1_000_000 * hugeScale <= 16_000)
   assert.ok(
