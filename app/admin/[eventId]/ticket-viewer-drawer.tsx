@@ -29,7 +29,7 @@ export function TicketViewerDrawer({ active, onOpenChange, open, reference, tick
       <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:50rem]'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
-            <DrawerTitle className='font-poly text-xl'>Generated tickets</DrawerTitle>
+            <DrawerTitle className='font-poly text-xl'>Ticket Viewer</DrawerTitle>
             <DrawerDescription className='truncate font-ios text-xs tracking-wider'>
               {reference} · {tickets.length} {tickets.length === 1 ? 'ticket' : 'tickets'}
             </DrawerDescription>

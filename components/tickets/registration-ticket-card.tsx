@@ -30,7 +30,11 @@ function RegistrationField({ className, label, value }: { className?: string; la
   return (
     <div className='space-y-0.5'>
       <p className='font-ios text-[10px] font-medium uppercase tracking-[0.3em] text-slate-500'>{label}</p>
-      <p className={cn('max-w-[20ch] text-clip font-ios text-sm tracking-[0.18em] text-slate-800', className)}>
+      <p
+        className={cn(
+          'min-w-0 max-w-full wrap-break-word font-ios text-sm tracking-[0.18em] text-slate-800',
+          className
+        )}>
         {value}
       </p>
     </div>
@@ -118,7 +122,7 @@ export function RegistrationTicketCard({
                   </span>
                 ) : null}
               </div>
-              <p className='truncate font-ios text-lg font-medium tracking-widest text-slate-900'>
+              <p className='wrap-break-word font-ios text-lg font-medium tracking-widest text-slate-900'>
                 {registration.name}
               </p>
               {checkedIn ? (
@@ -126,14 +130,14 @@ export function RegistrationTicketCard({
               ) : null}
             </div>
 
-            <div className='grid grid-cols-1 gap-3 overflow-hidden'>
+            <div className='grid min-w-0 grid-cols-1 gap-3'>
               <RegistrationField label='Email Address' value={registration.email} />
               <RegistrationField label='Phone Number' value={registration.phone} />
               <RegistrationField
                 label='Ticket Number'
                 value={formatTicketNumber(registration.id)}
                 className={cn(
-                  'relative z-10 overflow-visible font-semibold text-2xl tracking-[0.35em] line-through decoration-white leading-5',
+                  'relative z-10 max-w-none whitespace-nowrap font-semibold text-xl tracking-[0.22em] sm:text-2xl sm:tracking-[0.35em] line-through decoration-white',
                   checkedIn && 'text-emerald-700'
                 )}
               />
