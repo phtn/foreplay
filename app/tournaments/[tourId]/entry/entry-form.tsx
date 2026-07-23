@@ -275,45 +275,6 @@ export const NewEntryForm = ({
           void form.handleSubmit()
         }}>
         <div className='grid md:grid-cols-3'>
-          <div className='md:border-r border-slate-400 dark:border-slate-900 p-4 md:p-8'>
-            <form.AppField name='email'>
-              {({ TextField }) => (
-                <TextField
-                  id='book-email'
-                  label='Contact'
-                  icon='mail'
-                  type='email'
-                  placeholder='you@example.com'
-                  autoComplete='email'
-                  required
-                  containerClassName='mb-4'
-                  className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
-                  onChange={(event) => {
-                    void setEntryQuery({ email: event.currentTarget.value || null })
-                  }}></TextField>
-              )}
-            </form.AppField>
-            <form.AppField name='phone'>
-              {({ TextField }) => (
-                <TextField
-                  id='book-phone'
-                  type='tel'
-                  label='Phone (Optional)'
-                  icon='phone-accept'
-                  placeholder='+63'
-                  autoComplete='tel'
-                  required={false}
-                  containerClassName='mb-0'
-                  className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
-                  onChange={(event) => {
-                    void setEntryQuery({ phone: event.currentTarget.value || null })
-                  }}
-                />
-              )}
-            </form.AppField>
-          </div>
           <div className='bg-sky-500/0 md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-900'>
             <form.AppField name='fullName'>
               {({ TextField }) => (
@@ -344,7 +305,8 @@ export const NewEntryForm = ({
                   required
                   containerClassName='mb-4'
                   className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
+                  // disabled={isDraftBusy || isEntryLocked}
+                  disabled
                   onChange={(event) => {
                     const nextPlayers = Number.parseInt(event.currentTarget.value, 10)
                     const playerCount = Number.isNaN(nextPlayers) ? players : nextPlayers
@@ -390,6 +352,45 @@ export const NewEntryForm = ({
             </div>
           </div>
 
+          <div className='md:border-r border-slate-400 dark:border-slate-900 p-4 md:p-8'>
+            <form.AppField name='email'>
+              {({ TextField }) => (
+                <TextField
+                  id='book-email'
+                  label='Contact'
+                  icon='mail'
+                  type='email'
+                  placeholder='you@example.com'
+                  autoComplete='email'
+                  required
+                  containerClassName='mb-4'
+                  className={entryControlClassName}
+                  disabled={isDraftBusy || isEntryLocked}
+                  onChange={(event) => {
+                    void setEntryQuery({ email: event.currentTarget.value || null })
+                  }}></TextField>
+              )}
+            </form.AppField>
+            <form.AppField name='phone'>
+              {({ TextField }) => (
+                <TextField
+                  id='book-phone'
+                  type='tel'
+                  label='Phone (Optional)'
+                  icon='phone-accept'
+                  placeholder='+63'
+                  autoComplete='tel'
+                  required={false}
+                  containerClassName='mb-0'
+                  className={entryControlClassName}
+                  disabled={isDraftBusy || isEntryLocked}
+                  onChange={(event) => {
+                    void setEntryQuery({ phone: event.currentTarget.value || null })
+                  }}
+                />
+              )}
+            </form.AppField>
+          </div>
           <div className='h-full flex flex-col gap-4 md:gap-8 md:pt-4 text-center md:justify-center bg-sky-500/0'>
             <p className='font-okx text-foreground/80 text-xs md:text-base text-balance text-center'>
               By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
