@@ -1,3 +1,4 @@
+import formatters
 import gleeunit
 import tournament_entry
 
@@ -92,4 +93,33 @@ fn prepare_with(email: String, player_count: String) {
     "",
     "",
   )
+}
+
+pub fn formats_registration_fee_label_test() {
+  assert formatters.registration_fee_label(0.0, "₱1,000")
+    == "Sponsor-driven event"
+  assert formatters.registration_fee_label(-1.0, "₱1,000")
+    == "Sponsor-driven event"
+  assert formatters.registration_fee_label(1000.0, "₱1,000") == "₱1,000"
+}
+
+pub fn formats_slots_label_test() {
+  assert formatters.slots_label(12, True, 24) == "12/24"
+  assert formatters.slots_label(12, False, 0) == "12"
+}
+
+pub fn formats_publication_label_test() {
+  assert formatters.publication_label(True) == "Published"
+  assert formatters.publication_label(False) == "Draft"
+}
+
+pub fn formats_commission_label_test() {
+  assert formatters.commission_label("fixed", True, "0") == "fixed · 0"
+  assert formatters.commission_label("fixed", False, "") == "Not configured"
+}
+
+pub fn formats_status_label_test() {
+  assert formatters.status_label("pending_payment") == "Pending Payment"
+  assert formatters.status_label("WAITING_review") == "WAITING Review"
+  assert formatters.status_label("") == ""
 }

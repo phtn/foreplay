@@ -5,6 +5,7 @@ import { Popover } from '@base-ui/react/popover'
 import type { ColumnFiltersState } from '@tanstack/react-table'
 import { Column } from '@tanstack/react-table'
 import { memo, useId, useMemo, useState } from 'react'
+import { smap } from './custom-maps'
 import { normalizeText } from './filter-fns'
 import { getColumnHeaderText, getFilterValueLabel, getFilterValueToken } from './filter-utils'
 import { TABLE_QUERY_LIMITS } from './parsers'
@@ -133,13 +134,13 @@ const FilterComponent = <T,>({
               { 'px-0 md:px-3.5': totalActiveFilters > 0 }
             )}>
             {totalActiveFilters > 0 ? (
-              <span className='bg-indigo-500 font-okxs md:-ml-1 w-5 rounded-sm font-semibold text-white dark:bg-indigo-400'>
+              <span className='bg-indigo-500 font-okx md:-ml-1 w-5 rounded-sm font-semibold text-white dark:text-background dark:bg-indigo-300'>
                 {totalActiveFilters > 99 ? '99+' : totalActiveFilters}
               </span>
             ) : (
               <Icon name='filter' className={cn('size-4 dark:opacity-90')} />
             )}
-            <span className='hidden text-sm font-brk capitalize opacity-90 md:flex'>Filter</span>
+            <span className='hidden font-ios text-sm capitalize opacity-90 md:flex'>Filter</span>
           </BaseButton>
         }
       />
@@ -190,7 +191,7 @@ const FilterComponent = <T,>({
                       <BaseButton
                         onClick={() => handleColumnRemove(filterData.column.id)}
                         className='h-6 w-6 p-0 text-muted-foreground hover:text-destructive'>
-                        <Icon name='x' className='size-3' />
+                        <Icon name='close' className='size-4' />
                       </BaseButton>
                     </div>
 
@@ -223,7 +224,7 @@ const FilterComponent = <T,>({
                         const hiddenOptionCount = matchingOptions.length - renderedOptions.length
 
                         return (
-                          <>
+                          <div className='space-y-1'>
                             {renderedOptions.map((option, index) => {
                               const id = `v-${baseId}-${columnIndex}-${index}`
                               const isChecked = filterData.selectedValues.some(
@@ -236,7 +237,7 @@ const FilterComponent = <T,>({
                                   className={cn(
                                     'ml-5 flex h-8 items-center rounded-sm px-1.5 font-brk hover:bg-dark-table/10 dark:hover:bg-origin/30',
                                     {
-                                      'bg-indigo-500 text-white opacity-100 hover:bg-indigo-400 dark:bg-origin/80 dark:text-indigo-400 dark:hover:bg-origin/50':
+                                      'bg-indigo-500 text-white opacity-100 hover:bg-indigo-400 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-400/15':
                                         isChecked
                                     }
                                   )}>
@@ -271,7 +272,7 @@ const FilterComponent = <T,>({
                                     <Icon name={isChecked ? 'check' : 'checkbox-unchecked'} className='size-4' />
                                   </Checkbox.Root>
                                   <label htmlFor={id} className='flex grow justify-between gap-2 font-brk text-xs'>
-                                    <span className='truncate'>{option.label}</span>
+                                    <span className='truncate'>{smap[option.label]}</span>
                                     <span className='shrink-0 text-xs'>{option.count}</span>
                                   </label>
                                 </div>
@@ -283,7 +284,7 @@ const FilterComponent = <T,>({
                                 {hiddenOptionCount === 1 ? '' : 's'} — refine the search
                               </div>
                             ) : null}
-                          </>
+                          </div>
                         )
                       })()}
                     </div>

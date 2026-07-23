@@ -3,11 +3,12 @@ import ProtectedLayout from '@/ctx/protected'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import {
   buildFirebaseSubscriptionUserIds,
-  buildFirebaseTokenIdentifier,
-  buildFirebaseUserId
+  buildFirebaseTokenIdentifier
 } from '@/lib/firebase/server-session'
+import { buildLoginPath } from '@/lib/routing/auth-redirect'
 import { fetchQuery } from 'convex/nextjs'
 import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { Content } from './content'
 
 export const metadata: Metadata = {
@@ -38,30 +39,46 @@ const getSearchParamValue = (value: string | string[] | undefined) => {
   return typeof value === 'string' && value.trim() ? value.trim() : null
 }
 
+const buildEntryPath = (tourId: string, query: Awaited<PageProps['searchParams']>) => {
+  const entrySearchParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(query)) {
+    if (Array.isArray(value)) {
+      value.forEach((item) => entrySearchParams.append(key, item))
+    } else if (value !== undefined) {
+      entrySearchParams.set(key, value)
+    }
+  }
+
+  const pathname = `/tournaments/${encodeURIComponent(tourId)}/entry`
+  const search = entrySearchParams.toString()
+  return search ? `${pathname}?${search}` : pathname
+}
+
 const Page = async ({ params, searchParams }: PageProps) => {
   const [{ tourId }, query, session] = await Promise.all([params, searchParams, getVerifiedFirebaseSession()])
+
+  if (!session) {
+    redirect(buildLoginPath(buildEntryPath(tourId, query)))
+  }
+
   const requestedFormId = getSearchParamValue(query.formId)
-  const userId = session ? buildFirebaseUserId(session.decodedToken) : undefined
-  const userIds = session ? buildFirebaseSubscriptionUserIds(session.decodedToken) : []
+  const userIds = buildFirebaseSubscriptionUserIds(session.decodedToken)
   const tournamentPromise = fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
-  const userPromise = session
-    ? fetchQuery(api.users.q.getUserByTokenId, {
-        tokenIdentifier: buildFirebaseTokenIdentifier(session.decodedToken)
-      })
-    : Promise.resolve(null)
-  const subscriptionPromise = requestedFormId && userId
+  const userPromise = fetchQuery(api.users.q.getUserByTokenId, {
+    tokenIdentifier: buildFirebaseTokenIdentifier(session.decodedToken)
+  })
+  const subscriptionPromise = requestedFormId
     ? fetchQuery(api.subscriptions.q.getByTournamentIdAndFormId, {
         tournamentId: tourId,
         formId: requestedFormId,
         userIds
       })
     : Promise.resolve(null)
-  const currentEntriesPromise = userId
-    ? fetchQuery(api.subscriptions.q.listByTournamentIdForUserIds, {
-        tournamentId: tourId,
-        userIds
-      })
-    : Promise.resolve([])
+  const currentEntriesPromise = fetchQuery(api.subscriptions.q.listByTournamentIdForUserIds, {
+    tournamentId: tourId,
+    userIds
+  })
   const paymentMethodPromise = fetchQuery(api.paymentMethods.q.getActiveManual)
 
   const [tournament, users, subscription, currentEntries, paymentMethod] = await Promise.all([
@@ -95,10 +112,10 @@ const Page = async ({ params, searchParams }: PageProps) => {
         tourId={tourId}
         initialFormId={initialFormId}
         initialDivision={subscription?.division ?? initialDivision}
-        initialFullName={user?.name ?? session?.decodedToken.name ?? ''}
-        initialEmail={user?.email ?? session?.decodedToken.email ?? ''}
-        initialPhone={user?.phone ?? session?.decodedToken.phone_number ?? ''}
-        isAdmin={session?.customClaims.admin === true}
+        initialFullName={user?.name ?? session.decodedToken.name ?? ''}
+        initialEmail={user?.email ?? session.decodedToken.email ?? ''}
+        initialPhone={user?.phone ?? session.decodedToken.phone_number ?? ''}
+        isAdmin={session.customClaims.admin === true}
         initialSubscription={subscription}
         paymentMethod={
           paymentMethod

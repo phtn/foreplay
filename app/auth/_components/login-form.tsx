@@ -23,7 +23,7 @@ async function syncFirebaseSession(user: User) {
   await createFirebaseSession(await user.getIdToken(true))
 }
 
-export function LoginForm() {
+export function LoginForm({ redirectTo }: { redirectTo: string }) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [submissionKind, setSubmissionKind] = useState<SubmissionKind>(null)
   const { user, isLoading: isAuthLoading } = useFirebaseUser()
@@ -41,7 +41,7 @@ export function LoginForm() {
       try {
         const credential = await signInWithEmailPassword(value.email, value.password)
         await syncFirebaseSession(credential.user)
-        router.replace('/tournaments/som-2026')
+        router.replace(redirectTo)
       } catch (error) {
         setErrorMessage(getFirebaseAuthErrorMessage(error))
         setSubmissionKind(null)
@@ -66,7 +66,7 @@ export function LoginForm() {
     try {
       const nextUser = user ?? (await signInWithGoogle()).user
       await syncFirebaseSession(nextUser)
-      router.replace('/tournaments/som-2026')
+      router.replace(redirectTo)
     } catch (error) {
       setErrorMessage(getFirebaseAuthErrorMessage(error))
       setSubmissionKind(null)

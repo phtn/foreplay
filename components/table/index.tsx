@@ -59,6 +59,7 @@ import { RenderRow } from './render-row'
 import { Search } from './search'
 import { SelectToggle } from './select-toggle'
 import { CenterTableToolbar, LeftTableToolbar, RightTableToolbar } from './toolbar'
+import { getVisibleColumnsSize, getVisibleHeaders } from './visibility'
 
 export interface TableToolbarContext<T> {
   getFilteredData: () => T[]
@@ -815,6 +816,7 @@ export const DataTable = <T,>({
 
   const visibleLeafColumns = table.getVisibleLeafColumns()
   const visibleColumnSignature = visibleLeafColumns.map((column) => column.id).join('\u001f')
+  const visibleTableSize = getVisibleColumnsSize(visibleLeafColumns)
 
   return (
     <div className='max-w-full overflow-hidden text-foreground'>
@@ -859,13 +861,13 @@ export const DataTable = <T,>({
               aria-busy={loading}
               aria-label={title ?? 'Data table'}
               className='w-fit min-w-full table-fixed caption-bottom text-sm md:min-w-4xl'
-              style={{ width: table.getTotalSize() }}>
+              style={{ width: visibleTableSize }}>
               <TableHeader className='w-full'>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
                     key={headerGroup.id}
                     className='sticky top-0 z-0 h-7 md:h-8 dark:bg-background/10 bg-slate-300/30 backdrop-blur-3xl'>
-                    {headerGroup.headers.map((header) => {
+                    {getVisibleHeaders(headerGroup.headers).map((header) => {
                       const headerSize = header.getSize()
                       return (
                         <TableHead

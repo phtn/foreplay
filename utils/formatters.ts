@@ -1,3 +1,11 @@
+import {
+  commission_label,
+  publication_label,
+  registration_fee_label,
+  slots_label,
+  status_label
+} from 'gts/formatters.mjs'
+
 export const pesoFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currency: 'PHP',
@@ -44,36 +52,21 @@ export function nanoCreatedAt(timestamp: number) {
 // }
 
 export function formatRegistrationFee(value: number) {
-  if (value <= 0) {
-    return 'Sponsor-driven event'
-  }
-
-  return pesoFormatter.format(value)
+  return registration_fee_label(value, pesoFormatter.format(value))
 }
 
 export function formatSlotsLabel(registeredSlots: number, slotsLimit?: number) {
-  if (slotsLimit) {
-    return `${registeredSlots}/${slotsLimit}`
-  }
-
-  return `${registeredSlots}`
+  return slots_label(registeredSlots, Boolean(slotsLimit), slotsLimit ?? 0)
 }
 
 export function getPublicationLabel(published: boolean | undefined) {
-  return published === false ? 'Draft' : 'Published'
+  return publication_label(published !== false)
 }
 
 export function formatCommission(type: string, value?: number) {
-  if (value === undefined) {
-    return 'Not configured'
-  }
-
-  return `${type} · ${value}`
+  return commission_label(type, value !== undefined, value === undefined ? '' : String(value))
 }
 
 export function formatStatus(value: string | undefined) {
-  return (value ?? 'pending_payment')
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
+  return status_label(value ?? 'pending_payment')
 }
