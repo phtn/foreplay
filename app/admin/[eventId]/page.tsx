@@ -6,7 +6,6 @@ import { formatEventDate, formatGateOpenTime, formatSlotsLabel } from '@/utils/f
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { EventHeader } from './event-header'
 import { PlayersDataTable, type EventSubscriptionTableRow } from './players-data-table'
 
 interface EventPageProps {
@@ -95,12 +94,12 @@ export default async function EventPage({ params }: EventPageProps) {
       </div>
 
       <PlayersDataTable eventId={eventId} rows={playerRows} />
-      <EventHeader
+      {/*<EventHeader
         eventDateLabel={eventDateLabel}
         gateOpenTimeLabel={gateOpenTimeLabel}
         fee={event.registration_fee}
         slotsLabel={slotsLabel}
-      />
+      />*/}
     </main>
   )
 }
