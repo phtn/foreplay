@@ -303,9 +303,9 @@ export const NewEntryForm = ({
                 <TextField
                   id='name'
                   type='text'
-                  label='Full Name'
+                  label={`Player's Name`}
                   icon={'user'}
-                  placeholder='Your first and last name'
+                  placeholder='First and Last name'
                   autoComplete='name'
                   containerClassName='mb-4'
                   className={entryControlClassName}
@@ -379,7 +379,7 @@ export const NewEntryForm = ({
               {({ TextField }) => (
                 <TextField
                   id='book-email'
-                  label='Contact'
+                  label='Email'
                   icon='mail'
                   type='email'
                   placeholder='you@example.com'
@@ -398,11 +398,11 @@ export const NewEntryForm = ({
                 <TextField
                   id='book-phone'
                   type='tel'
-                  label='Phone (Optional)'
+                  label='Phone'
                   icon='phone-accept'
                   placeholder='+63'
                   autoComplete='tel'
-                  required={false}
+                  required
                   containerClassName='mb-0'
                   className={entryControlClassName}
                   disabled={isDraftBusy || isEntryLocked}

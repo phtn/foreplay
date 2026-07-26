@@ -16,15 +16,15 @@ import { GolfCourse } from './course'
 
 const proofPoints = [
   { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
-  { label: 'Cash Purse', value: '₱450k', icon: 'cash' as const },
+  { label: 'Cash Purse', value: '₱500k', icon: 'cash' as const },
   { label: 'Hole-in-one', value: 'Ford Everest', icon: 'trophy' as const }
 ]
 
 const gamesList: BookedGames[] = [
   {
-    day: 'Sat',
-    date: '18',
-    month: 'July',
+    day: 'Thu',
+    date: '22',
+    month: 'October',
     time: '06:00 - 07:00',
     place: 'Pradera Verde clubhouse',
     team: 'Sponsor check-in',
@@ -32,44 +32,6 @@ const gamesList: BookedGames[] = [
     attendance: 'Corporate guests, player kits, and sponsor flight confirmation.',
     avatar: 'SM',
     extra: '+4'
-  },
-  {
-    day: 'Sat',
-    date: '18',
-    month: 'July',
-    time: '07:00 - 12:30',
-    place: 'Pinatubo Course',
-    team: 'Shotgun start',
-    status: 'Live',
-    attendance: 'System 36 play with sponsor activations across priority holes.',
-    avatar: '36',
-    extra: '+18'
-  },
-  {
-    day: 'Sat',
-    date: '18',
-    month: 'July',
-    time: 'Hole 15',
-    place: 'Island green',
-    team: 'Hole-in-one prize',
-    status: 'Prize',
-    attendance: '2026 Ford Everest 4x2 Sport.',
-    avatar: 'FE',
-    extra: null,
-    action: 'Sponsor',
-    actionHref: `/tournaments/${featuredTournament.id}/sponsorship`
-  },
-  {
-    day: 'Sat',
-    date: '18',
-    month: 'July',
-    time: 'After scoring',
-    place: 'VIP banquet',
-    team: 'Awards program',
-    status: 'VIP',
-    attendance: 'Cash prize ceremony, sponsor acknowledgments, and banquet networking.',
-    avatar: 'VP',
-    extra: '+1'
   }
 ]
 

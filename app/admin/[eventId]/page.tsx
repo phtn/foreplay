@@ -2,7 +2,7 @@ import { api } from '@/convex/_generated/api'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { Icon } from '@/lib/icons'
 import { toRegistrationTicketData, type RegistrationTicketData } from '@/lib/tickets/registration-ticket'
-import { formatEventDate, formatGateOpenTime, formatSlotsLabel } from '@/utils/formatters'
+import { formatEventDate } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -32,8 +32,8 @@ export default async function EventPage({ params }: EventPageProps) {
   }
 
   const eventDateLabel = formatEventDate(event.gate_open_at, event.event_date)
-  const gateOpenTimeLabel = formatGateOpenTime(event.gate_open_at)
-  const slotsLabel = formatSlotsLabel(event.registered_slots, event.slots_limit)
+  // const gateOpenTimeLabel = formatGateOpenTime(event.gate_open_at)
+  // const slotsLabel = formatSlotsLabel(event.registered_slots, event.slots_limit)
   const ticketsBySubscription = new Map<string, RegistrationTicketData[]>()
 
   for (const registration of registrations) {
