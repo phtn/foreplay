@@ -71,7 +71,7 @@ export const featuredTournament: TournamentSpotlight = {
     latitude: 14.888219,
     longitude: 120.497161
   },
-  dateLabel: 'July 18, 2026 · Saturday',
+  dateLabel: 'October 22, 2026 · Thursday',
   feeLabel: 'Sponsor packages from ₱20,000',
   slotsLabel: '100+ executives',
   formatLabel: 'System 36',
@@ -80,10 +80,10 @@ export const featuredTournament: TournamentSpotlight = {
     'A corporate golf and networking tournament built around executive access, premium brand placement, a major hole-in-one prize, and a high-value sponsor package ladder.',
   divisions: ['Corporate', 'System 36', 'Sponsor flights', 'VIP banquet'],
   teeTimeAt: '2026-07-18T07:00:00+08:00',
-  teeTimeLabel: 'July 18, 2026 at 7:00 AM',
+  teeTimeLabel: 'October 22, 2026 at 7:00 AM',
   prizes: [
     '2026 Ford Everest 4x2 Sport hole-in-one grand prize',
-    '₱450,000 total cash rewards',
+    '₱500,000 total cash rewards',
     'Sponsor-led activations and awards'
   ],
   events: [
@@ -97,8 +97,8 @@ export const featuredTournament: TournamentSpotlight = {
     { label: 'Date & Time', value: 'July 18, 2026 | 7:00 AM Shotgun Start' },
     { label: 'Official Venue', value: 'Pradera Verde Golf & Country Club, Pampanga (Pinatubo Course)' },
     { label: 'Format', value: 'System 36 handicapping format' },
-    { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport on Hole 15 Island Green' },
-    { label: 'Cash Prize Purse', value: '₱450,000 total cash rewards' }
+    { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport' },
+    { label: 'Cash Prize Purse', value: '₱500,000 total cash rewards' }
   ],
   partnerPitch:
     'Position your brand directly in front of business owners, key executives, and industry leaders through a premium golf tournament environment designed for face-to-face corporate engagement.',

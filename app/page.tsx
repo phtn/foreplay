@@ -53,7 +53,7 @@ const gamesList: BookedGames[] = [
     place: 'Island green',
     team: 'Hole-in-one prize',
     status: 'Prize',
-    attendance: '2026 Ford Everest 4x2 Sport headline moment.',
+    attendance: '2026 Ford Everest 4x2 Sport.',
     avatar: 'FE',
     extra: null,
     action: 'Sponsor',

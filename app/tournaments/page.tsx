@@ -50,19 +50,6 @@ export default function TournamentsPage() {
         </div>
 
         <div className='grid gap-6 lg:grid-cols-[1.1fr_0.9fr]'>
-          {/*<div className='space-y-4'>
-            <SectionTitle
-              eyebrow='Open entries'
-              title='Make the premium event impossible to ignore'
-              description='The cards should read like invitations: venue first, payoff second, then a clear route to register.'
-            />
-            <div className='space-y-4'>
-              {tournamentList.map((tournament) => (
-                <TournamentCard key={tournament.id} tournament={tournament} />
-              ))}
-            </div>
-          </div>
-*/}
           <div className='hidden space-y-4'>
             <SectionTitle eyebrow='Why the field buys' title='Package the experience, not just the bracket' />
             <Card className='border-border/70 bg-muted/20'>
