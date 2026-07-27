@@ -1,9 +1,10 @@
 'use server'
 
 import { api } from '@/convex/_generated/api'
-import type { Id } from '@/convex/_generated/dataModel'
+import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { fetchMutation } from 'convex/nextjs'
+import { ConvexError } from 'convex/values'
 import { revalidatePath } from 'next/cache'
 import {
   editableSubscriptionStatuses,
@@ -14,6 +15,60 @@ import {
 const editableSubscriptionStatusSet = new Set<string>(
   editableSubscriptionStatuses
 )
+
+type TournamentSupport = NonNullable<Doc<'tournaments'>['support']>
+type TournamentSponsorList = NonNullable<
+  Doc<'tournaments'>['sponsor_list']
+>
+
+type SaveTournamentSupportInput = {
+  tournamentId: Id<'tournaments'>
+  support: TournamentSupport
+}
+
+type SaveTournamentSponsorListInput = {
+  tournamentId: Id<'tournaments'>
+  sponsorList: TournamentSponsorList
+}
+
+const tournamentSettingsError = (
+  error: unknown,
+  fallback: string,
+  operation: string
+) => {
+  if (error instanceof ConvexError) {
+    const data = error.data
+
+    if (typeof data === 'string' && data.trim()) {
+      return { ok: false, error: data.trim() } as const
+    }
+
+    if (
+      data &&
+      typeof data === 'object' &&
+      'message' in data &&
+      typeof data.message === 'string'
+    ) {
+      return { ok: false, error: data.message } as const
+    }
+  }
+
+  console.error(`[tournament-settings] ${operation} failed`, error)
+  return { ok: false, error: fallback } as const
+}
+
+const revalidateTournamentSettings = (eventId: string | null) => {
+  revalidatePath('/admin')
+
+  if (!eventId) {
+    return
+  }
+
+  const encodedEventId = encodeURIComponent(eventId)
+  revalidatePath(`/admin/${encodedEventId}`)
+  revalidatePath(`/tournaments/${encodedEventId}`)
+  revalidatePath(`/tournaments/${encodedEventId}/sponsorship`)
+}
 
 const validateStatusActionInput = ({
   eventId,
@@ -145,4 +200,54 @@ export async function updateSubscriptionRemarks(formData: FormData) {
   })
 
   revalidatePath(`/admin/${eventId}`)
+}
+
+export async function saveTournamentSupport(
+  input: SaveTournamentSupportInput
+) {
+  await requireAdminSession()
+
+  try {
+    const result = await fetchMutation(
+      api.tournaments.m.updateSupport,
+      {
+        tournamentId: input.tournamentId,
+        support: input.support
+      }
+    )
+
+    revalidateTournamentSettings(result.eventId)
+    return { ok: true } as const
+  } catch (error) {
+    return tournamentSettingsError(
+      error,
+      'Unable to save support details.',
+      'save support details'
+    )
+  }
+}
+
+export async function saveTournamentSponsorList(
+  input: SaveTournamentSponsorListInput
+) {
+  await requireAdminSession()
+
+  try {
+    const result = await fetchMutation(
+      api.tournaments.m.updateSponsorList,
+      {
+        tournamentId: input.tournamentId,
+        sponsor_list: input.sponsorList
+      }
+    )
+
+    revalidateTournamentSettings(result.eventId)
+    return { ok: true } as const
+  } catch (error) {
+    return tournamentSettingsError(
+      error,
+      'Unable to save the sponsor list.',
+      'save sponsor list'
+    )
+  }
 }

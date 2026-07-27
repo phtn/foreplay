@@ -11,6 +11,11 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from '@/components/ui/drawer'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
 import { Icon } from '@/lib/icons'
 
 interface EventQrDrawerProps {
@@ -36,18 +41,26 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
 
   return (
     <Drawer swipeDirection='right'>
-      <DrawerTrigger
-        render={
-          <Button
-            type='button'
-            variant='ghost'
-            size='icon-sm'
-            className='rounded-full text-sky-600 hover:text-sky-500'
-            aria-label={`Show QR code for ${eventTitle}`}>
-            <Icon name='qrcode' className='size-5' />
-          </Button>
-        }
-      />
+      <Tooltip>
+        <TooltipTrigger
+          delay={150}
+          render={
+            <DrawerTrigger
+              render={
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='icon-sm'
+                  className='rounded-full text-sky-600 hover:text-sky-500'
+                  aria-label={`Show QR code for ${eventTitle}`}>
+                  <Icon name='qrcode' className='size-5' />
+                </Button>
+              }
+            />
+          }
+        />
+        <TooltipContent side='top'>Event QR code</TooltipContent>
+      </Tooltip>
 
       <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem]'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 pb-4 text-left'>

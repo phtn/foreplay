@@ -1,8 +1,9 @@
 import { createQRCodeSvg } from '@/components/qrcode/create-svg'
 import type { Doc } from '@/convex/_generated/dataModel'
 
-import { Icon } from '@/lib/icons'
 import { EventQrDrawer } from './event-qr-drawer'
+import { EventSponsorsDrawer } from './event-sponsors-drawer'
+import { EventSupportDrawer } from './event-support-drawer'
 
 interface EventToolbarProps {
   event: Doc<'tournaments'>
@@ -35,8 +36,8 @@ export const EventToolbar = ({ event }: EventToolbarProps) => {
         qrSvg={qrSvg}
         tournamentUrl={tournamentUrl}
       />
-      <Icon name='service' className='size-4' />
-      <Icon name='heart-hand' className='size-4' />
+      <EventSponsorsDrawer eventTitle={event.title} sponsorList={event.sponsor_list} tournamentId={event._id} />
+      <EventSupportDrawer eventTitle={event.title} support={event.support} tournamentId={event._id} />
     </div>
   )
 }

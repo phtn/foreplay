@@ -16,8 +16,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
 const GUEST_NAV_ITEMS: NavItem[] = [
-  { value: '/tournaments/som-2026', label: 'Home', icon: 'home-line' },
-  { value: '/', label: 'Tournaments', icon: 'trophy-line' }
+  { value: '/tournaments/som-2026', label: 'Tournaments', icon: 'trophy-line' }
+  // { value: '/', label: 'Home', icon: 'home-line' },
 ]
 
 interface AuthenticatedTopbarProps {
