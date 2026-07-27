@@ -115,6 +115,7 @@ export interface DataTableProps<T> {
    */
   enableRowSelection?: boolean
   centerToolbarDateRange?: ReactNode
+  centerToolbarActions?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
   rightToolbarLeft?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
   /** Enables a pin column that keeps rows above the table body. */
   enableRowPinning?: boolean
@@ -206,6 +207,7 @@ export const DataTable = <T,>({
   defaultColumnVisibility,
   enableRowSelection = true,
   centerToolbarDateRange,
+  centerToolbarActions,
   rightToolbarLeft,
   enableRowPinning = false,
   rowPinningParamKey,
@@ -821,9 +823,17 @@ export const DataTable = <T,>({
     void columnFilters
     void columns
     void committedSearch
+    void sorting
     void tableData
-    return table.getFilteredRowModel().rows.map((row) => row.original)
-  }, [columnFilters, columns, committedSearch, table, tableData])
+    return table.getSortedRowModel().rows.map((row) => row.original)
+  }, [columnFilters, columns, committedSearch, sorting, table, tableData])
+  const centerToolbarActionsContent = useMemo(
+    () =>
+      typeof centerToolbarActions === 'function'
+        ? centerToolbarActions({ getFilteredData })
+        : centerToolbarActions,
+    [centerToolbarActions, getFilteredData]
+  )
   const toolbarLeftContent = useMemo(
     () => (typeof rightToolbarLeft === 'function' ? rightToolbarLeft({ getFilteredData }) : rightToolbarLeft),
     [getFilteredData, rightToolbarLeft]
@@ -845,6 +855,7 @@ export const DataTable = <T,>({
               />
             ) : null}
             <CenterTableToolbar
+              actions={centerToolbarActionsContent}
               filter={
                 <Filter
                   columns={filterableColumns}

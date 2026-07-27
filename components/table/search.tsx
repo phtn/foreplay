@@ -2,15 +2,7 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { Input } from '@base-ui/react'
 import type { Column } from '@tanstack/react-table'
-import {
-  useEffect,
-  useEffectEvent,
-  useId,
-  memo,
-  useRef,
-  type ChangeEvent,
-  type RefObject
-} from 'react'
+import { memo, useEffect, useEffectEvent, useId, useRef, type ChangeEvent, type RefObject } from 'react'
 import { TABLE_QUERY_LIMITS } from './parsers'
 
 interface Props<T> {
@@ -21,18 +13,11 @@ interface Props<T> {
   ref?: RefObject<HTMLInputElement | null>
 }
 
-const SearchComponent = ({
-  col,
-  value,
-  onChange,
-  onClear,
-  ref
-}: Props<unknown>) => {
+const SearchComponent = ({ col, value, onChange, onClear, ref }: Props<unknown>) => {
   const id = useId()
   const fallbackRef = useRef<HTMLInputElement>(null)
   const inputRef = ref ?? fallbackRef
-  const hasValue =
-    value.trim().length > 0 || Boolean(col?.getFilterValue?.()?.toString())
+  const hasValue = value.trim().length > 0 || Boolean(col?.getFilterValue?.()?.toString())
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
     if (event.defaultPrevented) return
@@ -40,16 +25,9 @@ const SearchComponent = ({
     const target = event.target
     const isTyping =
       target instanceof HTMLElement &&
-      (target.tagName === 'INPUT' ||
-        target.tagName === 'TEXTAREA' ||
-        target.isContentEditable)
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
 
-    if (
-      event.key === '/' &&
-      !isTyping &&
-      inputRef.current &&
-      document.activeElement !== inputRef.current
-    ) {
+    if (event.key === '/' && !isTyping && inputRef.current && document.activeElement !== inputRef.current) {
       event.preventDefault()
       inputRef.current.focus()
     }
@@ -66,7 +44,7 @@ const SearchComponent = ({
         id={id}
         ref={inputRef}
         className={cn(
-          'peer h-8 w-full min-w-0 rounded-sm border-none bg-sidebar ps-3 font-brk text-sm outline-0 placeholder:font-brk placeholder:text-foreground/60 md:w-48 md:min-w-60 dark:bg-background/40',
+          'peer h-8 w-full min-w-0 rounded-sm border-none bg-sidebar ps-3 font-brk text-sm outline-0 placeholder:font-ios placeholder:text-foreground/60 md:w-48 md:min-w-60 dark:bg-background/40',
           hasValue && 'pe-10'
         )}
         value={value}

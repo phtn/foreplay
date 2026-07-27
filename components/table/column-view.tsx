@@ -58,9 +58,9 @@ const ColumnViewComponent = <T,>({ cols, columnVisibility, onColumnVisibilityCha
                 {invisibleColumns.length > 99 ? '99+' : invisibleColumns.length}
               </span>
             ) : (
-              <Icon name='columns' className='size-4 dark:opacity-60' />
+              <Icon name='columns' className='size-4 opacity-80 dark:opacity-60' />
             )}
-            <span className='hidden font-ios text-sm opacity-90 md:flex'>Columns</span>
+            <span className='hidden font-ios text-sm md:flex'>Columns</span>
           </Button>
         }>
         <ChevronDownIcon className='-mr-1' />
@@ -69,7 +69,7 @@ const ColumnViewComponent = <T,>({ cols, columnVisibility, onColumnVisibilityCha
         <Menu.Positioner align='start' className='outline-none' sideOffset={3}>
           <Menu.Popup className='select-none origin-(--transform-origin) w-64 rounded-md border border-dark-gray/30 bg-zinc-300/30 dark:bg-zinc-900/20 backdrop-blur-3xl py-1 text-origin shadow-none outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:bg-dark-table dark:text-zinc-200'>
             <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 capitalize dark:border-zinc-800'>
-              <span className='font-okx text-sm font-medium'>Toggle columns</span>
+              <span className='font-okx text-sm font-medium'>Hide/Show columns</span>
             </div>
             <div className='p-2 space-y-1'>
               {hideableColumns.map((column) => {
@@ -85,7 +85,7 @@ const ColumnViewComponent = <T,>({ cols, columnVisibility, onColumnVisibilityCha
                     checked={isVisible}
                     onCheckedChange={(value) => handleToggle(column.id, value)}>
                     <span>{getColumnHeaderText(column)}</span>
-                    <Icon name={isVisible ? 'check' : 'eye-close'} className='size-4' />
+                    <Icon name={isVisible ? 'check' : 'eye-close'} className='size-3.5' />
                   </Menu.CheckboxItem>
                 )
               })}

@@ -97,7 +97,7 @@ export default async function EventPage({ params }: EventPageProps) {
         </div>
       </div>
 
-      <PlayersDataTable eventId={eventId} rows={playerRows} />
+      <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />
       {/*<EventHeader
         eventDateLabel={eventDateLabel}
         gateOpenTimeLabel={gateOpenTimeLabel}

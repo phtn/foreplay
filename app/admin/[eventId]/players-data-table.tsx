@@ -1,6 +1,6 @@
 'use client'
 
-import { DataTable } from '@/components/table'
+import { DataTable, type TableToolbarContext } from '@/components/table'
 import { type ColumnConfig, multiSelectFilterFn } from '@/components/table/create-column'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { useMemo, useRef, useState, useTransition } from 'react'
+import { useCallback, useMemo, useRef, useState, useTransition } from 'react'
 import { useFormStatus } from 'react-dom'
 import {
   confirmSubscription,
@@ -26,6 +26,7 @@ import {
   updateSubscriptionRemarks,
   updateSubscriptionStatus
 } from './actions'
+import { createPlayersCsv, createPlayersExportFileName, createPlayersPdf } from './players-export'
 import { ReceiptDrawer } from './receipt-drawer'
 import type { EditableSubscriptionStatus } from './subscription-status-actions'
 
@@ -51,6 +52,7 @@ export interface EventSubscriptionTableRow {
 
 interface PlayersDataTableProps {
   eventId: string
+  eventTitle: string
   rows: EventSubscriptionTableRow[]
 }
 
@@ -393,7 +395,101 @@ function RemarksCell({ eventId, row }: { eventId: string; row: EventSubscription
   )
 }
 
-export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
+type PlayersExportFormat = 'csv' | 'pdf'
+
+interface PlayersExportMenuProps {
+  eventId: string
+  eventTitle: string
+  getRows: () => EventSubscriptionTableRow[]
+  hasRows: boolean
+}
+
+function downloadCsv(content: string, fileName: string) {
+  const csvBlob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const downloadUrl = URL.createObjectURL(csvBlob)
+  const downloadLink = document.createElement('a')
+
+  downloadLink.href = downloadUrl
+  downloadLink.download = fileName
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  downloadLink.remove()
+  window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+}
+
+function PlayersExportMenu({ eventId, eventTitle, getRows, hasRows }: PlayersExportMenuProps) {
+  const [exporting, setExporting] = useState<PlayersExportFormat | null>(null)
+
+  const exportRows = async (format: PlayersExportFormat) => {
+    if (exporting) return
+
+    setExporting(format)
+
+    try {
+      const filteredRows = getRows()
+      const fileName = createPlayersExportFileName(eventId, format)
+
+      if (format === 'csv') {
+        downloadCsv(createPlayersCsv(filteredRows), fileName)
+        return
+      }
+
+      const document = await createPlayersPdf({
+        eventId,
+        eventTitle,
+        rows: filteredRows
+      })
+      document.save(fileName)
+    } catch (error) {
+      console.error(`Unable to export player data as ${format.toUpperCase()}.`, error)
+    } finally {
+      setExporting(null)
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            disabled={!hasRows || exporting !== null}
+            className='h-8 rounded-sm px-2 portrait:aspect-square md:h-7.5 md:gap-2 md:px-3.5'
+            aria-label={exporting ? `Exporting players as ${exporting.toUpperCase()}` : 'Export players'}>
+            <Icon name={exporting ? 'spinner-ring' : 'down-to-line'} className='size-4 opacity-80' />
+            <span className='hidden font-ios text-sm opacity-90 md:flex'>{exporting ? 'Exporting' : 'Export'}</span>
+          </Button>
+        }
+      />
+      <DropdownMenuContent
+        align='start'
+        className='w-56 rounded-md ring-zinc-500/50 bg-zinc-100/20 dark:bg-zinc-900/20 backdrop-blur-2xl'>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className='font-ios uppercase tracking-widest'>Export Table</DropdownMenuLabel>
+          <DropdownMenuSeparator className='border-dashed' />
+          <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('csv')} className='rounded-md'>
+            <Icon name='table' className='size-5 text-emerald-600' />
+            <div>
+              <p className='font-medium'>CSV spreadsheet</p>
+              <p className='text-xs text-muted-foreground'>For Excel and Sheets</p>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('pdf')} className='rounded-md'>
+            <Icon name='pdf' className='size-5 text-rose-600' />
+            <div>
+              <p className='font-medium'>PDF report</p>
+              <p className='text-xs text-muted-foreground'>Print-ready player list</p>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTableProps) {
   const columns = useMemo<ColumnConfig<EventSubscriptionTableRow>[]>(
     () => [
       {
@@ -524,6 +620,17 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
     ],
     [eventId]
   )
+  const renderExportMenu = useCallback(
+    ({ getFilteredData }: TableToolbarContext<EventSubscriptionTableRow>) => (
+      <PlayersExportMenu
+        eventId={eventId}
+        eventTitle={eventTitle}
+        getRows={getFilteredData}
+        hasRows={getFilteredData().length > 0}
+      />
+    ),
+    [eventId, eventTitle]
+  )
 
   return (
     <DataTable
@@ -537,6 +644,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
       queryParamPrefix='players'
       defaultPageSize={200}
       enableRowSelection={false}
+      centerToolbarActions={renderExportMenu}
     />
   )
 }

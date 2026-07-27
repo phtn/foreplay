@@ -2,12 +2,13 @@ import { Toolbar } from '@base-ui/react/toolbar'
 import { ReactNode } from 'react'
 
 interface CenterTableToolbarProps {
+  actions?: ReactNode
   filter: ReactNode
   view: ReactNode
   dateRange?: ReactNode
 }
 
-export const CenterTableToolbar = ({ filter, view, dateRange }: CenterTableToolbarProps) => {
+export const CenterTableToolbar = ({ actions, filter, view, dateRange }: CenterTableToolbarProps) => {
   return (
     <div className='flex h-9 shrink-0 items-center justify-center'>
       <div className='flex shrink-0 items-start justify-start gap-1 md:justify-between md:gap-2'>
@@ -15,6 +16,7 @@ export const CenterTableToolbar = ({ filter, view, dateRange }: CenterTableToolb
         <div className='flex shrink-0 flex-nowrap items-start md:gap-2'>
           <div className='shrink-0 flex'>{filter}</div>
           {dateRange ? <div className='shrink-0 hidden md:flex'>{dateRange}</div> : null}
+          {actions ? <div className='flex shrink-0'>{actions}</div> : null}
         </div>
       </div>
     </div>
