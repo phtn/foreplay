@@ -413,30 +413,32 @@ export const NewEntryForm = ({
               )}
             </form.AppField>
           </div>
-          <div className='h-full flex flex-col gap-4 md:gap-8 md:pt-4 text-center md:justify-center bg-sky-500/0'>
-            <p className='font-okx text-foreground/80 text-xs md:text-base text-balance text-center'>
-              By continuing, you reserve a request for <span className='px-2 font-medium'>{tourId}</span>. Confirmation
-              follows payment review.
-            </p>
-            {errorMessage ? (
-              <p role='alert' className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
-                {errorMessage}
+          <div className='h-full flex flex-col md:pt-4 gap-4 md:gap-4 text-center md:justify-center bg-sky-500/0'>
+            <div className='px-5 space-y-4'>
+              <p className='font-okx text-foreground/80 text-xs px-4 md:text-base text-balance text-center'>
+                By continuing, you reserve a request for <span className='px-2 font-medium uppercase'>{tourId}</span>.
+                Confirmation follows payment review.
               </p>
-            ) : null}
-            {successMessage ? (
-              <div
-                role='status'
-                className='flex items-center justify-center gap-2 rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'>
-                <Icon name='check' className='size-4' />
-                <span>{successMessage}</span>
-              </div>
-            ) : null}
+              {errorMessage ? (
+                <p role='alert' className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                  {errorMessage}
+                </p>
+              ) : null}
+              {successMessage ? (
+                <div
+                  role='status'
+                  className='flex items-center justify-center gap-2 rounded-md bg-emerald-500/5 px-4 py-2 text-sm text-emerald-700'>
+                  <span className='line-clamp-2 text-balance'>{successMessage}</span>
+                  <Icon name='check' className='size-3' />
+                </div>
+              ) : null}
+            </div>
             <div className='flex items-center justify-center w-full px-8 mb-8 md:mb-0'>
               <Button
                 size='xl'
                 type='submit'
                 variant='default'
-                className='w-full bg-slate-900 dark:bg-background text-white/80 md:min-w-64'
+                className='w-full bg-slate-900 hover:bg-foreground/80 dark:bg-background text-white/80 md:min-w-64'
                 disabled={isDraftBusy || isEntryLocked}>
                 {isSubmitting ? <Icon name='spinner-ring' className='size-4' /> : null}
                 <span className='px-2 font-poly capitalize'>
@@ -492,7 +494,7 @@ export const NewEntryForm = ({
                 <Button
                   type='button'
                   variant='outline'
-                  className='justify-center'
+                  className='justify-center rounded-md bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
                   disabled={!paymentQRCodeContent}
                   onClick={() => {
                     void copyPaymentCode()
@@ -503,7 +505,7 @@ export const NewEntryForm = ({
                 <Button
                   type='button'
                   variant='outline'
-                  className='justify-center'
+                  className='justify-center bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
                   disabled={!paymentQRCodeContent}
                   onClick={downloadPaymentQR}>
                   <Icon name='down-to-line' className='size-4' />
@@ -602,7 +604,7 @@ export const NewEntryForm = ({
                 type='button'
                 size='xl'
                 variant='default'
-                className='w-full bg-slate-900 text-white/80 dark:bg-background'
+                className='w-full bg-slate-900 hover:bg-foreground/80 text-white/80 dark:bg-background'
                 disabled={
                   isEntryLocked
                     ? !subscriptionId
