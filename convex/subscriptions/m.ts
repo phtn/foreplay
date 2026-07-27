@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
+import { reconcileSubscriptionTickets } from '../registrations/ticket'
 import {
   areSubscriptionStatusSnapshotsEqual,
   resolveAdminStatusTransition,
@@ -8,11 +9,7 @@ import {
   type AdminSubscriptionStatusAction,
   type SubscriptionStatusSnapshot
 } from './adminStatus'
-import {
-  adminSubscriptionStatusAction,
-  paymentStatus
-} from './d'
-import { reconcileSubscriptionTickets } from '../registrations/ticket'
+import { adminSubscriptionStatusAction, paymentStatus } from './d'
 import { isSubscriptionEntryLocked } from './policy'
 
 const trimOrUndefined = (value: string | undefined) => {
@@ -50,7 +47,8 @@ const toStatusPatch = (
   confirmed_by_email: snapshot.confirmed_by_email,
   confirmed_by_name: snapshot.confirmed_by_name,
   confirmed_at: snapshot.confirmed_at,
-  admin_status_change_id: changeId
+  admin_status_change_id: changeId,
+  updatedAt: Date.now()
 })
 
 const getAdminStatusResult = (
@@ -66,73 +64,34 @@ const getAdminStatusResult = (
 
 const applyAdminStatus = async (
   ctx: MutationCtx,
-  {
-    subscriptionId,
-    tournamentId,
-    action,
-    actor
-  }: ApplyAdminStatusArgs
+  { subscriptionId, tournamentId, action, actor }: ApplyAdminStatusArgs
 ) => {
   const subscription = await ctx.db.get(subscriptionId)
 
-  if (
-    !subscription ||
-    subscription.tournament_id !== tournamentId
-  ) {
+  if (!subscription || subscription.tournament_id !== tournamentId) {
     throw new ConvexError('Subscription not found.')
   }
 
   const previous = toSubscriptionStatusSnapshot(subscription)
 
-  if (
-    action === 'confirm_payment' &&
-    previous.payment_status === 'paid' &&
-    previous.status === 'confirmed'
-  ) {
-    await reconcileSubscriptionTickets(
-      ctx,
-      subscription,
-      'paid',
-      true
-    )
+  if (action === 'confirm_payment' && previous.payment_status === 'paid' && previous.status === 'confirmed') {
+    await reconcileSubscriptionTickets(ctx, subscription, 'paid', true)
 
-    return getAdminStatusResult(
-      subscriptionId,
-      previous,
-      Boolean(subscription.admin_status_change_id)
-    )
+    return getAdminStatusResult(subscriptionId, previous, Boolean(subscription.admin_status_change_id))
   }
 
   let next: SubscriptionStatusSnapshot
   try {
-    next = resolveAdminStatusTransition(
-      previous,
-      action,
-      actor,
-      Date.now()
-    )
+    next = resolveAdminStatusTransition(previous, action, actor, Date.now())
   } catch (error) {
-    throw new ConvexError(
-      error instanceof Error
-        ? error.message
-        : 'The requested status transition is invalid.'
-    )
+    throw new ConvexError(error instanceof Error ? error.message : 'The requested status transition is invalid.')
   }
 
   if (areSubscriptionStatusSnapshotsEqual(previous, next)) {
-    return getAdminStatusResult(
-      subscriptionId,
-      previous,
-      Boolean(subscription.admin_status_change_id)
-    )
+    return getAdminStatusResult(subscriptionId, previous, Boolean(subscription.admin_status_change_id))
   }
 
-  await reconcileSubscriptionTickets(
-    ctx,
-    subscription,
-    next.payment_status,
-    action === 'confirm_payment'
-  )
+  await reconcileSubscriptionTickets(ctx, subscription, next.payment_status, action === 'confirm_payment')
 
   const actorEmail = trimOrUndefined(actor.email)
   const actorName = trimOrUndefined(actor.name)
@@ -143,8 +102,7 @@ const applyAdminStatus = async (
     next,
     ...(subscription.admin_status_change_id
       ? {
-          previous_change_id:
-            subscription.admin_status_change_id
+          previous_change_id: subscription.admin_status_change_id
         }
       : {}),
     actor_id: actor.id,
@@ -152,10 +110,7 @@ const applyAdminStatus = async (
     ...(actorName ? { actor_name: actorName } : {})
   })
 
-  await ctx.db.patch(
-    subscriptionId,
-    toStatusPatch(next, changeId)
-  )
+  await ctx.db.patch(subscriptionId, toStatusPatch(next, changeId))
 
   return getAdminStatusResult(subscriptionId, next, true)
 }
@@ -218,7 +173,8 @@ export const create = mutation({
         division: trimOrUndefined(args.division),
         payment_amount: paymentAmount,
         txn_ref_no: args.formId,
-        status: 'pending_payment'
+        status: 'pending_payment',
+        updatedAt: Date.now()
       })
 
       return { subscriptionId: existingSubscription._id }
@@ -239,7 +195,8 @@ export const create = mutation({
       payment_status: 'pending',
       payment_amount: paymentAmount,
       txn_ref_no: args.formId,
-      status: 'pending_payment'
+      status: 'pending_payment',
+      updatedAt: Date.now()
     })
 
     return { subscriptionId }
@@ -402,10 +359,7 @@ export const undoStatusForAdmin = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (
-      !subscription ||
-      subscription.tournament_id !== args.tournamentId
-    ) {
+    if (!subscription || subscription.tournament_id !== args.tournamentId) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -420,25 +374,12 @@ export const undoStatusForAdmin = mutation({
       currentChange.subscription_id !== args.subscriptionId ||
       currentChange.undone_at !== undefined
     ) {
-      throw new ConvexError(
-        'The latest status update cannot be undone.'
-      )
+      throw new ConvexError('The latest status update cannot be undone.')
     }
 
-    await ctx.db.patch(
-      args.subscriptionId,
-      toStatusPatch(
-        currentChange.previous,
-        currentChange.previous_change_id
-      )
-    )
+    await ctx.db.patch(args.subscriptionId, toStatusPatch(currentChange.previous, currentChange.previous_change_id))
 
-    await reconcileSubscriptionTickets(
-      ctx,
-      subscription,
-      currentChange.previous.payment_status,
-      false
-    )
+    await reconcileSubscriptionTickets(ctx, subscription, currentChange.previous.payment_status, false)
 
     const adminEmail = trimOrUndefined(args.adminEmail)
     const adminName = trimOrUndefined(args.adminName)
@@ -449,11 +390,7 @@ export const undoStatusForAdmin = mutation({
       undone_by_name: adminName
     })
 
-    return getAdminStatusResult(
-      args.subscriptionId,
-      currentChange.previous,
-      Boolean(currentChange.previous_change_id)
-    )
+    return getAdminStatusResult(args.subscriptionId, currentChange.previous, Boolean(currentChange.previous_change_id))
   }
 })
 

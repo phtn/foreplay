@@ -25,8 +25,10 @@ export default async function Page() {
     { value: 'events', label: 'Events', content: <EventsContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
-    { value: 'payments', label: 'Payments', content: <PaymentsContent /> }
+    { value: 'payments', label: 'Payments', content: <PaymentsContent /> },
+    { value: 'settings', label: '⬢', content: <PaymentsContent /> }
   ]
+
   return (
     <main className='mx-auto flex w-full max-w-7xl flex-col md:px-4 pt-4 md:pt-0 pb-2'>
       <Tabs tabs={tabs} className='font-okx' />

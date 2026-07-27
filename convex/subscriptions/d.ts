@@ -54,6 +54,7 @@ export const subscriptionSchema = v.object({
   payment_amount: v.optional(v.number()),
   receipt_image_url: v.optional(v.string()),
   txn_ref_no: v.optional(v.string()),
+  updatedAt: v.optional(v.number()),
   payment_qrcode: v.optional(v.string()),
   admin_remarks: v.optional(v.string()),
   confirmed_by_id: v.optional(v.string()),
@@ -61,9 +62,7 @@ export const subscriptionSchema = v.object({
   confirmed_by_name: v.optional(v.string()),
   confirmed_at: v.optional(v.number()),
   status: v.optional(v.string()),
-  admin_status_change_id: v.optional(
-    v.id('subscriptionStatusChanges')
-  )
+  admin_status_change_id: v.optional(v.id('subscriptionStatusChanges'))
 })
 
 export type Subscription = typeof subscriptionSchema
