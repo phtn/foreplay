@@ -4,6 +4,8 @@ export const smap: Record<string, string> = {
   failed: 'Failed',
   pending: 'Pending',
   refunded: 'Refunded',
+  cancelled: 'Cancelled',
+  for_testing: 'For Testing',
   payment_review: 'Payment Review',
   pending_payment: 'Pending Payment'
 }

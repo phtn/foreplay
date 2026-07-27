@@ -4,8 +4,10 @@ import { Typewrite } from '@/components/text/typewriter'
 import { Card, CardContent } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
+import { statusStyles } from '@/lib/constants'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { formatStatus } from '@/utils/formatters'
 import Link from 'next/link'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
@@ -56,20 +58,6 @@ const currencyFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currencyDisplay: 'code'
 })
-
-const statusStyles: Record<EntryStatus, string> = {
-  pending_payment: 'border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  payment_review: 'border-sky-500/25 bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  confirmed: 'border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  cancelled: 'border-destructive/25 bg-destructive/10 text-destructive'
-}
-
-const formatStatus = (value: EntryStatus) => {
-  return value
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
-}
 
 const getEntryStatus = (subscription: Subscription): EntryStatus => {
   if (subscription.status === 'cancelled') {

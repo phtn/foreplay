@@ -345,7 +345,7 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
   const [open, setOpen] = useState(false)
 
   if (row.tickets.length === 0) {
-    return <span className='flex justify-center text-xs text-muted-foreground'>N/A</span>
+    return <span className='font-ios text-xs text-muted-foreground tracking-widest flex justify-center'>N/A</span>
   }
 
   return (
@@ -401,8 +401,8 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         accessorKey: 'reference',
         header: 'Ref #',
         size: 80,
-        enableFiltering: true,
-        enableSorting: true,
+        enableFiltering: false,
+        enableSorting: false,
         cell: ({ row }) => <ReferenceCell row={row.original} />
       },
       {
@@ -410,8 +410,7 @@ export function PlayersDataTable({ eventId, rows }: PlayersDataTableProps) {
         accessorKey: 'createdAt',
         header: 'Created',
         size: 100,
-        enableFiltering: true,
-        enableGlobalFiltering: true,
+        enableFiltering: false,
         cell: ({ row }) => <DateTimeCell timestamp={row.original.createdAt} />
       },
 

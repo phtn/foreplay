@@ -94,7 +94,7 @@ export const featuredTournament: TournamentSpotlight = {
   ],
   specialGuests: ['Corporate partners', 'Business owners', 'Key executives', 'Industry leaders'],
   overviewFacts: [
-    { label: 'Date & Time', value: 'July 18, 2026 | 7:00 AM Shotgun Start' },
+    { label: 'Date & Time', value: 'October 22, 2026 | 7:00 AM Shotgun Start' },
     { label: 'Official Venue', value: 'Pradera Verde Golf & Country Club, Pampanga (Pinatubo Course)' },
     { label: 'Format', value: 'System 36 handicapping format' },
     { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport' },
@@ -272,7 +272,7 @@ export const protectedEntries: ProtectedEntry[] = [
     id: 'entry-001',
     tournament: 'Seoul of Manila Golf Tournament 2026',
     venue: 'Pradera Verde Golf & Country Club, Pampanga',
-    dateLabel: 'July 18, 2026',
+    dateLabel: 'October 22, 2026',
     status: 'Pending payment',
     step: 'Confirm your sponsor flight or player access with the secretariat.',
     feeLabel: '₱20,000+',

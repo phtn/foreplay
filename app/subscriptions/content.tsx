@@ -1,46 +1,14 @@
 import { Card, CardContent } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
+import { statusStyles } from '@/lib/constants'
 import { Icon } from '@/lib/icons'
+import { formatCreatedAt, formatPaymentAmount, formatStatus } from '@/utils/formatters'
 import Link from 'next/link'
 
 type Subscription = Doc<'subscriptions'>
 
 interface ContentProps {
   subscriptions: Subscription[]
-}
-
-const statusStyles: Record<string, string> = {
-  pending_payment: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  payment_review: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  confirmed: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  cancelled: 'bg-destructive/10 text-destructive'
-}
-
-const formatStatus = (value: string | undefined) => {
-  return (value ?? 'pending_payment')
-    .split('_')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ')
-}
-
-const formatCreatedAt = (value: number) => {
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium'
-    // timeStyle: 'short'
-  }).format(value)
-}
-
-const formatPaymentAmount = (value: number | undefined) => {
-  if (typeof value !== 'number') {
-    return 'TBD'
-  }
-
-  return new Intl.NumberFormat('en-PH', {
-    currency: 'PHP',
-    maximumFractionDigits: 0,
-    style: 'currency',
-    currencyDisplay: 'code'
-  }).format(value)
 }
 
 export const Content = ({ subscriptions }: ContentProps) => {

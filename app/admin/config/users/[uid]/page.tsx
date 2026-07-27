@@ -3,9 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
+import { MetricTone, metricToneStyles, statusStyles } from '@/lib/constants'
 import { getFirebaseUserByUid } from '@/lib/firebase/admin'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { Icon, type IconName } from '@/lib/icons'
+import { dateMedium, dateTimeMedium, formatStatus } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -24,38 +26,12 @@ interface UserPageProps {
 }
 
 type Subscription = Doc<'subscriptions'>
-type MetricTone = 'amber' | 'emerald' | 'sky' | 'violet'
-
-const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-  timeZone: 'Asia/Manila'
-})
-
-const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'medium',
-  timeZone: 'Asia/Manila'
-})
 
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
   style: 'currency',
   currency: 'PHP',
   maximumFractionDigits: 0
 })
-
-const statusStyles: Record<string, string> = {
-  pending_payment: '_bg-amber-500/10 text-orange-700 dark:text-orange-300',
-  payment_review: '_bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  confirmed: '_bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  cancelled: '_bg-destructive/10 text-destructive'
-}
-
-const metricToneStyles: Record<MetricTone, string> = {
-  amber: '_bg-amber-500/10 text-amber-700 dark:text-amber-300',
-  emerald: '_bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  sky: '_bg-sky-500/10 text-sky-700 dark:text-sky-300',
-  violet: '_bg-violet-500/10 text-violet-700 dark:text-violet-300'
-}
 
 function isNonEmptyString(value: string | null | undefined): value is string {
   return typeof value === 'string' && value.trim().length > 0
@@ -102,7 +78,7 @@ function formatDate(value: number | string | null | undefined, short = false) {
     return 'Not available'
   }
 
-  return (short ? shortDateFormatter : dateTimeFormatter).format(timestamp)
+  return (short ? dateMedium : dateTimeMedium).format(timestamp)
 }
 
 function toCount(value: string) {
@@ -116,13 +92,6 @@ function getSubscriptionStatus(subscription: Subscription) {
   }
 
   return subscription.payment_status === 'paid' ? 'confirmed' : 'pending_payment'
-}
-
-function formatStatus(status: string) {
-  return status
-    .split('_')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
 }
 
 function formatProvider(providerId: string) {

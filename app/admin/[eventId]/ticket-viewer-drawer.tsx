@@ -26,7 +26,7 @@ export function TicketViewerDrawer({ active, onOpenChange, open, reference, tick
         if (nextOpen) setExportError(null)
       }}
       swipeDirection='down'>
-      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:50rem]'>
+      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:60rem] md:[--drawer-content-width:64rem] lg:[--drawer-content-width:72rem]'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
             <DrawerTitle className='font-poly text-xl'>Ticket Viewer</DrawerTitle>

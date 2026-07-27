@@ -1,98 +1,59 @@
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
 import {
-  findTournament,
   SectionTitle,
-  TournamentHero,
-  type TournamentSpotlight
+  TournamentHero
 } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
-import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import { dateFormatter, formatRegistrationFee, formatSlotsLabel, timeFormatter } from '@/utils/formatters'
+import {
+  formatRegistrationFee,
+  formatSlotsLabel,
+  getPublicationLabel,
+  timeFormatter
+} from '@/utils/formatters'
 
 interface TourDetailProps {
   tourId: string
 }
 
-function mapConvexTournament(tournament: Doc<'tournaments'>, fallback: TournamentSpotlight): TournamentSpotlight {
-  const eventDate = new Date(tournament.gate_open_at)
-  const dateLabel = tournament.event_date || dateFormatter.format(eventDate)
-  const teeTimeLabel = `${dateLabel} at ${timeFormatter.format(eventDate)}`
-
-  return {
-    ...fallback,
-    id: tournament.id ?? tournament._id ?? fallback.id,
-    title: tournament.title,
-    venue: tournament.venue,
-    dateLabel,
-    feeLabel: formatRegistrationFee(tournament.registration_fee),
-    slotsLabel: formatSlotsLabel(tournament.registered_slots, tournament.slots_limit),
-    formatLabel: tournament.divisions?.[0] ?? 'Tournament',
-    statusLabel: tournament.published === false ? 'Coming soon' : 'Entry open',
-    description: tournament.description ?? fallback.description,
-    divisions: tournament.divisions ?? fallback.divisions,
-    teeTimeAt: new Date(tournament.gate_open_at).toISOString(),
-    teeTimeLabel,
-    overviewFacts: tournament.overview_facts?.map((fact) => ({ label: fact.label, value: fact.value })),
-    partnerPitch: tournament.partner_pitch,
-    partnerReasons: tournament.partner_reasons?.map((reason) => ({
-      title: reason.title,
-      description: reason.description
-    })),
-    sponsorshipTiers: tournament.sponsorship_tiers?.map((tier) => ({
-      name: tier.name,
-      investmentLabel: tier.investment_label,
-      playingAccess: tier.playing_access,
-      accessNote: tier.access_note,
-      benefits: tier.benefits
-    })),
-    sponsorContact:
-      tournament.sponsor_contact_phone || tournament.sponsor_contact_email
-        ? {
-            phoneLabel: tournament.sponsor_contact_phone ?? fallback.sponsorContact?.phoneLabel ?? '',
-            emailLabel: tournament.sponsor_contact_email ?? fallback.sponsorContact?.emailLabel ?? ''
-          }
-        : fallback.sponsorContact
-  }
-}
-
 export default async function TourDetail({ tourId }: TourDetailProps) {
-  const fallbackTournament = findTournament(tourId)
-  const convexTournament = await fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
-  const tournament = convexTournament ? mapConvexTournament(convexTournament, fallbackTournament) : fallbackTournament
-  const tournamentFacts = tournament.overviewFacts ?? [
-    { label: 'Format', value: tournament.formatLabel },
-    { label: 'Date', value: tournament.dateLabel },
-    { label: 'Venue', value: tournament.venue },
-    { label: 'Slots', value: tournament.slotsLabel }
-  ]
+  const tournament = await fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
+
+  if (!tournament?.id) {
+    notFound()
+  }
+
+  const eventDate = new Date(tournament.gate_open_at)
+  const dateLabel = tournament.event_date
+  const feeLabel = formatRegistrationFee(tournament.registration_fee)
+  const slotsLabel = formatSlotsLabel(tournament.registered_slots, tournament.slots_limit)
+  const teeTimeLabel = `${dateLabel} at ${timeFormatter.format(eventDate)}`
+  const tournamentFacts = tournament.overview_facts ?? []
 
   return (
     <div className='space-y-4 md:space-y-8'>
       <TournamentHero
         darkButton
-        eyebrow={tournament.statusLabel}
+        eyebrow={getPublicationLabel(tournament.published)}
         title={tournament.title}
-        description={tournament.description}
+        description={tournament.description ?? ''}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
         primaryLabel='Book Entry'
-        teeTimeAt={tournament.teeTimeAt}
-        teeTimeLabel={tournament.teeTimeLabel}
-        prizes={tournament.prizes}
-        events={tournament.events}
-        specialGuests={tournament.specialGuests}
+        teeTimeAt={eventDate.toISOString()}
+        teeTimeLabel={teeTimeLabel}
         metrics={[
           { label: 'Venue', value: tournament.venue, icon: 'location' },
-          { label: 'Date', value: tournament.dateLabel, icon: 'calendar' },
-          { label: 'Entry fee', value: tournament.feeLabel, icon: 'trophy' },
-          { label: 'Field size', value: tournament.slotsLabel, icon: 'person-multiple' }
+          { label: 'Date', value: dateLabel, icon: 'calendar' },
+          { label: 'Entry fee', value: feeLabel, icon: 'trophy' },
+          { label: 'Field size', value: slotsLabel, icon: 'person-multiple' }
         ]}
       />
 
@@ -126,7 +87,7 @@ export default async function TourDetail({ tourId }: TourDetailProps) {
               <div className='space-y-5 p-4'>
                 <p className='text-xs uppercase tracking-widest'>Entry fee</p>
                 <p className='font-okx font-medium text-2xl'>
-                  {tournament.feeLabel} <span className='px-1 font-normal opacity-60'> entry</span>
+                  {feeLabel} <span className='px-1 font-normal opacity-60'> entry</span>
                 </p>
                 {/*<p className='font-display text-xs text-foreground/80 tracking-wide leading-0'>
                   Secure your slot before the field closes.

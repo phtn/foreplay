@@ -118,7 +118,7 @@ export function RegistrationTicketCard({
         )}>
         <div aria-hidden className='h-1 w-full bg-slate-950' />
 
-        <div className='grid md:grid-cols-[minmax(0,1fr)_13.5rem]'>
+        <div className='grid sm:grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1fr)_16.5rem]'>
           <section className='min-w-0 p-5 pt-4 sm:p-6 sm:pt-5 md:p-7 relative'>
             <div className='absolute top-4 right-4 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-18 h-16 aspect-auto opacity-80' />
             <header className='flex items-center gap-3 pr-20 md:pr-0'>
@@ -214,7 +214,7 @@ export function RegistrationTicketCard({
               </div>
 
               <CreateQR
-                className='my-4 size-40 rounded-xl p-2.5 sm:size-44 md:my-3 md:size-36 md:p-2'
+                className='my-4 size-40 rounded-xl p-2.5 sm:size-44 md:my-3 md:size-54 md:p-2'
                 config={qrConfig}
                 disabled={!active}
                 downloading={isExporting}

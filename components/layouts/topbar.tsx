@@ -16,9 +16,8 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
 const GUEST_NAV_ITEMS: NavItem[] = [
-  { value: '/', label: 'Dashboard', icon: 'home-line' },
-  { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
-  { value: '/entries', label: 'Entries', icon: 'ticket' }
+  { value: '/tournaments/som-2026', label: 'Home', icon: 'home-line' },
+  { value: '/', label: 'Tournaments', icon: 'trophy-line' }
 ]
 
 interface AuthenticatedTopbarProps {
@@ -131,11 +130,10 @@ function GuestTopbar() {
         <Link
           className={cn(
             buttonVariants({ size: 'sm' }),
-            'w-auto rounded-lg bg-[#1d2824] ps-3! text-white hover:bg-[#2f3d37]'
+            'w-auto rounded-lg bg-[#1d2824] ps-3! font-poly text-white hover:bg-[#2f3d37]'
           )}
           href='/auth/login'>
           Sign in
-          <Icon name='chevron-right' className='size-4' />
         </Link>
       </div>
     </header>

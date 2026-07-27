@@ -17,6 +17,17 @@ export const dateFormatter = new Intl.DateTimeFormat('en-US', {
   timeZone: 'Asia/Manila'
 })
 
+export const dateTimeMedium = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'Asia/Manila'
+})
+
+export const dateMedium = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeZone: 'Asia/Manila'
+})
+
 export const timeFormatter = new Intl.DateTimeFormat('en-US', {
   hour: 'numeric',
   minute: '2-digit',
@@ -40,9 +51,9 @@ export function formatGateOpenTime(timestamp: number) {
   return timeFormatter.format(new Date(timestamp))
 }
 
-// function formatCreatedAt(timestamp: number) {
-//   return createdAtFormatter.format(timestamp)
-// }
+export function formatCreatedAt(timestamp: number) {
+  return createdAtNano.format(timestamp)
+}
 export function nanoCreatedAt(timestamp: number) {
   return createdAtNano.format(timestamp)
 }
@@ -53,6 +64,19 @@ export function nanoCreatedAt(timestamp: number) {
 
 export function formatRegistrationFee(value: number) {
   return registration_fee_label(value, pesoFormatter.format(value))
+}
+
+export const formatPaymentAmount = (value: number | undefined) => {
+  if (typeof value !== 'number') {
+    return 'TBD'
+  }
+
+  return new Intl.NumberFormat('en-PH', {
+    currency: 'PHP',
+    maximumFractionDigits: 0,
+    style: 'currency',
+    currencyDisplay: 'code'
+  }).format(value)
 }
 
 export function formatSlotsLabel(registeredSlots: number, slotsLimit?: number) {

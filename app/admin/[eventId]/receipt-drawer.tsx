@@ -59,7 +59,7 @@ export function ReceiptDrawer({
   }, [open])
 
   if (!receiptUrl) {
-    return <span className='text-muted-foreground'>N/A</span>
+    return <span className='font-ios text-xs text-muted-foreground tracking-widest'>N/A</span>
   }
 
   return (
