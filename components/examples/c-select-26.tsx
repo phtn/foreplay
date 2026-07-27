@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 const statuses = [
   { value: 'A', label: 'A', color: 'bg-emerald-500' },
   { value: 'B', label: 'B', color: 'bg-orange-300' },
-  { value: 'C', label: 'C', color: 'bg-indigo-500' }
+  { value: 'C', label: 'C', color: 'bg-indigo-400' }
 ]
 
 type GroupOption = (typeof statuses)[number]
@@ -21,14 +21,14 @@ export function GroupSelect({ disabled, onChange, value }: GroupSelectProps) {
   const selectedGroup = getSelectedGroup(value)
 
   return (
-    <Field className='max-w-24'>
+    <Field className='max-w-28'>
       <Select
         value={selectedGroup}
         items={statuses}
         onValueChange={(nextValue) => {
           onChange((nextValue as GroupOption | null)?.value ?? '')
         }}>
-        <SelectTrigger disabled={disabled} className='w-20! pe-0 bg-input/10!'>
+        <SelectTrigger disabled={disabled} className='w-28! pe-0 bg-input/10!'>
           <SelectValue>
             {(item: (typeof statuses)[number]) => (
               <span className='flex items-center gap-3'>
@@ -42,7 +42,7 @@ export function GroupSelect({ disabled, onChange, value }: GroupSelectProps) {
           <SelectGroup>
             {statuses.map((status) => (
               <SelectItem key={status.value} value={status} className='hover:bg-slate-300/10'>
-                <span className='flex items-center gap-3'>
+                <span className='font-poly flex items-center gap-3'>
                   {status.color && <span className={`size-3 shrink-0 rounded-full ${status.color}`} />}
                   <span>{status.label}</span>
                 </span>

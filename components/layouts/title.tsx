@@ -36,7 +36,7 @@ export const LinkTitle = ({ title, eyebrow, icon, href }: SectionTitleProps) => 
       <Link href={href ?? ''}>
         <p className='font-ios text-xs uppercase tracking-wider text-sky-600 dark:text-sky-500'>{eyebrow}</p>
         <div className='flex items-center space-x-1'>
-          <h2 className='font-poly flex items-center gap-1 md:gap-2'>{title}</h2>
+          <h2 className='font-poly text-sm flex items-center gap-1 md:gap-2 opacity-80'>{title}</h2>
           {icon && <Icon name={icon} className='size-4 text-sky-600 dark:text-sky-500' />}
         </div>
       </Link>

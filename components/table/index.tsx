@@ -114,6 +114,8 @@ export interface DataTableProps<T> {
    * tables that do not provide durable bulk actions.
    */
   enableRowSelection?: boolean
+  /** Expands columns to consume the available table width while preserving their minimum pixel widths. */
+  fillAvailableWidth?: boolean
   centerToolbarDateRange?: ReactNode
   centerToolbarActions?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
   rightToolbarLeft?: ReactNode | ((context: TableToolbarContext<T>) => ReactNode)
@@ -206,6 +208,7 @@ export const DataTable = <T,>({
   loadedCountParamKey,
   defaultColumnVisibility,
   enableRowSelection = true,
+  fillAvailableWidth = false,
   centerToolbarDateRange,
   centerToolbarActions,
   rightToolbarLeft,
@@ -891,8 +894,11 @@ export const DataTable = <T,>({
               data-slot='table'
               aria-busy={loading}
               aria-label={title ?? 'Data table'}
-              className='w-fit min-w-full table-fixed caption-bottom text-sm transition-[width] duration-200 ease-out motion-reduce:transition-none md:min-w-4xl'
-              style={{ width: visibleTableSize }}>
+              className={cn(
+                'min-w-full table-fixed caption-bottom text-sm transition-[width] duration-200 ease-out motion-reduce:transition-none md:min-w-4xl',
+                fillAvailableWidth ? 'w-full' : 'w-fit'
+              )}
+              style={fillAvailableWidth ? { minWidth: visibleTableSize } : { width: visibleTableSize }}>
               <colgroup>
                 {leafColumns.map((column) => {
                   const isVisible = isColumnVisible(column.id, columnVisibility)

@@ -56,5 +56,23 @@ export const tournamentSchema = v.object({
     )
   ),
   sponsor_contact_phone: v.optional(v.string()),
-  sponsor_contact_email: v.optional(v.string())
+  sponsor_contact_email: v.optional(v.string()),
+  sponsor_list: v.optional(
+    v.array(
+      v.object({
+        value: v.string(),
+        label: v.optional(v.string()),
+        url: v.optional(v.string()),
+        is_active: v.optional(v.boolean())
+      })
+    )
+  ),
+  support: v.optional(
+    v.object({
+      name: v.optional(v.string()),
+      title: v.optional(v.string()),
+      email: v.optional(v.string()),
+      phone: v.optional(v.string())
+    })
+  )
 })
