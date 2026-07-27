@@ -452,10 +452,11 @@ export function TournamentHero({
                 <Link
                   className={cn(
                     buttonVariants({ variant: 'secondary', size: 'xl' }),
-                    'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
+                    'w-full font-poly sm:w-auto bg-slate-200/5 hover:bg-white hover:text-slate-900'
                   )}
                   href={secondaryHref}>
-                  {secondaryLabel}
+                  <Icon name='service' className='size-4.5' />
+                  <span>{secondaryLabel}</span>
                 </Link>
               )}
             </div>

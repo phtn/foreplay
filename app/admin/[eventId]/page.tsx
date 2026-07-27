@@ -58,6 +58,7 @@ export default async function EventPage({ params }: EventPageProps) {
     userId: subscription.user_id,
     reference: subscription.txn_ref_no ?? subscription.form_id ?? subscription._id,
     contactEmail: subscription.contact_email ?? null,
+    contactPhone: subscription.contact_phone ?? null,
     teamName: subscription.team_name ?? 'Team pending',
     totalPlayers: toCount(subscription.total_players),
     totalCheckedIn: toCount(subscription.total_checked_in),

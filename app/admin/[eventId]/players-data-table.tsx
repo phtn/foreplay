@@ -36,6 +36,7 @@ export interface EventSubscriptionTableRow {
   createdAt: number
   reference: string
   contactEmail: string | null
+  contactPhone: string | null
   teamName: string
   totalPlayers: number
   totalCheckedIn: number
@@ -175,6 +176,16 @@ function StatusPill({ value, className }: { value: string; className: string }) 
       )}>
       {formatStatus(value)}
     </span>
+  )
+}
+
+function PhoneCell({ row }: { row: EventSubscriptionTableRow }) {
+  return (
+    <Link href={`/admin/config/users/${row.userId}`} className='space-y-1'>
+      <p className='text-foreground/85'>
+        <span className='font-okx'>{row.contactPhone}</span>
+      </p>
+    </Link>
   )
 }
 
@@ -517,6 +528,14 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         size: 220,
         enableFiltering: false,
         cell: ({ row }) => <EntriesCell row={row.original} />
+      },
+      {
+        id: 'phone',
+        accessorKey: 'contactPhone',
+        header: 'Phone',
+        size: 160,
+        enableFiltering: false,
+        cell: ({ row }) => <PhoneCell row={row.original} />
       },
       {
         id: 'amount',

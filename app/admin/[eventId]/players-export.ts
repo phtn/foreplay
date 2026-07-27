@@ -1,5 +1,6 @@
 import type { jsPDF as JsPdfDocument } from 'jspdf'
 
+import { formatStatus } from '@/utils/formatters'
 import type { EventSubscriptionTableRow } from './players-data-table'
 
 interface PlayersExportOptions {
@@ -51,17 +52,9 @@ const PDF_HEADERS = [
 const formatExportDate = (timestamp: number | null) =>
   timestamp !== null && Number.isFinite(timestamp) ? exportDateTimeFormatter.format(timestamp) : ''
 
-const formatStatus = (status: string) =>
-  status
-    .split('_')
-    .filter(Boolean)
-    .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
-    .join(' ')
-
 const escapeCsvCell = (value: string | number | null) => {
   const text = value === null ? '' : String(value)
-  const formulaSafeText =
-    typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(text) ? `'${text}` : text
+  const formulaSafeText = typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(text) ? `'${text}` : text
 
   return `"${formulaSafeText.replaceAll('"', '""')}"`
 }
@@ -91,21 +84,25 @@ const getCsvRow = (row: EventSubscriptionTableRow): Array<string | number | null
   row.tickets.length
 ]
 
-const getPdfRow = (row: EventSubscriptionTableRow): string[] => [
-  row.reference,
-  formatExportDate(row.createdAt),
-  row.teamName,
-  row.contactEmail ?? '',
-  `${row.totalCheckedIn}/${row.totalPlayers}`,
-  row.paymentAmount === null ? '' : `PHP ${amountFormatter.format(row.paymentAmount)}`,
-  formatStatus(row.paymentStatus),
-  formatStatus(row.subscriptionStatus),
-  [row.confirmer, formatExportDate(row.confirmedAt)].filter(Boolean).join('\n'),
-  row.adminRemarks
-].map(normalizePdfText)
+const getPdfRow = (row: EventSubscriptionTableRow): string[] =>
+  [
+    row.reference,
+    formatExportDate(row.createdAt),
+    row.teamName,
+    row.contactEmail ?? '',
+    `${row.totalCheckedIn}/${row.totalPlayers}`,
+    row.paymentAmount === null ? '' : `PHP ${amountFormatter.format(row.paymentAmount)}`,
+    formatStatus(row.paymentStatus),
+    formatStatus(row.subscriptionStatus),
+    [row.confirmer, formatExportDate(row.confirmedAt)].filter(Boolean).join('\n'),
+    row.adminRemarks
+  ].map(normalizePdfText)
 
 export function createPlayersCsv(rows: EventSubscriptionTableRow[]) {
-  const lines = [CSV_HEADERS.map(escapeCsvCell).join(','), ...rows.map((row) => getCsvRow(row).map(escapeCsvCell).join(','))]
+  const lines = [
+    CSV_HEADERS.map(escapeCsvCell).join(','),
+    ...rows.map((row) => getCsvRow(row).map(escapeCsvCell).join(','))
+  ]
 
   return `\uFEFF${lines.join('\r\n')}`
 }
@@ -121,11 +118,7 @@ export function createPlayersExportFileName(eventId: string, extension: 'csv' | 
   return `${safeEventId}-players-${dateStamp}.${extension}`
 }
 
-export async function createPlayersPdf({
-  eventId,
-  eventTitle,
-  rows
-}: PlayersExportOptions): Promise<JsPdfDocument> {
+export async function createPlayersPdf({ eventId, eventTitle, rows }: PlayersExportOptions): Promise<JsPdfDocument> {
   const [{ jsPDF }, { autoTable }] = await Promise.all([import('jspdf'), import('jspdf-autotable')])
   const document = new jsPDF({
     compress: true,
@@ -143,7 +136,7 @@ export async function createPlayersPdf({
     author: 'Foreplay PRO',
     creator: 'Foreplay PRO',
     subject: 'Filtered tournament player export',
-    title: `${eventTitle} players`
+    title: `${eventTitle} Players`
   })
 
   autoTable(document, {

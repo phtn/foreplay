@@ -1,21 +1,13 @@
 import Link from 'next/link'
 
-import {
-  SectionTitle,
-  TournamentHero
-} from '@/components/protected/tournament-experience'
+import { SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
-import {
-  formatRegistrationFee,
-  formatSlotsLabel,
-  getPublicationLabel,
-  timeFormatter
-} from '@/utils/formatters'
+import { formatRegistrationFee, formatSlotsLabel, getPublicationLabel, timeFormatter } from '@/utils/formatters'
 
 interface TourDetailProps {
   tournament: Doc<'tournaments'>
@@ -39,6 +31,8 @@ export default function TourDetail({ tournament }: TourDetailProps) {
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
         primaryLabel='Book Entry'
+        secondaryLabel={tournament.support?.phone}
+        secondaryHref={`tel:${tournament.support?.phone}`}
         teeTimeAt={eventDate.toISOString()}
         teeTimeLabel={teeTimeLabel}
         metrics={[
