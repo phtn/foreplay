@@ -3,14 +3,26 @@
 import { GroupSelect } from '@/components/examples/c-select-26'
 import { LinkTitle, SectionTitle } from '@/components/layouts/title'
 import { Badge } from '@/components/reui/badge'
-import { DataTable } from '@/components/table'
+import { DataTable, type TableToolbarContext } from '@/components/table'
 import { type ColumnConfig, multiSelectFilterFn } from '@/components/table/create-column'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
+import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { updateRegistrationPairing } from './actions'
+import { createPairingsCsv, createPairingsExportFileName, createPairingsPdf } from './pairings-export'
 import { StartSelector } from './start-selector'
 
 type Registration = Doc<'registrations'>
@@ -21,7 +33,7 @@ type PairingValue = {
 }
 type PairingState = Map<Id<'registrations'>, PairingValue>
 
-type PairingTableRow = PairingValue & {
+export type PairingTableRow = PairingValue & {
   checkedInStatus: 'Yes' | 'No'
   id: Id<'registrations'>
   pending: boolean
@@ -82,6 +94,100 @@ const emptyState = (
     <p className='text-sm text-muted-foreground'>This tournament does not have any players to pair yet.</p>
   </div>
 )
+
+type PairingsExportFormat = 'csv' | 'pdf'
+
+interface PairingsExportMenuProps {
+  eventId: string
+  eventTitle: string
+  getRows: () => PairingTableRow[]
+  hasRows: boolean
+}
+
+function downloadCsv(content: string, fileName: string) {
+  const csvBlob = new Blob([content], { type: 'text/csv;charset=utf-8' })
+  const downloadUrl = URL.createObjectURL(csvBlob)
+  const downloadLink = document.createElement('a')
+
+  downloadLink.href = downloadUrl
+  downloadLink.download = fileName
+  document.body.appendChild(downloadLink)
+  downloadLink.click()
+  downloadLink.remove()
+  window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+}
+
+function PairingsExportMenu({ eventId, eventTitle, getRows, hasRows }: PairingsExportMenuProps) {
+  const [exporting, setExporting] = useState<PairingsExportFormat | null>(null)
+
+  const exportRows = async (format: PairingsExportFormat) => {
+    if (exporting) return
+
+    setExporting(format)
+
+    try {
+      const filteredRows = getRows()
+      const fileName = createPairingsExportFileName(eventId, format)
+
+      if (format === 'csv') {
+        downloadCsv(createPairingsCsv(filteredRows), fileName)
+        return
+      }
+
+      const document = await createPairingsPdf({
+        eventId,
+        eventTitle,
+        rows: filteredRows
+      })
+      document.save(fileName)
+    } catch (error) {
+      console.error(`Unable to export pairings as ${format.toUpperCase()}.`, error)
+    } finally {
+      setExporting(null)
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            disabled={!hasRows || exporting !== null}
+            className='h-8 rounded-sm px-2 portrait:aspect-square md:h-7.5 md:gap-2 md:px-3.5'
+            aria-label={exporting ? `Exporting pairings as ${exporting.toUpperCase()}` : 'Export pairings'}>
+            <Icon name={exporting ? 'spinner-ring' : 'down-to-line'} className='size-4 opacity-80' />
+            <span className='hidden font-ios text-sm opacity-90 md:flex'>{exporting ? 'Exporting' : 'Export'}</span>
+          </Button>
+        }
+      />
+      <DropdownMenuContent
+        align='start'
+        className='w-56 rounded-md ring-zinc-500/50 bg-zinc-100/20 dark:bg-zinc-900/20 backdrop-blur-2xl'>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className='font-ios uppercase tracking-widest'>Export Table</DropdownMenuLabel>
+          <DropdownMenuSeparator className='border-dashed' />
+          <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('csv')} className='rounded-md'>
+            <Icon name='table' className='size-5 text-emerald-600' />
+            <div>
+              <p className='font-medium'>CSV spreadsheet</p>
+              <p className='text-xs text-muted-foreground'>For Excel and Sheets</p>
+            </div>
+          </DropdownMenuItem>
+          <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('pdf')} className='rounded-md'>
+            <Icon name='pdf' className='size-5 text-rose-600' />
+            <div>
+              <p className='font-medium'>PDF report</p>
+              <p className='text-xs text-muted-foreground'>Print-ready pairings list</p>
+            </div>
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 export function PairingsTable({ eventId, registrations, eventName }: PairingsTableProps) {
   const router = useRouter()
@@ -265,6 +371,17 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
     ],
     [rows.length, updatePairing]
   )
+  const renderExportMenu = useCallback(
+    ({ getFilteredData }: TableToolbarContext<PairingTableRow>) => (
+      <PairingsExportMenu
+        eventId={eventId}
+        eventTitle={eventName ?? 'Tournament'}
+        getRows={getFilteredData}
+        hasRows={getFilteredData().length > 0}
+      />
+    ),
+    [eventId, eventName]
+  )
 
   return (
     <div className='mx-auto flex w-full max-w-7xl flex-col min-h-screen _border border-input'>
@@ -292,6 +409,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         defaultPageSize={100}
         enableRowSelection={false}
         fillAvailableWidth
+        centerToolbarActions={renderExportMenu}
       />
     </div>
   )

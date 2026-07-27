@@ -13,6 +13,11 @@ import {
   type FirebaseCustomClaims
 } from '@/lib/firebase/custom-claims'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
+import {
+  type AdminAlertsConfig,
+  normalizeAdminAlertsConfig,
+  serializeAdminAlertsConfig
+} from '@/lib/tones'
 import { fetchMutation } from 'convex/nextjs'
 import { revalidatePath } from 'next/cache'
 
@@ -161,6 +166,21 @@ export async function saveManualPaymentMethod(input: SaveManualPaymentMethodInpu
   revalidatePath('/admin/config')
 
   return { paymentMethodId }
+}
+
+export async function saveAdminAlertsConfig(input: AdminAlertsConfig, firebaseIdToken: string) {
+  await requireAdminSession()
+
+  const config = serializeAdminAlertsConfig(normalizeAdminAlertsConfig(input))
+  const updatedAt = await fetchMutation(
+    api.admin.q.upsertAdminAlertsConfig,
+    { config },
+    { token: firebaseIdToken }
+  )
+
+  revalidatePath('/admin/config')
+
+  return { updatedAt }
 }
 
 export async function createTournamentEvent(input: CreateTournamentEventInput) {

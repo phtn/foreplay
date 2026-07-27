@@ -13,6 +13,8 @@ import { type MutationCtx, type QueryCtx, mutation, query } from '../_generated/
 type AdminCtx = MutationCtx | QueryCtx
 type AdminDb = MutationCtx['db'] | QueryCtx['db']
 
+const adminAlertsIdentifier = 'admin-alerts'
+
 const requireAdmin = async (ctx: AdminCtx) => {
   const identity = await ctx.auth.getUserIdentity()
   if (!identity || identity.admin !== true) {
@@ -39,14 +41,23 @@ const getParsedAdminValue = (setting: { value: { data: { value: string } } } | n
 
 export const getAdminByIdentStrict = query({
   args: { identifier: v.string() },
-  handler: async ({ db }, { identifier }) => {
-    const setting = await getAdminDocumentByIdentifier(db, identifier)
+  handler: async (ctx, { identifier }) => {
+    await requireAdmin(ctx)
+
+    const setting = await getAdminDocumentByIdentifier(ctx.db, identifier)
 
     if (!setting) {
       return { error: `NOT_FOUND`, status: 404, message: identifier }
     }
 
     return getParsedAdminValue(setting)
+  }
+})
+
+export const getAdminAlertsConfig = query({
+  args: {},
+  handler: async ({ db }) => {
+    return getParsedAdminValue(await getAdminDocumentByIdentifier(db, adminAlertsIdentifier))
   }
 })
 
@@ -100,6 +111,24 @@ const bitcoinRelayEntryValidator = v.object({
   btcPrivate: v.string()
 })
 
+const alertEventConfigValidator = v.object({
+  enabled: v.boolean(),
+  synthType: v.union(v.literal('basic'), v.literal('glass')),
+  waveform: v.union(v.literal('sine'), v.literal('triangle'), v.literal('square'), v.literal('sawtooth')),
+  notes: v.array(v.string()),
+  noteDurationMs: v.number(),
+  gapMs: v.number(),
+  volumeDb: v.number()
+})
+
+const adminAlertsConfigValidator = v.object({
+  enabled: v.boolean(),
+  orders: alertEventConfigValidator,
+  payments: alertEventConfigValidator,
+  signups: alertEventConfigValidator,
+  messages: alertEventConfigValidator
+})
+
 const upsertAdminValue = async (ctx: MutationCtx, identifier: string, payload: unknown) => {
   const existing = await getAdminDocumentByIdentifier(ctx.db, identifier)
   const now = Date.now()
@@ -123,6 +152,17 @@ const upsertAdminValue = async (ctx: MutationCtx, identifier: string, payload: u
   })
   return now
 }
+
+export const upsertAdminAlertsConfig = mutation({
+  args: {
+    config: adminAlertsConfigValidator
+  },
+  handler: async (ctx, { config }) => {
+    await requireAdmin(ctx)
+
+    return await upsertAdminValue(ctx, adminAlertsIdentifier, config)
+  }
+})
 
 export const upsertCryptoWalletSettings = mutation({
   args: {

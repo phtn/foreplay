@@ -75,18 +75,18 @@ export const DEFAULT_ADMIN_ALERTS_CONFIG: AdminAlertsConfig = {
 }
 
 const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) return fallback
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
   return Math.min(max, Math.max(min, value))
 }
 
 const normalizeNotes = (value: unknown, fallback: string[]) => {
-  if (!Array.isArray(value)) return fallback
+  if (!Array.isArray(value)) return [...fallback]
   const notes = value
     .filter((item): item is string => typeof item === 'string')
     .map((item) => item.trim())
     .filter((item) => item.length > 0)
 
-  return notes.length > 0 ? notes : fallback
+  return notes.length > 0 ? notes : [...fallback]
 }
 
 export const parseNotesInput = (value: string) =>
@@ -103,13 +103,13 @@ const normalizeEventConfig = (value: unknown, fallback: AdminAlertEventConfig): 
   return {
     enabled:
       typeof (raw as { enabled?: unknown }).enabled === 'boolean'
-        ? ((raw as { enabled: boolean }).enabled ?? fallback.enabled)
+        ? (raw as { enabled: boolean }).enabled
         : fallback.enabled,
     synthType: ALERT_SYNTH_TYPES.includes((raw as { synthType?: AlertSynthType }).synthType as AlertSynthType)
-      ? ((raw as { synthType: AlertSynthType }).synthType ?? fallback.synthType)
+      ? (raw as { synthType: AlertSynthType }).synthType
       : fallback.synthType,
     waveform: TONE_OSCILLATORS.includes((raw as { waveform?: ToneOscillator }).waveform as ToneOscillator)
-      ? ((raw as { waveform: ToneOscillator }).waveform ?? fallback.waveform)
+      ? (raw as { waveform: ToneOscillator }).waveform
       : fallback.waveform,
     notes: normalizeNotes((raw as { notes?: unknown }).notes, fallback.notes),
     noteDurationMs: clampNumber(
@@ -129,7 +129,7 @@ export const normalizeAdminAlertsConfig = (value: unknown): AdminAlertsConfig =>
   return {
     enabled:
       typeof (raw as { enabled?: unknown }).enabled === 'boolean'
-        ? ((raw as { enabled: boolean }).enabled ?? DEFAULT_ADMIN_ALERTS_CONFIG.enabled)
+        ? (raw as { enabled: boolean }).enabled
         : DEFAULT_ADMIN_ALERTS_CONFIG.enabled,
     orders: normalizeEventConfig((raw as { orders?: unknown }).orders, DEFAULT_ADMIN_ALERTS_CONFIG.orders),
     payments: normalizeEventConfig((raw as { payments?: unknown }).payments, DEFAULT_ADMIN_ALERTS_CONFIG.payments),
@@ -138,12 +138,12 @@ export const normalizeAdminAlertsConfig = (value: unknown): AdminAlertsConfig =>
   }
 }
 
-export const serializeAdminAlertsConfig = (config: AdminAlertsConfig): Record<string, unknown> => ({
+export const serializeAdminAlertsConfig = (config: AdminAlertsConfig): AdminAlertsConfig => ({
   enabled: config.enabled,
-  orders: config.orders,
-  payments: config.payments,
-  signups: config.signups,
-  messages: config.messages
+  orders: { ...config.orders, notes: [...config.orders.notes] },
+  payments: { ...config.payments, notes: [...config.payments.notes] },
+  signups: { ...config.signups, notes: [...config.signups.notes] },
+  messages: { ...config.messages, notes: [...config.messages.notes] }
 })
 
 export const playAdminAlert = async (config: AdminAlertEventConfig) => {
@@ -178,12 +178,20 @@ export const playAdminAlert = async (config: AdminAlertEventConfig) => {
 
     const note = config.notes[0] ?? 'G6'
     const durationSeconds = Math.max(0.08, config.noteDurationMs / 1000)
-    synth.triggerAttackRelease(note, durationSeconds)
 
-    window.setTimeout(() => {
+    try {
+      await reverb.ready
+      synth.triggerAttackRelease(note, durationSeconds)
+    } catch (error) {
       synth.dispose()
       reverb.dispose()
-    }, config.noteDurationMs + 500)
+      throw error
+    }
+
+    globalThis.setTimeout(() => {
+      synth.dispose()
+      reverb.dispose()
+    }, config.noteDurationMs + 1400)
     return
   }
 
@@ -203,15 +211,20 @@ export const playAdminAlert = async (config: AdminAlertEventConfig) => {
   const durationSeconds = Math.max(0.04, config.noteDurationMs / 1000)
   const gapSeconds = Math.max(0, config.gapMs / 1000)
 
-  config.notes.forEach((note, index) => {
-    const time = now + index * (durationSeconds + gapSeconds)
-    synth.triggerAttackRelease(note, durationSeconds, time)
-  })
+  try {
+    config.notes.forEach((note, index) => {
+      const time = now + index * (durationSeconds + gapSeconds)
+      synth.triggerAttackRelease(note, durationSeconds, time)
+    })
+  } catch (error) {
+    synth.dispose()
+    throw error
+  }
 
   const totalDurationMs =
     config.notes.length * config.noteDurationMs + Math.max(0, config.notes.length - 1) * config.gapMs
 
-  window.setTimeout(() => {
+  globalThis.setTimeout(() => {
     synth.dispose()
   }, totalDurationMs + 250)
 }

@@ -162,18 +162,10 @@ const EventRow = (row: EventRow) => {
               </div>
 
               <div className='min-w-0'>
-                <p className='font-okx text-base text-[#1d2824] dark:text-white'>{row.title}</p>
+                <p className='font-poly font-medium text-base text-[#1d2824] dark:text-white'>{row.title}</p>
                 <p className='mt-0.5 text-sm text-[#1d2824]/65 dark:text-white/80'>{row.place}</p>
               </div>
             </div>
-
-            {/*<span
-              className={cn(
-                'inline-flex rounded-sm px-1.5 py-1 font-ios text-[11px] uppercase tracking-widest',
-                getStatusClass(row.status)
-              )}>
-              {row.status}
-            </span>*/}
           </div>
 
           <p className='text-sm leading-6 text-[#1d2824]/70 dark:text-foreground'>{row.summary}</p>
@@ -231,7 +223,7 @@ const EventRow = (row: EventRow) => {
 
         <div className='min-w-0 space-y-2'>
           <div className='flex items-center gap-3'>
-            <p className='truncate font-okx text-base text-[#1d2824]'>{row.title}</p>
+            <p className='truncate font-poly text-base text-[#1d2824]'>{row.title}</p>
           </div>
 
           <div className='flex items-center gap-1 text-sm text-[#1d2824]/70'>
@@ -255,7 +247,7 @@ const EventRow = (row: EventRow) => {
             <Link
               className={cn(
                 buttonVariants({ variant: 'default', size: 'default' }),
-                'bg-background hover:bg-background/80 rounded-full text-sky-400'
+                'bg-foreground dark:bg-background hover:bg-foreground/80 dark:hover:bg-background/80 rounded-full text-sky-400'
               )}
               href={row.href}>
               <span className='font-poly'>Open</span>
