@@ -120,31 +120,31 @@ export function RegistrationTicketCard({
 
         <div className='grid sm:grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1fr)_16.5rem]'>
           <section className='min-w-0 p-5 pt-4 sm:p-6 sm:pt-5 md:p-7 relative'>
-            <div className='absolute top-4 right-4 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-18 h-16 aspect-auto opacity-80 rounded-lg' />
+            <div className='absolute top-4 right-2 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-12 h-10 md:w-18 md:h-16 aspect-auto opacity-80 rounded-lg' />
             <div
               id='tournament-title'
-              className='absolute top-6 right-50 font-poly text-base whitespace-nowrap w-14 capitalize'>
+              className='absolute md:top-6 top-4 md:right-50 right-30 font-poly md:text-base text-sm whitespace-nowrap w-14 capitalize'>
               {registration.eventName}
             </div>
             {registration.eventSupportPhone ? (
               <div
                 id='tournament-support'
-                className='absolute top-12 right-50 font-okx text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
-                <Icon name='service' className='size-4' />
+                className='absolute md:top-12 top-9 md:right-50 right-30 font-okx text-xs md:text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
+                <Icon name='service' className='size-3 md:size-4' />
                 <span>{registration.eventSupportPhone}</span>
               </div>
             ) : null}
-            <header className='flex items-center gap-3 pr-20 md:pr-0'>
+            <header className='flex items-center gap-1 md:gap-3 pr-20 md:pr-0'>
               <span
                 aria-hidden
-                className='inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-slate-950 font-poly text-sm font-medium text-white'>
-                <Icon name='foreplay' size={24} />
+                className='inline-flex size-6 md:size-9 shrink-0 items-center justify-center rounded-full bg-slate-950 font-poly text-sm font-medium text-white'>
+                <Icon name='foreplay' className='size-4 md:size-6' />
               </span>
               <div className='min-w-0'>
-                <p className='font-poly text-[15px] font-medium leading-none tracking-[-0.02em] text-slate-950'>
+                <p className='font-poly text-sm md:text-[15px] font-medium leading-none tracking-[-0.02em] text-slate-950'>
                   FOREPLAY
                 </p>
-                <p className='mt-1 max-w-72 wrap-break-word font-ios text-[8px] uppercase leading-3 tracking-[0.18em] text-slate-600'>
+                <p className='hidden md:flex mt-1 max-w-72 wrap-break-word font-ios text-[8px] uppercase leading-3 tracking-[0.18em] text-slate-600'>
                   {registration.eventName ?? 'Tournament entry'}
                 </p>
               </div>
