@@ -1,7 +1,7 @@
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
-import type { Id } from '@/convex/_generated/dataModel'
+import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { statusStyles } from '@/lib/constants'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { buildFirebaseSubscriptionUserIds } from '@/lib/firebase/server-session'
@@ -49,6 +49,61 @@ const SessionRequired = () => (
   </section>
 )
 
+const SupportContactDetails = ({ support }: { support: Doc<'tournaments'>['support'] }) => {
+  const name = support?.name?.trim()
+  const title = support?.title?.trim()
+  const email = support?.email?.trim()
+  const phone = support?.phone?.trim()
+  const hasSupportDetails = Boolean(name || title || email || phone)
+
+  return (
+    <aside aria-label='Organizer support' className='mt-5 rounded-lg bg-muted/60 p-4 font-okx'>
+      <div className='flex items-start gap-3'>
+        <span className='inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-background text-sky-600'>
+          <Icon name='service' className='size-6' />
+        </span>
+        <div className='min-w-0 flex-1'>
+          <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Organizer support</p>
+          {hasSupportDetails ? (
+            <div className='mt-2 space-y-2 text-sm'>
+              {name || title ? (
+                <div>
+                  {name ? <p className='font-medium text-foreground capitalize'>{name}</p> : null}
+                  {title ? <p className='font-ios text-xs text-muted-foreground'>{title}</p> : null}
+                </div>
+              ) : null}
+              {email || phone ? (
+                <address className='flex flex-col items-start gap-1.5 not-italic mt-1'>
+                  {email ? (
+                    <a
+                      href={`mailto:${email}`}
+                      className='inline-flex min-w-0 items-center gap-2 text-foreground/80 hover:text-sky-600 hover:underline'>
+                      <Icon name='mail' className='size-3.5 opacity-80' />
+                      <span className='wrap-break-word min-w-0 font-ios'>{email}</span>
+                    </a>
+                  ) : null}
+                  {phone ? (
+                    <a
+                      href={`tel:${phone}`}
+                      className='inline-flex items-center gap-2 text-foreground/80 hover:text-sky-600 hover:underline'>
+                      <Icon name='phone-accept' className='size-3.5 opacity-80' />
+                      <span className='font-ios tracking-wider'>{phone}</span>
+                    </a>
+                  ) : null}
+                </address>
+              ) : null}
+            </div>
+          ) : (
+            <p className='mt-2 text-sm leading-5 text-muted-foreground'>
+              Organizer support details are not available yet.
+            </p>
+          )}
+        </div>
+      </div>
+    </aside>
+  )
+}
+
 const Page = async ({ params }: PageProps) => {
   const [{ subscriptionId }, session] = await Promise.all([params, getVerifiedFirebaseSession()])
 
@@ -67,7 +122,8 @@ const Page = async ({ params }: PageProps) => {
     userIds
   })
   const tournamentPromise = subscriptionPromise.then((subscription) => {
-    if (!subscription || (subscription.status ?? 'pending_payment') !== 'confirmed') {
+    const status = subscription?.status ?? 'pending_payment'
+    if (!subscription || (status !== 'confirmed' && status !== 'payment_review' && status !== 'cancelled')) {
       return null
     }
 
@@ -148,7 +204,7 @@ const Page = async ({ params }: PageProps) => {
                 <span className='text-muted-foreground font-ios'>Estimated completion: within 24 hours</span>
               </div>
             </div>
-            <p className='text-lg font-semibold'> </p>
+            <SupportContactDetails support={tournament?.support} />
           </CardContent>
           <CardFooter className='border-t border-border/50 border-dashed'>
             <div className='flex items-center text-xs space-x-1'>
@@ -170,14 +226,8 @@ const Page = async ({ params }: PageProps) => {
                 <Icon name='alert-triangle' className='size-5 text-rose-600' />
                 <p>Your entry has been cancelled by the organizer.</p>
               </div>
-              <div className='font-ios text-muted-foreground space-y-1 mt-2'>
-                {/*Support contact*/}
-                <p>For any questions, please contact the organizer support team:</p>
-                <span id='support-phone' className='text-base tracking-wider text-foreground'>
-                  0000-0000
-                </span>
-              </div>
             </div>
+            <SupportContactDetails support={tournament?.support} />
           </CardContent>
           <CardFooter className='border-t border-border/50 border-dashed'>
             <div className='flex items-center text-xs space-x-1'>
