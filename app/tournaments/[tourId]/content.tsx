@@ -1,6 +1,10 @@
+import { api } from '@/convex/_generated/api'
+import { fetchQuery } from 'convex/nextjs'
 import { CourseDrawingExport } from 'foreway/core'
 import { CourseMap } from 'foreway/react'
+import { notFound } from 'next/navigation'
 import TourDetail from './details'
+import { Sponsors } from './sponsors'
 
 interface TourContentProps {
   tourId: string
@@ -9,10 +13,17 @@ interface TourContentProps {
 const courseStats = [
   { label: 'HOLES', value: '18', unit: '' },
   { label: 'PAR', value: '72', unit: '' },
-  { label: 'START', value: '7AM', unit: '' }
+  { label: 'START', value: '7AM', unit: '' },
+  { label: '^', value: 'N', unit: '' }
 ]
 
-export function TourContent({ tourId }: TourContentProps) {
+export async function TourContent({ tourId }: TourContentProps) {
+  const tournament = await fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
+
+  if (!tournament?.id) {
+    notFound()
+  }
+
   const courseDrawing = {
     version: 1,
     generatedAt: '2026-06-29T18:23:53.874Z',
@@ -293,7 +304,7 @@ export function TourContent({ tourId }: TourContentProps) {
 
   return (
     <main>
-      <TourDetail tourId={tourId} />
+      <TourDetail tournament={tournament} />
       <div className='md:flex items-center'>
         <CourseMap className='min-w-0 flex-1' drawing={courseDrawing} height={520} />
         <div className='grid grid-cols-3 md:grid-cols-1 gap-4'>
@@ -308,6 +319,7 @@ export function TourContent({ tourId }: TourContentProps) {
           ))}
         </div>
       </div>
+      <Sponsors sponsors={tournament.sponsor_list ?? []} />
     </main>
   )
 }

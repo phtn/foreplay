@@ -45,6 +45,7 @@ export default async function EventPage({ params }: EventPageProps) {
       toRegistrationTicketData(registration, `Player ${tickets.length + 1}`, {
         eventDate: eventDateLabel,
         eventName: event.title,
+        eventSupportPhone: event.support?.phone,
         venue: event.venue
       })
     )

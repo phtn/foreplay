@@ -140,6 +140,7 @@ const Page = async ({ params }: PageProps) => {
             maxEntries={maxEntries}
             defaultDivision={subscription.division}
             eventDate={tournament ? formatEventDate(tournament.gate_open_at, tournament.event_date) : 'Date TBA'}
+            eventSupportPhone={tournament?.support?.phone}
             tournamentName={subscription.tournament_name}
             venue={tournament?.venue ?? 'Venue TBA'}
           />

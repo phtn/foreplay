@@ -120,7 +120,20 @@ export function RegistrationTicketCard({
 
         <div className='grid sm:grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1fr)_16.5rem]'>
           <section className='min-w-0 p-5 pt-4 sm:p-6 sm:pt-5 md:p-7 relative'>
-            <div className='absolute top-4 right-4 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-18 h-16 aspect-auto opacity-80' />
+            <div className='absolute top-4 right-4 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-18 h-16 aspect-auto opacity-80 rounded-lg' />
+            <div
+              id='tournament-title'
+              className='absolute top-6 right-50 font-poly text-base whitespace-nowrap w-14 capitalize'>
+              {registration.eventName}
+            </div>
+            {registration.eventSupportPhone ? (
+              <div
+                id='tournament-support'
+                className='absolute top-12 right-50 font-okx text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
+                <Icon name='service' className='size-4' />
+                <span>{registration.eventSupportPhone}</span>
+              </div>
+            ) : null}
             <header className='flex items-center gap-3 pr-20 md:pr-0'>
               <span
                 aria-hidden
@@ -142,22 +155,24 @@ export function RegistrationTicketCard({
                 <p className='font-ios text-[9px] font-medium uppercase tracking-[0.28em] text-slate-500'>
                   Admit one · {registration.slotLabel}
                 </p>
-                {checkedIn ? (
-                  <span className='inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-emerald-700 ring-1 ring-emerald-600/15'>
-                    <Icon name='check' className='size-3' />
-                    Checked in
-                  </span>
-                ) : active ? (
-                  <span className='inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-slate-600 ring-1 ring-slate-900/5'>
-                    <span aria-hidden className='size-1.5 rounded-full bg-emerald-500' />
-                    Entry active
-                  </span>
-                ) : (
-                  <span className='inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-amber-700 ring-1 ring-amber-600/15'>
-                    <Icon name='lock' className='size-3' />
-                    Inactive
-                  </span>
-                )}
+                <span id='ticket-status' data-ticket-export-ignore>
+                  {checkedIn ? (
+                    <span className='inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-emerald-700 ring-1 ring-emerald-600/15'>
+                      <Icon name='check' className='size-3' />
+                      Checked in
+                    </span>
+                  ) : active ? (
+                    <span className='inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-slate-600 ring-1 ring-slate-900/5'>
+                      <span aria-hidden className='size-1.5 rounded-full bg-emerald-500' />
+                      Entry active
+                    </span>
+                  ) : (
+                    <span className='inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 font-ios text-[8px] font-medium uppercase tracking-[0.18em] text-amber-700 ring-1 ring-amber-600/15'>
+                      <Icon name='lock' className='size-3' />
+                      Inactive
+                    </span>
+                  )}
+                </span>
               </div>
               <p className='mt-3 wrap-break-word font-poly text-[1.65rem] font-medium leading-[1.05] tracking-[-0.035em] text-slate-950 sm:text-[2rem]'>
                 {registration.name}

@@ -1,6 +1,4 @@
-import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 import {
   SectionTitle,
@@ -9,7 +7,7 @@ import {
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { api } from '@/convex/_generated/api'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import {
@@ -20,16 +18,10 @@ import {
 } from '@/utils/formatters'
 
 interface TourDetailProps {
-  tourId: string
+  tournament: Doc<'tournaments'>
 }
 
-export default async function TourDetail({ tourId }: TourDetailProps) {
-  const tournament = await fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
-
-  if (!tournament?.id) {
-    notFound()
-  }
-
+export default function TourDetail({ tournament }: TourDetailProps) {
   const eventDate = new Date(tournament.gate_open_at)
   const dateLabel = tournament.event_date
   const feeLabel = formatRegistrationFee(tournament.registration_fee)

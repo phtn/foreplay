@@ -100,11 +100,7 @@ export const CreateQR = ({
       <button
         type='button'
         disabled={disabled}
-        aria-label={
-          disabled
-            ? 'Gate pass QR code is inactive'
-            : 'Open gate pass QR code'
-        }
+        aria-label={disabled ? 'Gate pass QR code is inactive' : 'Open gate pass QR code'}
         className={cn(
           'group relative size-64 overflow-hidden rounded-lg p-2 transition-transform active:scale-[0.98]',
           'focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-sky-500/30',
@@ -119,7 +115,7 @@ export const CreateQR = ({
         }}>
         <QRCanvas config={config} className='' />
         {checkedIn ? (
-          <span className='absolute inset-x-2 bottom-2 inline-flex items-center justify-center gap-1 rounded-md bg-emerald-500 px-2 py-1 font-ios text-[10px] uppercase tracking-widest text-white shadow-sm'>
+          <span className='absolute inset-x-2 bottom-2 inline-flex items-center justify-center gap-1 rounded-xs bg-emerald-500 px-2 py-1 font-ios text-xs uppercase tracking-widest text-white shadow-sm'>
             <Icon name='check' className='size-3.5' />
             Scanned
           </span>
@@ -151,14 +147,7 @@ export const CreateQR = ({
                   onClick={() => {
                     void onDownload()
                   }}>
-                  <Icon
-                    name={
-                      downloading
-                        ? 'spinner-ring'
-                        : 'down-to-line'
-                    }
-                    className='size-5'
-                  />
+                  <Icon name={downloading ? 'spinner-ring' : 'down-to-line'} className='size-5' />
                 </button>
               ) : null}
               <button

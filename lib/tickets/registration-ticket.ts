@@ -7,6 +7,7 @@ export interface RegistrationTicketData {
   email: string
   eventDate?: string
   eventName?: string
+  eventSupportPhone?: string
   gatePassPayload: string
   handicap: string
   id: Id<'registrations'>
@@ -23,6 +24,7 @@ type GatePassRegistration = Pick<Doc<'registrations'>, '_id' | 'ticket_token'>
 interface RegistrationTicketContext {
   eventDate?: string
   eventName?: string
+  eventSupportPhone?: string
   venue?: string
 }
 
@@ -46,6 +48,7 @@ export function toRegistrationTicketData(
     slotLabel,
     eventDate: context.eventDate,
     eventName: context.eventName,
+    eventSupportPhone: context.eventSupportPhone,
     name: registration.player_name,
     email: registration.player_email ?? 'N/A',
     gatePassPayload: buildGatePassPayload(registration),

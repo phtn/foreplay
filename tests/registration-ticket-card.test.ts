@@ -26,6 +26,7 @@ test('ticket typography cannot be clipped by its metadata column', () => {
       email: 'player.with.a.long.address@example.com',
       eventDate: 'July 18, 2026',
       eventName: 'Seoul of Manila Golf Tournament 2026',
+      eventSupportPhone: '+63 915 698 7788',
       gatePassPayload: '{"ticketToken":"token"}',
       handicap: 'N/A',
       id: registrationId,
@@ -67,8 +68,17 @@ test('ticket typography cannot be clipped by its metadata column', () => {
   assert.match(html, /July 18, 2026/)
   assert.match(html, />Premium</)
   assert.doesNotMatch(html, />(Division|Handicap|Shirt)</)
-  assert.match(html, /md:grid-cols-\[minmax\(0,1fr\)_13\.5rem\]/)
+  assert.match(html, /sm:grid-cols-\[minmax\(0,1fr\)_13\.5rem\]/)
+  assert.match(html, /md:grid-cols-\[minmax\(0,1fr\)_16\.5rem\]/)
   assert.match(html, />Gate pass</)
+  assert.match(
+    html,
+    /<div[^>]*id="tournament-support"[^>]*>.*\+63 915 698 7788.*<\/div>/
+  )
+  assert.match(
+    html,
+    /<span[^>]*id="ticket-status"[^>]*data-ticket-export-ignore/
+  )
   assert.doesNotMatch(
     html,
     /grid grid-cols-1 gap-3 overflow-hidden/

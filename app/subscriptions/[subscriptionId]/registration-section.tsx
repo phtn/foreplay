@@ -33,6 +33,7 @@ function buildInitialDraft(defaultDivision?: string): DraftRegistration {
 export function RegistrationSection({
   defaultDivision,
   eventDate,
+  eventSupportPhone,
   maxEntries,
   registrations,
   subscriptionId,
@@ -60,10 +61,11 @@ export function RegistrationSection({
         toRegistrationTicketData(registration, `Player ${index + 1}`, {
           eventDate,
           eventName: tournamentName,
+          eventSupportPhone,
           venue
         })
       ),
-    [eventDate, registrations, tournamentName, venue]
+    [eventDate, eventSupportPhone, registrations, tournamentName, venue]
   )
 
   const resetDraft = () => {
