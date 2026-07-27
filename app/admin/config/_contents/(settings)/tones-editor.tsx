@@ -4,55 +4,60 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Toggle } from '@/components/ui/toggle'
-import { api } from '@/convex/_generated/api'
 import { onError, onSuccess } from '@/ctx/toast'
-import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import {
-  ADMIN_ALERT_EVENT_KEYS,
-  type AdminAlertEventConfig,
-  type AdminAlertEventKey,
-  type AdminAlertsConfig,
-  ALERT_SYNTH_TYPES,
-  normalizeAdminAlertsConfig,
+  normalizeToneSetConfig,
   notesToInputValue,
   parseNotesInput,
-  playAdminAlert,
-  serializeAdminAlertsConfig,
-  TONE_OSCILLATORS
+  playToneSetEvent,
+  serializeToneSetConfig,
+  TONE_OSCILLATORS,
+  TONE_SYNTH_TYPES,
+  type ToneEventConfig,
+  type ToneOscillator,
+  type ToneSetConfig,
+  type ToneSynthType
 } from '@/lib/tones'
-import { useQuery } from 'convex/react'
 import { useState, useTransition } from 'react'
-import { saveAdminAlertsConfig } from '../../actions'
 
-const ALERT_LABELS: Record<AdminAlertEventKey, string> = {
-  orders: 'New Orders',
-  payments: 'Payments',
-  signups: 'User Sign-ups',
-  messages: 'Customer Chat'
+export type ToneEditorEvent<Key extends string> = {
+  key: Key
+  label: string
 }
 
-type AlertDraft = {
+type TonesEditorProps<Key extends string> = {
+  config: ToneSetConfig<Key>
+  description: string
+  events: readonly ToneEditorEvent<Key>[]
+  id: string
+  onSaveAction: (config: ToneSetConfig<Key>) => Promise<void>
+  saveDisabled?: boolean
+  saveErrorMessage?: string
+  saveSuccessMessage?: string
+  title: string
+}
+
+type ToneDraft = {
   enabled: boolean
   gapMs: string
   noteDurationMs: string
   notesInput: string
-  synthType: AdminAlertEventConfig['synthType']
+  synthType: ToneSynthType
   volumeDb: string
-  waveform: AdminAlertEventConfig['waveform']
+  waveform: ToneOscillator
 }
 
-type AlertDraftMap = Record<AdminAlertEventKey, AlertDraft>
+type ToneDraftMap<Key extends string> = Record<Key, ToneDraft>
 
-const buildEventDraft = (config: AdminAlertEventConfig): AlertDraft => ({
+const mapEvents = <Key extends string, Value>(
+  events: readonly ToneEditorEvent<Key>[],
+  getValue: (key: Key) => Value
+): Record<Key, Value> => Object.fromEntries(events.map(({ key }) => [key, getValue(key)])) as Record<Key, Value>
+
+const buildEventDraft = (config: ToneEventConfig): ToneDraft => ({
   enabled: config.enabled,
   gapMs: String(config.gapMs),
   noteDurationMs: String(config.noteDurationMs),
@@ -62,22 +67,17 @@ const buildEventDraft = (config: AdminAlertEventConfig): AlertDraft => ({
   waveform: config.waveform
 })
 
-const buildDrafts = (config: AdminAlertsConfig): AlertDraftMap => ({
-  orders: buildEventDraft(config.orders),
-  payments: buildEventDraft(config.payments),
-  signups: buildEventDraft(config.signups),
-  messages: buildEventDraft(config.messages)
-})
+const buildDrafts = <Key extends string>(
+  events: readonly ToneEditorEvent<Key>[],
+  config: ToneSetConfig<Key>
+): ToneDraftMap<Key> => mapEvents(events, (key) => buildEventDraft(config.tones[key]))
 
 const parseNumberInput = (value: string, fallback: number) => {
   const parsed = Number.parseFloat(value)
   return Number.isFinite(parsed) ? parsed : fallback
 }
 
-const buildEventConfig = (
-  draft: AlertDraft,
-  fallback: AdminAlertEventConfig
-): AdminAlertEventConfig => ({
+const buildEventConfig = (draft: ToneDraft, fallback: ToneEventConfig): ToneEventConfig => ({
   enabled: draft.enabled,
   synthType: draft.synthType,
   waveform: draft.waveform,
@@ -87,56 +87,59 @@ const buildEventConfig = (
   volumeDb: parseNumberInput(draft.volumeDb, fallback.volumeDb)
 })
 
-const buildConfig = (
-  config: AdminAlertsConfig,
+const buildConfig = <Key extends string>(
+  events: readonly ToneEditorEvent<Key>[],
+  config: ToneSetConfig<Key>,
   enabled: boolean,
-  drafts: AlertDraftMap
-): AdminAlertsConfig =>
-  normalizeAdminAlertsConfig({
-    enabled,
-    orders: buildEventConfig(drafts.orders, config.orders),
-    payments: buildEventConfig(drafts.payments, config.payments),
-    signups: buildEventConfig(drafts.signups, config.signups),
-    messages: buildEventConfig(drafts.messages, config.messages)
-  })
+  drafts: ToneDraftMap<Key>
+): ToneSetConfig<Key> => {
+  const keys = events.map(({ key }) => key)
 
-const configsMatch = (left: AdminAlertsConfig, right: AdminAlertsConfig) =>
-  JSON.stringify(serializeAdminAlertsConfig(left)) ===
-  JSON.stringify(serializeAdminAlertsConfig(right))
-
-export const AlertTones = () => {
-  const alertsSetting = useQuery(api.admin.q.getAdminAlertsConfig)
-
-  if (alertsSetting === undefined) {
-    return (
-      <div className='flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground' role='status'>
-        <Icon name='spinner-ring' className='size-4' />
-        <span>Loading alert tones</span>
-      </div>
-    )
-  }
-
-  const config = normalizeAdminAlertsConfig(alertsSetting)
-  const configKey = JSON.stringify(serializeAdminAlertsConfig(config))
-
-  return <AlertTonesEditor key={configKey} config={config} />
+  return normalizeToneSetConfig(
+    {
+      enabled,
+      tones: mapEvents(events, (key) => buildEventConfig(drafts[key], config.tones[key]))
+    },
+    keys,
+    config
+  )
 }
 
-const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
-  const { user } = useFirebaseUser()
+const configsMatch = <Key extends string>(
+  events: readonly ToneEditorEvent<Key>[],
+  left: ToneSetConfig<Key>,
+  right: ToneSetConfig<Key>
+) => {
+  const keys = events.map(({ key }) => key)
+  return JSON.stringify(serializeToneSetConfig(left, keys)) === JSON.stringify(serializeToneSetConfig(right, keys))
+}
+
+const isToneSynthType = (value: unknown): value is ToneSynthType =>
+  typeof value === 'string' && TONE_SYNTH_TYPES.some((synthType) => synthType === value)
+
+const isToneOscillator = (value: unknown): value is ToneOscillator =>
+  typeof value === 'string' && TONE_OSCILLATORS.some((oscillator) => oscillator === value)
+
+export function TonesEditor<Key extends string>({
+  config,
+  description,
+  events,
+  id,
+  onSaveAction,
+  saveDisabled = false,
+  saveErrorMessage = 'Failed to save tone settings',
+  saveSuccessMessage = 'Tone settings saved',
+  title
+}: TonesEditorProps<Key>) {
   const [isEnabled, setIsEnabled] = useState(config.enabled)
-  const [drafts, setDrafts] = useState<AlertDraftMap>(() => buildDrafts(config))
-  const [testingKey, setTestingKey] = useState<AdminAlertEventKey | null>(null)
+  const [drafts, setDrafts] = useState<ToneDraftMap<Key>>(() => buildDrafts(events, config))
+  const [testingKey, setTestingKey] = useState<Key | null>(null)
   const [isSaving, startSaving] = useTransition()
 
-  const normalizedDraftConfig = buildConfig(config, isEnabled, drafts)
-  const isDirty = !configsMatch(normalizedDraftConfig, config)
+  const normalizedDraftConfig = buildConfig(events, config, isEnabled, drafts)
+  const isDirty = !configsMatch(events, normalizedDraftConfig, config)
 
-  function setDraftField<Field extends keyof AlertDraft>(
-    key: AdminAlertEventKey,
-    field: Field,
-    value: AlertDraft[Field]
-  ) {
+  function setDraftField<Field extends keyof ToneDraft>(key: Key, field: Field, value: ToneDraft[Field]) {
     setDrafts((current) => ({
       ...current,
       [key]: {
@@ -148,32 +151,28 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
 
   const handleReset = () => {
     setIsEnabled(config.enabled)
-    setDrafts(buildDrafts(config))
+    setDrafts(buildDrafts(events, config))
   }
 
   const handleSave = () => {
-    if (!user) {
-      onError('Your admin session is still loading. Try again in a moment.')
-      return
-    }
+    if (saveDisabled) return
 
     startSaving(async () => {
       try {
-        const firebaseIdToken = await user.getIdToken(true)
-        await saveAdminAlertsConfig(normalizedDraftConfig, firebaseIdToken)
-        onSuccess('Alert settings saved')
+        await onSaveAction(normalizedDraftConfig)
+        onSuccess(saveSuccessMessage)
       } catch (error) {
-        onError(error instanceof Error ? error.message : 'Failed to save alerts')
+        onError(error instanceof Error ? error.message : saveErrorMessage)
       }
     })
   }
 
-  const handleTest = async (key: AdminAlertEventKey) => {
+  const handleTest = async (key: Key) => {
     if (testingKey !== null) return
 
     try {
       setTestingKey(key)
-      await playAdminAlert(normalizedDraftConfig[key])
+      await playToneSetEvent(normalizedDraftConfig, key)
     } catch (error) {
       onError(error instanceof Error ? error.message : 'Unable to start audio. Interact with the page and try again.')
     } finally {
@@ -182,58 +181,62 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
   }
 
   return (
-    <div className='flex min-w-0 w-full max-w-full flex-col gap-4 pb-24'>
+    <section className='flex min-w-0 w-full max-w-full flex-col gap-4' aria-labelledby={`${id}-title`}>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
-        <div className='flex flex-wrap items-center gap-3'>
-          <div>
-            <h2 className='font-okx text-lg font-semibold'>Alert tones</h2>
-            <p className='text-sm text-muted-foreground'>Configure the sound used for each admin event.</p>
+        <div>
+          <div className='flex items-center space-x-4'>
+            <h2 id={`${id}-title`} className='font-okx text-lg font-semibold'>
+              {title}
+            </h2>
+            <Toggle
+              id={`${id}-enabled`}
+              title='Enable audio'
+              label={isEnabled ? 'disable' : 'enable'}
+              checked={isEnabled}
+              onChange={setIsEnabled}
+            />
           </div>
-          <Toggle
-            id='admin-alerts-enabled'
-            title='Enable audio'
-            label='Audio'
-            checked={isEnabled}
-            onChange={setIsEnabled}
-          />
+          <p className='text-sm text-muted-foreground'>{description}</p>
         </div>
 
         <div className='flex gap-2'>
           <Button type='button' variant='outline' onClick={handleReset} disabled={!isDirty || isSaving}>
             Reset
           </Button>
-          <Button type='button' onClick={handleSave} disabled={!isDirty || isSaving || !user}>
+          <Button type='button' onClick={handleSave} disabled={!isDirty || isSaving || saveDisabled}>
             <Icon name={isSaving ? 'spinner-ring' : 'check'} className='size-4' />
             <span>{isSaving ? 'Saving' : 'Save changes'}</span>
           </Button>
         </div>
       </div>
 
-      <div className='grid gap-4 xl:grid-cols-4'>
-        {ADMIN_ALERT_EVENT_KEYS.map((key) => {
+      <div className='grid gap-4 xl:grid-cols-3'>
+        {events.map(({ key, label }) => {
           const draft = drafts[key]
-          const notesId = `${key}-alert-notes`
-          const synthId = `${key}-alert-synth`
-          const waveformId = `${key}-alert-waveform`
-          const durationId = `${key}-alert-duration`
-          const gapId = `${key}-alert-gap`
-          const volumeId = `${key}-alert-volume`
+          const notesId = `${id}-${key}-notes`
+          const synthId = `${id}-${key}-synth`
+          const waveformId = `${id}-${key}-waveform`
+          const durationId = `${id}-${key}-duration`
+          const gapId = `${id}-${key}-gap`
+          const volumeId = `${id}-${key}-volume`
 
           return (
-            <Card key={key} size='sm' className='border border-border/70 bg-card'>
-              <CardContent className='flex flex-col gap-4'>
+            <Card key={key} size='sm' className='border border-border/70 bg-card rounded-md p-0'>
+              <CardContent className='flex flex-col gap-4 p-0'>
                 <div className='flex items-center justify-between gap-3'>
-                  <h3 className='text-base font-semibold'>{ALERT_LABELS[key]}</h3>
+                  <h3 className='text-base font-semibold'>{label}</h3>
                   <Toggle
-                    id={`${key}-alert-enabled`}
-                    title={`${ALERT_LABELS[key]} alert`}
+                    id={`${id}-${key}-enabled`}
+                    title={`${label} tone`}
                     checked={draft.enabled}
                     onChange={(value) => setDraftField(key, 'enabled', value)}
                   />
                 </div>
 
                 <div className='grid gap-2'>
-                  <Label htmlFor={notesId}>Notes</Label>
+                  <Label className='text-xs' htmlFor={notesId}>
+                    Notes
+                  </Label>
                   <Input
                     id={notesId}
                     value={draft.notesInput}
@@ -244,11 +247,13 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
                 </div>
 
                 <div className='grid gap-2'>
-                  <Label htmlFor={synthId}>Synth</Label>
+                  <Label className='text-xs' htmlFor={synthId}>
+                    Synth
+                  </Label>
                   <Select
                     value={draft.synthType}
                     onValueChange={(next) => {
-                      if (typeof next === 'string') {
+                      if (isToneSynthType(next)) {
                         setDraftField(key, 'synthType', next)
                       }
                     }}>
@@ -256,7 +261,7 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {ALERT_SYNTH_TYPES.map((synthType) => (
+                      {TONE_SYNTH_TYPES.map((synthType) => (
                         <SelectItem key={synthType} value={synthType}>
                           {synthType}
                         </SelectItem>
@@ -267,11 +272,13 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
 
                 {draft.synthType === 'basic' ? (
                   <div className='grid gap-2'>
-                    <Label htmlFor={waveformId}>Waveform</Label>
+                    <Label className='text-xs' htmlFor={waveformId}>
+                      Waveform
+                    </Label>
                     <Select
                       value={draft.waveform}
                       onValueChange={(next) => {
-                        if (typeof next === 'string') {
+                        if (isToneOscillator(next)) {
                           setDraftField(key, 'waveform', next)
                         }
                       }}>
@@ -291,7 +298,9 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
 
                 <div className='grid grid-cols-1 gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3'>
                   <div className='grid gap-2'>
-                    <Label htmlFor={durationId}>Note ms</Label>
+                    <Label className='text-xs flex justify-center' htmlFor={durationId}>
+                      NOTE ms
+                    </Label>
                     <Input
                       id={durationId}
                       type='number'
@@ -302,7 +311,9 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
                     />
                   </div>
                   <div className='grid gap-2'>
-                    <Label htmlFor={gapId}>Gap ms</Label>
+                    <Label className='text-xs flex justify-center' htmlFor={gapId}>
+                      GAP ms
+                    </Label>
                     <Input
                       id={gapId}
                       type='number'
@@ -313,7 +324,9 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
                     />
                   </div>
                   <div className='grid gap-2'>
-                    <Label htmlFor={volumeId}>Volume dB</Label>
+                    <Label className='text-xs flex justify-center' htmlFor={volumeId}>
+                      VOL dB
+                    </Label>
                     <Input
                       id={volumeId}
                       type='number'
@@ -340,6 +353,6 @@ const AlertTonesEditor = ({ config }: { config: AdminAlertsConfig }) => {
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }

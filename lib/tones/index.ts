@@ -1,17 +1,18 @@
-export const ADMIN_ALERTS_IDENTIFIER = 'admin-alerts'
+export const PRODUCT_ORDER_TONE_KEYS = ['entry', 'payments', 'signups'] as const
+export type ProductOrderToneKey = (typeof PRODUCT_ORDER_TONE_KEYS)[number]
 
-export const ADMIN_ALERT_EVENT_KEYS = ['orders', 'payments', 'signups', 'messages'] as const
-export type AdminAlertEventKey = (typeof ADMIN_ALERT_EVENT_KEYS)[number]
+export const SCAN_TICKET_KEYS = ['used', 'invalid', 'good'] as const
+export type ScanTicketToneKey = (typeof SCAN_TICKET_KEYS)[number]
 
 export const TONE_OSCILLATORS = ['sine', 'triangle', 'square', 'sawtooth'] as const
 export type ToneOscillator = (typeof TONE_OSCILLATORS)[number]
 
-export const ALERT_SYNTH_TYPES = ['basic', 'glass'] as const
-export type AlertSynthType = (typeof ALERT_SYNTH_TYPES)[number]
+export const TONE_SYNTH_TYPES = ['basic', 'glass'] as const
+export type ToneSynthType = (typeof TONE_SYNTH_TYPES)[number]
 
-export type AdminAlertEventConfig = {
+export type ToneEventConfig = {
   enabled: boolean
-  synthType: AlertSynthType
+  synthType: ToneSynthType
   waveform: ToneOscillator
   notes: string[]
   noteDurationMs: number
@@ -19,16 +20,13 @@ export type AdminAlertEventConfig = {
   volumeDb: number
 }
 
-export type AdminAlertsConfig = {
+export type ToneSetConfig<Key extends string> = {
   enabled: boolean
-  orders: AdminAlertEventConfig
-  payments: AdminAlertEventConfig
-  signups: AdminAlertEventConfig
-  messages: AdminAlertEventConfig
+  tones: Record<Key, ToneEventConfig>
 }
 
-const DEFAULT_EVENT_CONFIGS: Record<AdminAlertEventKey, AdminAlertEventConfig> = {
-  orders: {
+const DEFAULT_PRODUCT_ORDER_EVENT_CONFIGS: Record<ProductOrderToneKey, ToneEventConfig> = {
+  entry: {
     enabled: true,
     synthType: 'basic',
     waveform: 'triangle',
@@ -54,25 +52,57 @@ const DEFAULT_EVENT_CONFIGS: Record<AdminAlertEventKey, AdminAlertEventConfig> =
     noteDurationMs: 120,
     gapMs: 90,
     volumeDb: -12
-  },
-  messages: {
-    enabled: true,
-    synthType: 'glass',
-    waveform: 'sine',
-    notes: ['G6'],
-    noteDurationMs: 250,
-    gapMs: 0,
-    volumeDb: -14
   }
 }
 
-export const DEFAULT_ADMIN_ALERTS_CONFIG: AdminAlertsConfig = {
-  enabled: false,
-  orders: DEFAULT_EVENT_CONFIGS.orders,
-  payments: DEFAULT_EVENT_CONFIGS.payments,
-  signups: DEFAULT_EVENT_CONFIGS.signups,
-  messages: DEFAULT_EVENT_CONFIGS.messages
+const DEFAULT_SCAN_TICKET_EVENT_CONFIGS: Record<ScanTicketToneKey, ToneEventConfig> = {
+  used: {
+    enabled: true,
+    synthType: 'basic',
+    waveform: 'square',
+    notes: ['A3', 'A3'],
+    noteDurationMs: 110,
+    gapMs: 70,
+    volumeDb: -10
+  },
+  invalid: {
+    enabled: true,
+    synthType: 'basic',
+    waveform: 'sawtooth',
+    notes: ['E3', 'C3'],
+    noteDurationMs: 160,
+    gapMs: 50,
+    volumeDb: -10
+  },
+  good: {
+    enabled: true,
+    synthType: 'basic',
+    waveform: 'sine',
+    notes: ['C5', 'E5', 'G5', 'C6'],
+    noteDurationMs: 100,
+    gapMs: 45,
+    volumeDb: -8
+  }
 }
+
+export const DEFAULT_PRODUCT_ORDER_TONES_CONFIG: ToneSetConfig<ProductOrderToneKey> = {
+  enabled: false,
+  tones: DEFAULT_PRODUCT_ORDER_EVENT_CONFIGS
+}
+
+export const DEFAULT_SCAN_TICKET_TONES_CONFIG: ToneSetConfig<ScanTicketToneKey> = {
+  enabled: false,
+  tones: DEFAULT_SCAN_TICKET_EVENT_CONFIGS
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+const mapToneKeys = <Key extends string, Value>(
+  keys: readonly Key[],
+  getValue: (key: Key) => Value
+): Record<Key, Value> =>
+  Object.fromEntries(keys.map((key) => [key, getValue(key)])) as Record<Key, Value>
 
 const clampNumber = (value: unknown, fallback: number, min: number, max: number) => {
   if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
@@ -97,59 +127,112 @@ export const parseNotesInput = (value: string) =>
 
 export const notesToInputValue = (notes: string[]) => notes.join(', ')
 
-const normalizeEventConfig = (value: unknown, fallback: AdminAlertEventConfig): AdminAlertEventConfig => {
-  const raw = value && typeof value === 'object' ? value : {}
+const normalizeToneEventConfig = (value: unknown, fallback: ToneEventConfig): ToneEventConfig => {
+  const raw = isRecord(value) ? value : {}
 
   return {
-    enabled:
-      typeof (raw as { enabled?: unknown }).enabled === 'boolean'
-        ? (raw as { enabled: boolean }).enabled
-        : fallback.enabled,
-    synthType: ALERT_SYNTH_TYPES.includes((raw as { synthType?: AlertSynthType }).synthType as AlertSynthType)
-      ? (raw as { synthType: AlertSynthType }).synthType
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : fallback.enabled,
+    synthType: TONE_SYNTH_TYPES.includes(raw.synthType as ToneSynthType)
+      ? (raw.synthType as ToneSynthType)
       : fallback.synthType,
-    waveform: TONE_OSCILLATORS.includes((raw as { waveform?: ToneOscillator }).waveform as ToneOscillator)
-      ? (raw as { waveform: ToneOscillator }).waveform
+    waveform: TONE_OSCILLATORS.includes(raw.waveform as ToneOscillator)
+      ? (raw.waveform as ToneOscillator)
       : fallback.waveform,
-    notes: normalizeNotes((raw as { notes?: unknown }).notes, fallback.notes),
-    noteDurationMs: clampNumber(
-      (raw as { noteDurationMs?: unknown }).noteDurationMs,
-      fallback.noteDurationMs,
-      40,
-      1000
-    ),
-    gapMs: clampNumber((raw as { gapMs?: unknown }).gapMs, fallback.gapMs, 0, 600),
-    volumeDb: clampNumber((raw as { volumeDb?: unknown }).volumeDb, fallback.volumeDb, -36, 0)
+    notes: normalizeNotes(raw.notes, fallback.notes),
+    noteDurationMs: clampNumber(raw.noteDurationMs, fallback.noteDurationMs, 40, 1000),
+    gapMs: clampNumber(raw.gapMs, fallback.gapMs, 0, 600),
+    volumeDb: clampNumber(raw.volumeDb, fallback.volumeDb, -36, 0)
   }
 }
 
-export const normalizeAdminAlertsConfig = (value: unknown): AdminAlertsConfig => {
-  const raw = value && typeof value === 'object' ? value : {}
+type ToneKeyAliases<Key extends string> = Partial<Record<Key, readonly string[]>>
+
+const getToneValue = <Key extends string>(
+  values: Record<string, unknown>,
+  key: Key,
+  aliases: ToneKeyAliases<Key>
+) => {
+  if (values[key] !== undefined) {
+    return values[key]
+  }
+
+  for (const alias of aliases[key] ?? []) {
+    if (values[alias] !== undefined) {
+      return values[alias]
+    }
+  }
+
+  return undefined
+}
+
+export const normalizeToneSetConfig = <Key extends string>(
+  value: unknown,
+  keys: readonly Key[],
+  fallback: ToneSetConfig<Key>,
+  aliases: ToneKeyAliases<Key> = {}
+): ToneSetConfig<Key> => {
+  const raw = isRecord(value) ? value : {}
+  const rawTones = isRecord(raw.tones) ? raw.tones : raw
 
   return {
-    enabled:
-      typeof (raw as { enabled?: unknown }).enabled === 'boolean'
-        ? (raw as { enabled: boolean }).enabled
-        : DEFAULT_ADMIN_ALERTS_CONFIG.enabled,
-    orders: normalizeEventConfig((raw as { orders?: unknown }).orders, DEFAULT_ADMIN_ALERTS_CONFIG.orders),
-    payments: normalizeEventConfig((raw as { payments?: unknown }).payments, DEFAULT_ADMIN_ALERTS_CONFIG.payments),
-    signups: normalizeEventConfig((raw as { signups?: unknown }).signups, DEFAULT_ADMIN_ALERTS_CONFIG.signups),
-    messages: normalizeEventConfig((raw as { messages?: unknown }).messages, DEFAULT_ADMIN_ALERTS_CONFIG.messages)
+    enabled: typeof raw.enabled === 'boolean' ? raw.enabled : fallback.enabled,
+    tones: mapToneKeys(keys, (key) =>
+      normalizeToneEventConfig(getToneValue(rawTones, key, aliases), fallback.tones[key])
+    )
   }
 }
 
-export const serializeAdminAlertsConfig = (config: AdminAlertsConfig): AdminAlertsConfig => ({
+export const serializeToneSetConfig = <Key extends string>(
+  config: ToneSetConfig<Key>,
+  keys: readonly Key[]
+): ToneSetConfig<Key> => ({
   enabled: config.enabled,
-  orders: { ...config.orders, notes: [...config.orders.notes] },
-  payments: { ...config.payments, notes: [...config.payments.notes] },
-  signups: { ...config.signups, notes: [...config.signups.notes] },
-  messages: { ...config.messages, notes: [...config.messages.notes] }
+  tones: mapToneKeys(keys, (key) => ({
+    ...config.tones[key],
+    notes: [...config.tones[key].notes]
+  }))
 })
 
-export const playAdminAlert = async (config: AdminAlertEventConfig) => {
+export const normalizeProductOrderTonesConfig = (value: unknown) =>
+  normalizeToneSetConfig(value, PRODUCT_ORDER_TONE_KEYS, DEFAULT_PRODUCT_ORDER_TONES_CONFIG, {
+    entry: ['orders']
+  })
+
+export const serializeProductOrderTonesConfig = (config: ToneSetConfig<ProductOrderToneKey>) =>
+  serializeToneSetConfig(config, PRODUCT_ORDER_TONE_KEYS)
+
+export const normalizeScanTicketTonesConfig = (value: unknown) =>
+  normalizeToneSetConfig(value, SCAN_TICKET_KEYS, DEFAULT_SCAN_TICKET_TONES_CONFIG)
+
+export const serializeScanTicketTonesConfig = (config: ToneSetConfig<ScanTicketToneKey>) =>
+  serializeToneSetConfig(config, SCAN_TICKET_KEYS)
+
+let toneModulePromise: Promise<typeof import('tone')> | null = null
+
+const loadTone = () => {
+  if (!toneModulePromise) {
+    toneModulePromise = import('tone').catch((error: unknown) => {
+      toneModulePromise = null
+      throw error
+    })
+  }
+
+  return toneModulePromise
+}
+
+export const preloadTonePlayback = async () => {
+  await loadTone()
+}
+
+export const prepareTonePlayback = async () => {
+  const Tone = await loadTone()
+  await Tone.start()
+}
+
+export const playTone = async (config: ToneEventConfig) => {
   if (!config.enabled || config.notes.length === 0) return
 
-  const Tone = await import('tone')
+  const Tone = await loadTone()
   await Tone.start()
 
   if (config.synthType === 'glass') {
@@ -227,4 +310,9 @@ export const playAdminAlert = async (config: AdminAlertEventConfig) => {
   globalThis.setTimeout(() => {
     synth.dispose()
   }, totalDurationMs + 250)
+}
+
+export const playToneSetEvent = async <Key extends string>(config: ToneSetConfig<Key>, key: Key) => {
+  if (!config.enabled) return
+  await playTone(config.tones[key])
 }

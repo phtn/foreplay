@@ -14,9 +14,13 @@ import {
 } from '@/lib/firebase/custom-claims'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import {
-  type AdminAlertsConfig,
-  normalizeAdminAlertsConfig,
-  serializeAdminAlertsConfig
+  normalizeProductOrderTonesConfig,
+  normalizeScanTicketTonesConfig,
+  type ProductOrderToneKey,
+  type ScanTicketToneKey,
+  serializeProductOrderTonesConfig,
+  serializeScanTicketTonesConfig,
+  type ToneSetConfig
 } from '@/lib/tones'
 import { fetchMutation } from 'convex/nextjs'
 import { revalidatePath } from 'next/cache'
@@ -168,12 +172,33 @@ export async function saveManualPaymentMethod(input: SaveManualPaymentMethodInpu
   return { paymentMethodId }
 }
 
-export async function saveAdminAlertsConfig(input: AdminAlertsConfig, firebaseIdToken: string) {
+export async function saveProductOrderTonesConfig(
+  input: ToneSetConfig<ProductOrderToneKey>,
+  firebaseIdToken: string
+) {
   await requireAdminSession()
 
-  const config = serializeAdminAlertsConfig(normalizeAdminAlertsConfig(input))
+  const config = serializeProductOrderTonesConfig(normalizeProductOrderTonesConfig(input))
   const updatedAt = await fetchMutation(
-    api.admin.q.upsertAdminAlertsConfig,
+    api.admin.q.upsertProductOrderTonesConfig,
+    { config },
+    { token: firebaseIdToken }
+  )
+
+  revalidatePath('/admin/config')
+
+  return { updatedAt }
+}
+
+export async function saveScanTicketTonesConfig(
+  input: ToneSetConfig<ScanTicketToneKey>,
+  firebaseIdToken: string
+) {
+  await requireAdminSession()
+
+  const config = serializeScanTicketTonesConfig(normalizeScanTicketTonesConfig(input))
+  const updatedAt = await fetchMutation(
+    api.admin.q.upsertScanTicketTonesConfig,
     { config },
     { token: firebaseIdToken }
   )

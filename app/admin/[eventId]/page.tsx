@@ -71,7 +71,8 @@ export default async function EventPage({ params }: EventPageProps) {
     receiptUrl: subscription.receiptImageUrl,
     canUndo: Boolean(subscription.admin_status_change_id),
     tickets: ticketsBySubscription.get(subscription._id) ?? [],
-    adminRemarks: subscription.admin_remarks ?? ''
+    adminRemarks: subscription.admin_remarks ?? '',
+    updatedAt: subscription.updatedAt ?? null
   }))
 
   return (

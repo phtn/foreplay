@@ -34,6 +34,7 @@ export interface EventSubscriptionTableRow {
   subscriptionId: string
   userId: string
   createdAt: number
+  updatedAt: number | null
   reference: string
   contactEmail: string | null
   contactPhone: string | null
@@ -58,16 +59,16 @@ interface PlayersDataTableProps {
 }
 
 const subscriptionStatusStyles: Record<string, string> = {
-  pending_payment: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  pending_payment: 'bg-orange-500/10 text-orange-700 dark:text-orange-300',
   payment_review: 'bg-sky-500/10 text-sky-700 dark:text-sky-300',
   confirmed: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  cancelled: 'bg-destructive/10 text-destructive'
+  cancelled: 'bg-destructive/5 text-destructive'
 }
 
 const paymentStatusStyles: Record<EventSubscriptionTableRow['paymentStatus'], string> = {
-  pending: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
+  pending: 'bg-orange-500/10 text-orange-700 dark:text-orange-300',
   paid: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
-  failed: 'bg-destructive/10 text-destructive',
+  failed: 'bg-destructive/5 text-destructive',
   refunded: 'bg-slate-500/10 text-slate-700 dark:text-slate-300'
 }
 
@@ -635,6 +636,14 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         enableHiding: true,
         enableSorting: false,
         cell: ({ row }) => <RemarksCell eventId={eventId} row={row.original} />
+      },
+      {
+        id: 'updatedAt',
+        accessorKey: 'updatedAt',
+        header: 'Updated',
+        size: 100,
+        enableFiltering: false,
+        cell: ({ row }) => <DateTimeCell timestamp={row.original.createdAt} />
       }
     ],
     [eventId]

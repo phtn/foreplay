@@ -13,7 +13,9 @@ import { type MutationCtx, type QueryCtx, mutation, query } from '../_generated/
 type AdminCtx = MutationCtx | QueryCtx
 type AdminDb = MutationCtx['db'] | QueryCtx['db']
 
-const adminAlertsIdentifier = 'admin-alerts'
+const legacyAdminAlertsIdentifier = 'admin-alerts'
+const productOrderTonesIdentifier = 'product-order-tones'
+const scanTicketTonesIdentifier = 'scan-ticket-tones'
 
 const requireAdmin = async (ctx: AdminCtx) => {
   const identity = await ctx.auth.getUserIdentity()
@@ -54,10 +56,23 @@ export const getAdminByIdentStrict = query({
   }
 })
 
-export const getAdminAlertsConfig = query({
+export const getProductOrderTonesConfig = query({
   args: {},
   handler: async ({ db }) => {
-    return getParsedAdminValue(await getAdminDocumentByIdentifier(db, adminAlertsIdentifier))
+    const setting = await getAdminDocumentByIdentifier(db, productOrderTonesIdentifier)
+
+    if (setting) {
+      return getParsedAdminValue(setting)
+    }
+
+    return getParsedAdminValue(await getAdminDocumentByIdentifier(db, legacyAdminAlertsIdentifier))
+  }
+})
+
+export const getScanTicketTonesConfig = query({
+  args: {},
+  handler: async ({ db }) => {
+    return getParsedAdminValue(await getAdminDocumentByIdentifier(db, scanTicketTonesIdentifier))
   }
 })
 
@@ -111,7 +126,7 @@ const bitcoinRelayEntryValidator = v.object({
   btcPrivate: v.string()
 })
 
-const alertEventConfigValidator = v.object({
+const toneEventConfigValidator = v.object({
   enabled: v.boolean(),
   synthType: v.union(v.literal('basic'), v.literal('glass')),
   waveform: v.union(v.literal('sine'), v.literal('triangle'), v.literal('square'), v.literal('sawtooth')),
@@ -121,12 +136,22 @@ const alertEventConfigValidator = v.object({
   volumeDb: v.number()
 })
 
-const adminAlertsConfigValidator = v.object({
+const productOrderTonesConfigValidator = v.object({
   enabled: v.boolean(),
-  orders: alertEventConfigValidator,
-  payments: alertEventConfigValidator,
-  signups: alertEventConfigValidator,
-  messages: alertEventConfigValidator
+  tones: v.object({
+    entry: toneEventConfigValidator,
+    payments: toneEventConfigValidator,
+    signups: toneEventConfigValidator
+  })
+})
+
+const scanTicketTonesConfigValidator = v.object({
+  enabled: v.boolean(),
+  tones: v.object({
+    used: toneEventConfigValidator,
+    invalid: toneEventConfigValidator,
+    good: toneEventConfigValidator
+  })
 })
 
 const upsertAdminValue = async (ctx: MutationCtx, identifier: string, payload: unknown) => {
@@ -153,14 +178,25 @@ const upsertAdminValue = async (ctx: MutationCtx, identifier: string, payload: u
   return now
 }
 
-export const upsertAdminAlertsConfig = mutation({
+export const upsertProductOrderTonesConfig = mutation({
   args: {
-    config: adminAlertsConfigValidator
+    config: productOrderTonesConfigValidator
   },
   handler: async (ctx, { config }) => {
     await requireAdmin(ctx)
 
-    return await upsertAdminValue(ctx, adminAlertsIdentifier, config)
+    return await upsertAdminValue(ctx, productOrderTonesIdentifier, config)
+  }
+})
+
+export const upsertScanTicketTonesConfig = mutation({
+  args: {
+    config: scanTicketTonesConfigValidator
+  },
+  handler: async (ctx, { config }) => {
+    await requireAdmin(ctx)
+
+    return await upsertAdminValue(ctx, scanTicketTonesIdentifier, config)
   }
 })
 

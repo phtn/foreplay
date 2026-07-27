@@ -11,11 +11,7 @@ import {
   DrawerTitle,
   DrawerTrigger
 } from '@/components/ui/drawer'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Icon } from '@/lib/icons'
 
 interface EventQrDrawerProps {
@@ -62,7 +58,7 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
         <TooltipContent side='top'>Event QR code</TooltipContent>
       </Tooltip>
 
-      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem]'>
+      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem] rounded-xl'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
             <p className='font-ios text-xs uppercase tracking-widest text-sky-700 dark:text-sky-400'>Event QR code</p>
@@ -114,7 +110,10 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
         </div>
 
         <DrawerFooter className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2'>
-          <Button type='button' className='h-12 gap-2 font-poly bg-foreground text-background' onClick={downloadQrCode}>
+          <Button
+            type='button'
+            className='h-12 gap-2 font-poly bg-foreground hover:bg-foreground/80 text-background'
+            onClick={downloadQrCode}>
             <Icon name='down-to-line' className='size-4' />
             Download QR
           </Button>

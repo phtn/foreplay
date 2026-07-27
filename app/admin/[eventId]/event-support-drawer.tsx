@@ -136,7 +136,7 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
         </TooltipContent>
       </Tooltip>
 
-      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem] md:[--drawer-content-width:48rem]'>
+      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem] md:[--drawer-content-width:48rem] rounded-xl'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 border-dashed pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
             <p className='font-ios text-xs uppercase tracking-widest text-violet-700 dark:text-violet-400'>
@@ -242,7 +242,7 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
             />
             <Button
               type='submit'
-              className='h-12 gap-2 bg-foreground font-poly text-background'
+              className='h-12 gap-2 bg-foreground hover:bg-foreground/80 font-poly text-background'
               disabled={isSubmitting}>
               {isSubmitting ? (
                 <>

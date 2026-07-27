@@ -16,7 +16,7 @@ export const Toggle = ({ title, checked, onChange, disabled, id, className, labe
   return (
     <div className='inline-flex items-center gap-x-2!'>
       {label && (
-        <Label htmlFor={id} className='capitalize font-clash font-medium'>
+        <Label htmlFor={id} className='font-clash font-medium'>
           {label}
         </Label>
       )}

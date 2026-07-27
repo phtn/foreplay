@@ -4,9 +4,9 @@ import { Toaster, toast, type ToastOptions } from 'react-hot-toast'
 const BASE_TOAST_STYLE = {
   background: '#000000',
   color: 'white',
-  padding: '0px 10px',
+  padding: '4px 10px',
   letterSpacing: '-0.50px',
-  fontFamily: 'Okxs'
+  fontFamily: 'OKX'
 } satisfies CSSProperties
 
 const TOAST_STYLE_SM = {

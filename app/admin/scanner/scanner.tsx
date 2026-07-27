@@ -4,9 +4,18 @@ import { Badge } from '@/components/reui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { api } from '@/convex/_generated/api'
 import { Icon } from '@/lib/icons'
+import {
+  normalizeScanTicketTonesConfig,
+  playToneSetEvent,
+  preloadTonePlayback,
+  prepareTonePlayback,
+  type ScanTicketToneKey
+} from '@/lib/tones'
 import { cn } from '@/lib/utils'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQuery } from 'convex/react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { checkInGatePass } from './actions'
 
 type BarcodeDetectorResult = {
@@ -65,6 +74,11 @@ function ResultPanel({ result }: { result: CheckInResult | null }) {
 }
 
 export function GateScanner({ operator }: GateScannerProps) {
+  const scanTicketTonesSetting = useQuery(api.admin.q.getScanTicketTonesConfig)
+  const scanTicketTones = useMemo(
+    () => normalizeScanTicketTonesConfig(scanTicketTonesSetting),
+    [scanTicketTonesSetting]
+  )
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const frameRef = useRef<number | null>(null)
@@ -76,6 +90,13 @@ export function GateScanner({ operator }: GateScannerProps) {
   const [manualPayload, setManualPayload] = useState('')
   const [result, setResult] = useState<CheckInResult | null>(null)
   const [isChecking, setIsChecking] = useState(false)
+
+  const playScanTone = useCallback(
+    (key: ScanTicketToneKey) => {
+      void playToneSetEvent(scanTicketTones, key).catch(() => undefined)
+    },
+    [scanTicketTones]
+  )
 
   const stopScanner = useCallback(() => {
     if (frameRef.current) {
@@ -110,16 +131,20 @@ export function GateScanner({ operator }: GateScannerProps) {
     try {
       const nextResult = await checkInGatePass(normalizedPayload)
       setResult(nextResult)
+      playScanTone(nextResult.alreadyCheckedIn ? 'used' : 'good')
     } catch (error) {
+      setResult(null)
+      playScanTone('invalid')
       setErrorMessage(error instanceof Error ? error.message : 'Unable to check in this gate pass.')
     } finally {
       checkingRef.current = false
       setIsChecking(false)
     }
-  }, [])
+  }, [playScanTone])
 
   const startScanner = useCallback(async () => {
     setErrorMessage(null)
+    void prepareTonePlayback().catch(() => undefined)
 
     if (!navigator.mediaDevices?.getUserMedia) {
       setErrorMessage('Camera access is not available in this browser.')
@@ -151,6 +176,12 @@ export function GateScanner({ operator }: GateScannerProps) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to start the camera.')
     }
   }, [])
+
+  useEffect(() => {
+    if (scanTicketTones.enabled) {
+      void preloadTonePlayback().catch(() => undefined)
+    }
+  }, [scanTicketTones.enabled])
 
   useEffect(() => {
     if (!active) {
@@ -234,7 +265,7 @@ export function GateScanner({ operator }: GateScannerProps) {
                 'text-emerald-600': result?.checkedIn,
                 'text-orange-600': result?.alreadyCheckedIn
               })}>
-              {result && result.checkedIn ? 'TICKET OK' : result && result.alreadyCheckedIn ? 'TICKET USED' : ''}
+              {result?.alreadyCheckedIn ? 'TICKET USED' : result?.checkedIn ? 'TICKET OK' : ''}
             </span>
             <div className='flex items-center space-x-2'>
               <Icon
@@ -269,6 +300,7 @@ export function GateScanner({ operator }: GateScannerProps) {
               disabled={isChecking || !manualPayload.trim()}
               className='text-base'
               onClick={() => {
+                void prepareTonePlayback().catch(() => undefined)
                 void handlePayload(manualPayload)
               }}>
               <Icon name={isChecking ? 'spinner-ring' : 'check'} className='size-4' />

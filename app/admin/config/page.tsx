@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import { CreateEventContent } from './_contents/create-event'
 import { EventsContent } from './_contents/events'
 import { PaymentsContent } from './_contents/payments'
+import { SettingsContent } from './_contents/settings'
 import { StaffContent } from './_contents/staff'
 import { UsersContent } from './_contents/users'
 import { Tabs } from './tabs'
@@ -26,7 +27,7 @@ export default async function Page() {
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
     { value: 'payments', label: 'Payments', content: <PaymentsContent /> },
-    { value: 'settings', label: '⬢', content: <PaymentsContent /> }
+    { value: 'settings', label: '⬢', content: <SettingsContent /> }
   ]
 
   return (

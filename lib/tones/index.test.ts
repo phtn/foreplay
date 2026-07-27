@@ -1,7 +1,7 @@
 // @ts-expect-error The project runs Bun tests but does not currently include Bun's ambient TypeScript declarations.
 import { describe, expect, mock, test } from 'bun:test'
 
-import type { AdminAlertEventConfig } from './index'
+import type { ToneEventConfig } from './index'
 
 const playbackEvents: string[] = []
 
@@ -49,9 +49,9 @@ mock.module('tone', () => ({
   start: async () => {}
 }))
 
-describe('playAdminAlert', () => {
+describe('playTone', () => {
   test('waits for the glass reverb to be ready before triggering its note', async () => {
-    const config: AdminAlertEventConfig = {
+    const config: ToneEventConfig = {
       enabled: true,
       synthType: 'glass',
       waveform: 'sine',
@@ -61,8 +61,8 @@ describe('playAdminAlert', () => {
       volumeDb: -14
     }
 
-    const { playAdminAlert } = await import('./index')
-    const playback = playAdminAlert(config)
+    const { playTone } = await import('./index')
+    const playback = playTone(config)
 
     await reverbConstructed
     expect(playbackEvents).toEqual([])
@@ -74,15 +74,77 @@ describe('playAdminAlert', () => {
   })
 })
 
-describe('normalizeAdminAlertsConfig', () => {
+describe('tone set normalization', () => {
   test('does not share mutable note arrays between normalized configs', async () => {
-    const { normalizeAdminAlertsConfig } = await import('./index')
-    const first = normalizeAdminAlertsConfig(undefined)
+    const { normalizeProductOrderTonesConfig } = await import('./index')
+    const first = normalizeProductOrderTonesConfig(undefined)
 
-    first.orders.notes.push('A6')
+    first.tones.entry.notes.push('A6')
 
-    const second = normalizeAdminAlertsConfig(undefined)
+    const second = normalizeProductOrderTonesConfig(undefined)
 
-    expect(second.orders.notes).toEqual(['C5', 'E5', 'G5'])
+    expect(second.tones.entry.notes).toEqual(['C5', 'E5', 'G5'])
+  })
+
+  test('reads the legacy orders tone as the product entry tone', async () => {
+    const { normalizeProductOrderTonesConfig } = await import('./index')
+    const config = normalizeProductOrderTonesConfig({
+      enabled: true,
+      orders: {
+        enabled: true,
+        synthType: 'glass',
+        waveform: 'triangle',
+        notes: ['D5'],
+        noteDurationMs: 200,
+        gapMs: 20,
+        volumeDb: -6
+      }
+    })
+
+    expect(config.enabled).toBe(true)
+    expect(config.tones.entry.notes).toEqual(['D5'])
+    expect(config.tones.entry.synthType).toBe('glass')
+  })
+
+  test('normalizes arbitrary keyed tone sets', async () => {
+    const { normalizeToneSetConfig } = await import('./index')
+    const fallback = {
+      enabled: false,
+      tones: {
+        opened: {
+          enabled: true,
+          synthType: 'basic' as const,
+          waveform: 'sine' as const,
+          notes: ['C4'],
+          noteDurationMs: 100,
+          gapMs: 20,
+          volumeDb: -12
+        },
+        closed: {
+          enabled: true,
+          synthType: 'basic' as const,
+          waveform: 'square' as const,
+          notes: ['C3'],
+          noteDurationMs: 100,
+          gapMs: 20,
+          volumeDb: -12
+        }
+      }
+    }
+    const config = normalizeToneSetConfig(
+      {
+        enabled: true,
+        tones: {
+          opened: { notes: ['E4'], volumeDb: -4 }
+        }
+      },
+      ['opened', 'closed'] as const,
+      fallback
+    )
+
+    expect(config.enabled).toBe(true)
+    expect(config.tones.opened.notes).toEqual(['E4'])
+    expect(config.tones.opened.volumeDb).toBe(-4)
+    expect(config.tones.closed.notes).toEqual(['C3'])
   })
 })
