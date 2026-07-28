@@ -75,7 +75,7 @@ function runChrome(
 }
 
 test(
-  'exports content with lab() colors and inline SVG',
+  'exports off-screen content with lab() colors and inline SVG',
   { skip: chromeExecutable === undefined, timeout: 20_000 },
   async () => {
     assert.ok(chromeExecutable)
@@ -157,7 +157,11 @@ test(
                 #ticket {
                   background-color: #ffffff;
                   color: lab(35% 0 0) !important;
+                  left: -10000px;
                   padding: 16px;
+                  position: fixed;
+                  top: 0;
+                  width: 384px;
                 }
 
                 #ticket svg {

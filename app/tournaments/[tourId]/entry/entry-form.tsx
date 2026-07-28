@@ -1,17 +1,21 @@
 'use client'
 
 import { useAppForm } from '@/components/form'
-import { downloadQRCodePng } from '@/components/qrcode/download-png'
+import {
+  createPaymentQRCodeSvg,
+  PaymentQRExportSurface
+} from '@/components/qrcode/payment-export-surface'
 import { QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
 import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
+import { createPngFilename, downloadElementAsPng } from '@/lib/tickets/download-ticket-png'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
-import { Activity, useCallback, useEffect, useRef, useState } from 'react'
+import { Activity, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createTournamentSubscription,
   generateReceiptUploadUrl,
@@ -91,6 +95,8 @@ export const NewEntryForm = ({
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
   const receiptPreviewUrlRef = useRef<string | null>(null)
   const paymentSectionRef = useRef<HTMLDivElement | null>(null)
+  const paymentQrExportRef = useRef<HTMLDivElement | null>(null)
+  const paymentQrExportLockRef = useRef(false)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
   const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(() =>
     initiallyLocked
@@ -208,6 +214,10 @@ export const NewEntryForm = ({
   const isSaved = subscriptionId !== null
   const isDraftBusy = isSubmitting || isSubmittingReceipt
   const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
+  const paymentDownloadQrSvg = useMemo(
+    () => createPaymentQRCodeSvg(paymentQRCodeContent),
+    [paymentQRCodeContent]
+  )
   const paymentAccountDetails = paymentMethod ? formatPaymentAccountDetails(paymentMethod) : null
   const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
   const copyAccountDetails = useCallback(async () => {
@@ -226,23 +236,32 @@ export const NewEntryForm = ({
     }
   }, [paymentAccountDetails])
   const downloadPaymentQR = useCallback(async () => {
-    if (!paymentQRCodeContent) {
+    if (
+      !paymentMethod ||
+      !paymentDownloadQrSvg ||
+      !paymentQrExportRef.current ||
+      paymentQrExportLockRef.current
+    ) {
       return
     }
 
+    paymentQrExportLockRef.current = true
+
     try {
-      await downloadQRCodePng(
-        {
-          content: paymentQRCodeContent,
-          width: 400,
-          height: 400
-        },
-        `${formId}-payment-qr.png`
+      await downloadElementAsPng(
+        paymentQrExportRef.current,
+        createPngFilename(
+          `foreplay-payment-${paymentMethod.bankOrEwallet}-${paymentMethod.accountName}`,
+          `${formId}-payment-qr`
+        )
       )
-    } catch {
+    } catch (error) {
+      console.error('Unable to export the payment QR code.', error)
       setErrorMessage('Unable to download the payment QR code.')
+    } finally {
+      paymentQrExportLockRef.current = false
     }
-  }, [formId, paymentQRCodeContent])
+  }, [formId, paymentDownloadQrSvg, paymentMethod])
   const submitReceipt = useCallback(async () => {
     if ((!receiptFile && !isAdmin) || !subscriptionId || isEntryLocked) {
       return
@@ -626,6 +645,18 @@ export const NewEntryForm = ({
             </div>
           </div>
         </Activity>
+
+        {paymentMethod && paymentDownloadQrSvg ? (
+          <div aria-hidden className='pointer-events-none fixed left-[-10000px] top-0 w-96'>
+            <PaymentQRExportSurface
+              ref={paymentQrExportRef}
+              accountName={paymentMethod.accountName}
+              accountNumber={paymentMethod.accountNumber}
+              bankOrEwallet={paymentMethod.bankOrEwallet}
+              qrSvg={paymentDownloadQrSvg}
+            />
+          </div>
+        ) : null}
       </form>
     </form.AppForm>
   )

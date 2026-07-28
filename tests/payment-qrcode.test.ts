@@ -33,12 +33,13 @@ test('payment QR export surface includes the destination details and generated Q
     /<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg" version="1\.1" viewBox="0 0 512 512"/
   )
   assert.match(html, />foreplay\.pro</)
-    assert.match(html, />Download</)
+  assert.match(html, />Download</)
 
   const qrSurface = html.match(/role="img"[^>]*class="([^"]*)"/)
   assert.ok(qrSurface)
-  assert.match(qrSurface[1] ?? '', /border-slate-200/)
-  assert.doesNotMatch(qrSurface[1] ?? '', /border-primary/)
+  assert.match(qrSurface[1] ?? '', /rounded-4xl/)
+  assert.match(qrSurface[1] ?? '', /border-2/)
+  assert.match(qrSurface[1] ?? '', /border-primary\/33/)
 })
 
 test('payment QR preview degrades safely when saved content cannot be encoded', () => {

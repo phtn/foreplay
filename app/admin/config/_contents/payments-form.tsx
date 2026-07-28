@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import type { Id } from '@/convex/_generated/dataModel'
 import { useImageConverter } from '@/hooks/use-image-converter'
-import { Icon } from '@/lib/icons'
+import { Icon, IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -493,6 +493,11 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
   )
 }
 
+const lmap: Record<string, IconName> = {
+  bdo: 'bdo',
+  gotyme: 'gotyme'
+}
+
 function PaymentDestinationCard({
   onEdit,
   onTogglePreview,
@@ -514,22 +519,20 @@ function PaymentDestinationCard({
   return (
     <article
       className={cn(
-        'overflow-hidden rounded-xl border bg-card shadow-sm transition-colors h-fit',
-        selected ? 'border-sky-500/70 ring-2 ring-sky-500/15' : 'border-border/70'
+        'overflow-hidden rounded-2xl border bg-card shadow-sm transition-colors',
+        selected ? 'border-sky-200/70 ring-2 ring-sky-200/5' : 'border-border/70',
+        { grayscale: !paymentMethod.isActive }
       )}>
-      <div className='relative aspect-[1.58] overflow-hidden bg-[linear-gradient(135deg,#0f172a,#1f2937_48%,#0e7490)] p-5 text-white'>
+      <div className='relative aspect-[1.64] overflow-hidden bg-[linear-gradient(135deg,#0f172a,#1f2937_48%,#0e7490)] p-5 text-white'>
         <div className='absolute inset-x-0 top-0 h-16 bg-white/8' />
         <div className='absolute -right-10 bottom-8 h-28 w-48 rotate-[-22deg] bg-white/10' />
-        <div className='relative flex h-full flex-col justify-between'>
-          <div className='flex items-start justify-between gap-3'>
-            <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-white/65'>Manual payment</p>
-              <h3 className='mt-1 truncate font-okx text-lg font-semibold'>{paymentMethod.bankOrEwallet}</h3>
-            </div>
+        <div className='relative flex h-full flex-col justify-between space-y-2'>
+          <div className='flex items-start justify-between'>
+            <Icon name={lmap[paymentMethod.bankOrEwallet.toLowerCase()]} className='size-16' />
             <span
               className={cn(
                 'rounded-full px-2.5 py-1 font-ios text-[10px] uppercase tracking-widest',
-                paymentMethod.isActive ? 'bg-emerald-400 text-emerald-950' : 'bg-white/12 text-white/70'
+                paymentMethod.isActive ? 'bg-zinc-900 text-primary' : 'bg-white/12 text-white/70'
               )}>
               {paymentMethod.isActive ? 'Active' : 'Inactive'}
             </span>
@@ -567,12 +570,9 @@ function PaymentDestinationCard({
             aria-controls={previewId}
             aria-expanded={previewOpen}
             disabled={!hasQrCode && !previewOpen}
-            title={
-              hasQrCode || previewOpen ? undefined : 'Add QR code content or an image to preview this destination'
-            }
+            title={hasQrCode || previewOpen ? undefined : 'Add QR code content or an image to preview this destination'}
             onClick={onTogglePreview}>
             <Icon name={previewOpen ? 'eye-close' : 'qrcode'} className='size-4' />
-            <span>{previewOpen ? 'Hide QR' : 'Preview QR'}</span>
           </Button>
           <Button type='button' variant='outline' size='sm' onClick={onEdit}>
             Edit
