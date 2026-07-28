@@ -45,12 +45,13 @@ export default function TourDetail({ tournament }: TourDetailProps) {
 
       <div className='mt-16 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]'>
         <div className='space-y-9'>
-          <SectionTitle
-            eyebrow='Good to know'
-            title='Tournament Overview'
-            description='Observe Golf Course rules at all times.'
-          />
-
+          <div className='px-2'>
+            <SectionTitle
+              eyebrow='Good to know'
+              title='Tournament Overview'
+              description='Observe Golf Course rules at all times.'
+            />
+          </div>
           <Card className='border border-slate-400/20 dark:border-slate-500/80 dark:bg-slate-500/20 shadow-none p-0'>
             <CardContent className='space-y-4 px-0'>
               <div className='grid divide-y divide-border/80 dark:divide-slate-400/25 rounded-2xl border border-border/60'>
