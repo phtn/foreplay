@@ -321,13 +321,6 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
           </div>
 
           <DrawerFooter className='grid border-t border-border/70 p-4'>
-            {/*<DrawerClose
-              render={
-                <Button type='button' variant='ghost' className='h-12 font-poly' disabled={isSubmitting}>
-                  Close
-                </Button>
-              }
-            />*/}
             <Button
               type='submit'
               className='h-12 gap-2 bg-foreground hover:bg-foreground/80 font-poly text-background'

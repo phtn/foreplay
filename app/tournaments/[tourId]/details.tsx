@@ -58,11 +58,11 @@ export default function TourDetail({ tournament }: TourDetailProps) {
                 {tournamentFacts.map((item) => (
                   <div
                     key={item.label}
-                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
+                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 md:py-6 sm:grid-cols-[180px_1fr] sm:items-center'>
                     <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
                       {item.label}
                     </p>
-                    <p className='font-ios flex items-center space-x-1'>
+                    <p className='font-ios flex items-center space-x-1 md:space-x-5'>
                       <Icon name='chevron-right' className='size-3 text-primary' />
                       <span>{item.value}</span>
                     </p>
@@ -71,16 +71,19 @@ export default function TourDetail({ tournament }: TourDetailProps) {
                 {tournament.support && (
                   <div
                     key={tournament.support.phone}
-                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
+                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 md:py-6 sm:grid-cols-[180px_1fr] sm:items-center'>
                     <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
                       {tournament.support.title}
                     </p>
-                    <p className='font-ios space-x-2'>
-                      <span>{tournament.support.phone}</span>
-                      <span>&middot;</span>
-                      <span>{tournament.support.email}</span>
-                      <span>&middot;</span>
-                      <span className='capitalize'>{tournament.support.name}</span>
+                    <p className='font-ios flex items-center space-x-1 md:space-x-5'>
+                      <Icon name='chevron-right' className='size-3 text-primary' />
+                      <p className='font-ios space-x-2 md:space-x-1'>
+                        <span>{tournament.support.phone}</span>
+                        <span>&middot;</span>
+                        <span>{tournament.support.email}</span>
+                        <span>&middot;</span>
+                        <span className='capitalize'>{tournament.support.name}</span>
+                      </p>
                     </p>
                   </div>
                 )}
@@ -90,22 +93,25 @@ export default function TourDetail({ tournament }: TourDetailProps) {
         </div>
 
         <div className='space-y-6'>
-          <Card className='border border-slate-500/80 bg-slate-200/50 dark:bg-slate-500/20 p-0'>
+          <Card className='border border-slate-500/80 bg-slate-100/50 dark:bg-slate-500/20 p-0'>
             <CardContent className='space-y-4 p-0'>
-              <div className='space-y-5 p-4'>
+              <div className='space-y-4 p-4'>
                 <p className='text-xs uppercase tracking-widest'>Entry fee</p>
-                <p className='font-okx font-medium text-2xl'>
-                  {feeLabel} <span className='px-1 font-normal opacity-60'> entry</span>
+                <p className='font-poly font-medium text-2xl'>
+                  PHP {tournament.registration_fee.toLocaleString()}{' '}
+                  <span className='px-1 font-normal opacity-0'> entry</span>
                 </p>
               </div>
             </CardContent>
           </Card>
 
           <Card className='border border-border/40 dark:bg-slate-500/50'>
-            <CardHeader className='md:mt-2 border-b border-border/50 border-dashed'>
-              <CardTitle className='font-poly text-primary text-2xl text-center'>Steps to book your Entry</CardTitle>
+            <CardHeader className='md:mt-2 border-b border-border/50 dark:border-slate-500 border-dashed'>
+              <CardTitle className='font-poly text-primary dark:text-foreground text-lg sm:text-xl tracking-[-0.02em] text-center'>
+                Steps to book your entry
+              </CardTitle>
             </CardHeader>
-            <CardContent className='space-y-3'>
+            <CardContent className='space-y-2.25'>
               {[
                 'Click Register Now.',
                 'Fill out the entry form.',
@@ -113,8 +119,8 @@ export default function TourDetail({ tournament }: TourDetailProps) {
                 'Upload Proof of Payment',
                 'Go to My Entries to view ticket.'
               ].map((step, index) => (
-                <div key={step} className='flex items-center gap-4 py-4.5'>
-                  <div className='flex size-7.5 shrink-0 items-center justify-center rounded-full bg-foreground/80 font-semibold text-background'>
+                <div key={step} className='flex items-center gap-4 py-4'>
+                  <div className='flex size-8 shrink-0 items-center justify-center rounded-full bg-foreground/80 dark:bg-background/80 dark:text-primary font-semibold text-background'>
                     <span className='font-poly text-lg'>{index + 1}</span>
                   </div>
                   <p className='text-base md:text-base text-foreground'>{step}</p>

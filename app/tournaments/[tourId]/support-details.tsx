@@ -50,6 +50,7 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
 
   return (
     <article className='flex min-w-0 flex-col rounded-md _border border-border/60 bg-background p-4'>
+      {' '}
       <div className='flex items-start gap-3'>
         <div className='flex items-center justify-center h-15'>
           <span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700'>
@@ -62,7 +63,6 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
           {showTitle ? <p className='mt-1 font-ios text-xs text-muted-foreground'>{contact.title}</p> : null}
         </div>
       </div>
-
       {contact.email || contact.phone ? (
         <address className='mt-5 grid gap-2 not-italic'>
           {contact.email ? (

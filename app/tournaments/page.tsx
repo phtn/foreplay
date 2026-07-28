@@ -19,7 +19,6 @@ export default function TournamentsPage() {
           description={featuredTournament.description}
           venueLabel={featuredTournament.venue}
           primaryHref='/subscriptions'
-          // secondaryHref='/'
           primaryLabel='My Entries'
           secondaryLabel=''
           teeTimeAt={featuredTournament.teeTimeAt}
