@@ -90,7 +90,7 @@ export function RecoveryForm() {
               />
             )}
           </form.AppField>
-          <Button type='submit' className='h-12 w-full font-medium' disabled={isSubmitting}>
+          <Button type='submit' className='h-12 w-full font-poly font-medium' disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Icon name='spinner-ring' className='mr-2 size-4' />

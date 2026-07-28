@@ -10,7 +10,7 @@ export default function Recovery() {
       title='Account Recovery'
       subtitle='Password Reset'
       footer={
-        <Link href='/auth/login' className='text-primary font-medium hover:underline'>
+        <Link href='/auth/login' className='font-medium hover:underline text-foreground/80'>
           <Icon name='arrow-right' className='w-3 h-3 inline mr-1 -rotate-180' />
           Back to log in
         </Link>

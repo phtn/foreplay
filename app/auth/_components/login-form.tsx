@@ -141,6 +141,7 @@ export function LoginForm({ redirectTo }: { redirectTo: string }) {
                 label='Password'
                 icon='lock'
                 type='password'
+                showPasswordToggle
                 placeholder='Enter your password'
                 required></field.TextField>
             )}

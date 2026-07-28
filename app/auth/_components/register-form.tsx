@@ -154,7 +154,10 @@ export function RegisterForm({ redirectTo }: { redirectTo: string }) {
               />
             )}
           </form.AppField>
-          <Button type='submit' className='h-12 w-full font-medium text-white' disabled={isSubmitting || isAuthLoading}>
+          <Button
+            type='submit'
+            className='h-12 w-full font-poly font-medium text-white'
+            disabled={isSubmitting || isAuthLoading}>
             {submissionKind === 'email' ? (
               <>
                 <Icon name='spinner-ring' className='mr-2 size-4' />

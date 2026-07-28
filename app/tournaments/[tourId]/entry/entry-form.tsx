@@ -355,7 +355,6 @@ export const NewEntryForm = ({
                   required
                   containerClassName='mb-4'
                   className={entryControlClassName}
-                  // disabled={isDraftBusy || isEntryLocked}
                   disabled
                   onChange={(event) => {
                     const nextPlayers = Number.parseInt(event.currentTarget.value, 10)

@@ -39,8 +39,8 @@ export const AuthLayout = ({ icon, title, subtitle, footer, children }: AuthLayo
             {children}
           </div>
         </div>
-        <div className='mt-5 flex h-auto w-full items-start justify-between gap-4 sm:flex-row sm:items-center xl:mt-6'>
-          {footer && <div className='md:text-sm text-xs text-muted-foreground'>{footer}</div>}
+        <div className='mt-5 flex h-auto w-full items-start justify-between gap-4 sm:flex-row sm:items-center xl:mt-6 rounded-lg  bg-slate-100/10 backdrop-blur-2xl py-4'>
+          {footer && <div className='md:text-sm text-xs text-slate-100'>{footer}</div>}
         </div>
       </div>
     </div>
