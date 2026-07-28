@@ -832,9 +832,7 @@ export const DataTable = <T,>({
   }, [columnFilters, columns, committedSearch, sorting, table, tableData])
   const centerToolbarActionsContent = useMemo(
     () =>
-      typeof centerToolbarActions === 'function'
-        ? centerToolbarActions({ getFilteredData })
-        : centerToolbarActions,
+      typeof centerToolbarActions === 'function' ? centerToolbarActions({ getFilteredData }) : centerToolbarActions,
     [centerToolbarActions, getFilteredData]
   )
   const toolbarLeftContent = useMemo(
@@ -851,7 +849,7 @@ export const DataTable = <T,>({
         {title ? <h2 className='mb-1 truncate font-clash text-sm font-medium'>{title}</h2> : null}
 
         <div className='portrait:sticky flex min-h-10.5 w-full max-w-full shrink-0 flex-nowrap items-center justify-between gap-2 overflow-x-auto overflow-y-visible md:gap-0'>
-          <div className='flex shrink-0 flex-nowrap items-center gap-2 md:gap-3'>
+          <div className='flex shrink-0 flex-nowrap items-center gap-5 md:gap-3'>
             {enableRowSelection ? (
               <LeftTableToolbar
                 select={<SelectToggle on={selectOn} toggleFn={selectToggle} selectedCount={selectedRows.length} />}

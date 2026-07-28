@@ -392,10 +392,10 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
   )
 
   return (
-    <div className='mx-auto flex w-full max-w-7xl flex-col min-h-screen _border border-input'>
+    <div className='mx-auto flex w-full max-w-7xl flex-col min-h-screen'>
       <div className='flex items-center justify-between px-2 w-full'>
         <SectionTitle title={undefined} eyebrow='Players' href={`/admin/${eventId}`} />
-        <div className='flex flex-col items-center'>
+        <div className='flex flex-col items-center justify-start'>
           <h1 className='font-poly text-base md:text-lg'>{'Pairings'}</h1>
           <span className='font-ios text-xs opacity-70'>{eventName}</span>
         </div>

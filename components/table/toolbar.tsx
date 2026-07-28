@@ -10,10 +10,10 @@ interface CenterTableToolbarProps {
 
 export const CenterTableToolbar = ({ actions, filter, view, dateRange }: CenterTableToolbarProps) => {
   return (
-    <div className='flex h-9 shrink-0 items-center justify-center'>
-      <div className='flex shrink-0 items-start justify-start gap-1 md:justify-between md:gap-2'>
+    <div className='flex h-9 shrink-0 items-center justify-center ps-2.5 md:ps-0'>
+      <div className='flex items-start justify-start md:justify-between gap-4 shrink-0 md:gap-2'>
         <div className='shrink-0'>{view}</div>
-        <div className='flex shrink-0 flex-nowrap items-start md:gap-2'>
+        <div className='flex shrink-0 flex-nowrap items-start gap-4 md:gap-2'>
           <div className='shrink-0 flex'>{filter}</div>
           {dateRange ? <div className='shrink-0 hidden md:flex'>{dateRange}</div> : null}
           {actions ? <div className='flex shrink-0'>{actions}</div> : null}

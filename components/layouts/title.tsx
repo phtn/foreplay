@@ -30,7 +30,7 @@ export const SectionTitle = ({ title, eyebrow, href }: SectionTitleProps) => {
         {title ? (
           <h2 className={cn('font-poly font-semibold text-base', { 'text-sm opacity-80': href })}>{title}</h2>
         ) : (
-          <p className='opacity-0 font-poly font-medium text-base sm:text-xl md:text-xl'>X</p>
+          <p className='opacity-0 font-poly font-medium text-base sm:text-lg md:text-xl'>X</p>
         )}
       </div>
     </div>

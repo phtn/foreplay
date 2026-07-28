@@ -503,7 +503,7 @@ export const NewEntryForm = ({
                     void copyAccountDetails()
                   }}>
                   <Icon name={accountDetailsCopied ? 'check' : 'copy'} className='size-4 opacity-80' />
-                  <span>{accountDetailsCopied ? 'Copied' : 'Copy Account Details'}</span>
+                  <span>{accountDetailsCopied ? 'Copied' : 'Account Details'}</span>
                 </Button>
                 <Button
                   type='button'
