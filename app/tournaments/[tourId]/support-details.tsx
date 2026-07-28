@@ -51,9 +51,11 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
   return (
     <article className='flex min-w-0 flex-col rounded-md _border border-border/60 bg-background p-4'>
       <div className='flex items-start gap-3'>
-        <span className='flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'>
-          <Icon name='service' className='size-5' />
-        </span>
+        <div className='flex items-center justify-center h-15'>
+          <span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700'>
+            <Icon name='user-fill' className='size-5 opacity-70' />
+          </span>
+        </div>
         <div className='min-w-0'>
           <p className='font-ios text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>{contact.label}</p>
           <h3 className='mt-1 wrap-break-word font-poly text-lg leading-tight text-foreground capitalize'>{heading}</h3>
@@ -111,16 +113,19 @@ export function SupportDetails({ support }: { support: TournamentSupport }) {
       aria-labelledby='tournament-support-heading'
       className='mt-12 scroll-mt-6 overflow-hidden rounded-[1.5rem] border border-border/60 bg-slate-50 shadow-sm dark:border-slate-600 dark:bg-transparent sm:mt-16'>
       <div className='flex items-start gap-4 border-b border-dashed border-border/50 px-4 py-5 sm:px-7 sm:py-6'>
-        <span className='flex size-11 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground'>
-          <Icon name='service' className='size-6' />
-        </span>
+        {/*<span className='flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground'>
+        </span>*/}
         <div className='min-w-0'>
-          <p className='font-ios text-[10px] uppercase tracking-[0.28em] text-primary'>Need a hand?</p>
-          <h2 id='tournament-support-heading' className='mt-1 font-poly text-xl tracking-[-0.02em] sm:text-2xl'>
-            Questions &amp; inquiries
+          <div className='flex items-center space-x-2'>
+            <Icon name='help-circle' className='size-3.5 text-primary' />
+            <p className='font-ios text-xs uppercase tracking-[0.28em] text-primary'>We&apos;re here to help?</p>
+          </div>
+          <h2 id='tournament-support-heading' className='mt-1 font-poly text-lg sm:text-xl tracking-[-0.02em]'>
+            Questions &amp; Inquiries
           </h2>
-          <p className='mt-2 max-w-2xl text-sm leading-6 text-muted-foreground'>
-            Contact the event team for help with registration, payments, or tournament-day details.
+          <p className='mt-2 max-w-2xl font-okx text-foreground/70 text-sm leading-6'>
+            If you have any questions, need assistance with registration or payments, or require more information about
+            tournament day, we&apos;re here to help.
           </p>
         </div>
       </div>

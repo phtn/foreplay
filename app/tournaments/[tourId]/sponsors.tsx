@@ -167,8 +167,8 @@ export function Sponsors({ sponsors }: SponsorsProps) {
       }}>
       <div className='flex items-end justify-between gap-4 border-b border-border/50 dark:border-slate-600 border-dashed px-4 py-5 sm:px-7 sm:py-6'>
         <div>
-          <p className='font-ios text-[10px] uppercase tracking-[0.28em] text-primary'>Supported by</p>
-          <h2 id='sponsors-heading' className='mt-2 font-poly text-base md:text-lg tracking-[-0.02em] sm:text-xl'>
+          <p className='font-ios text-xs uppercase tracking-[0.28em] text-primary'>Supported by</p>
+          <h2 id='sponsors-heading' className='mt-2 font-poly text-lg sm:text-xl tracking-[-0.02em]'>
             Tournament Partners
           </h2>
         </div>
