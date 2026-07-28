@@ -39,6 +39,13 @@ type PaymentMethod = {
   qrCodeContent: string | null
 }
 
+const formatPaymentAccountDetails = (paymentMethod: PaymentMethod) =>
+  [
+    `Bank: ${paymentMethod.bankOrEwallet}`,
+    `Account Name: ${paymentMethod.accountName}`,
+    `Account Number: ${paymentMethod.accountNumber}`
+  ].join('\n')
+
 interface NewEntryFormProps {
   tourId: string
   formId: string
@@ -68,9 +75,7 @@ export const NewEntryForm = ({
   isAdmin,
   initialSubscription,
   paymentMethod,
-  divisionOptions,
-  onPlayersChange,
-  onDivisionChange
+  onPlayersChange
 }: NewEntryFormProps) => {
   const initiallyLocked = isSubscriptionEntryLocked(initialSubscription)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -95,7 +100,7 @@ export const NewEntryForm = ({
       : null
   )
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
-  const [paymentCodeCopied, setPaymentCodeCopied] = useState(false)
+  const [accountDetailsCopied, setAccountDetailsCopied] = useState(false)
   const { convert, terminate } = useImageConverter()
   const [entryQuery, setEntryQuery] = useQueryStates(
     {
@@ -203,18 +208,23 @@ export const NewEntryForm = ({
   const isSaved = subscriptionId !== null
   const isDraftBusy = isSubmitting || isSubmittingReceipt
   const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
+  const paymentAccountDetails = paymentMethod ? formatPaymentAccountDetails(paymentMethod) : null
   const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
-  const copyPaymentCode = useCallback(async () => {
-    if (!navigator.clipboard || !paymentQRCodeContent) {
+  const copyAccountDetails = useCallback(async () => {
+    if (!navigator.clipboard || !paymentAccountDetails) {
       return
     }
 
-    await navigator.clipboard.writeText(paymentQRCodeContent)
-    setPaymentCodeCopied(true)
-    window.setTimeout(() => {
-      setPaymentCodeCopied(false)
-    }, 1600)
-  }, [paymentQRCodeContent])
+    try {
+      await navigator.clipboard.writeText(paymentAccountDetails)
+      setAccountDetailsCopied(true)
+      window.setTimeout(() => {
+        setAccountDetailsCopied(false)
+      }, 1600)
+    } catch {
+      setErrorMessage('Unable to copy the payment account details.')
+    }
+  }, [paymentAccountDetails])
   const downloadPaymentQR = useCallback(async () => {
     if (!paymentQRCodeContent) {
       return
@@ -354,42 +364,6 @@ export const NewEntryForm = ({
                   }}></TextField>
               )}
             </form.AppField>
-            {/*<div className='h-28 bg-slate-100 rounded-md'></div>*/}
-            <div className='hidden _flex flex-col gap-4 sm:flex-row sm:items-start'>
-              <form.AppField name='division'>
-                {({ SelectField }) => (
-                  <SelectField
-                    id='book-division'
-                    label='Division'
-                    options={divisionOptions}
-                    containerClassName='mb-0'
-                    disabled={isDraftBusy || isEntryLocked}
-                    onChange={(event) => {
-                      const nextDivision = event.currentTarget.value
-                      onDivisionChange(nextDivision)
-                      void setEntryQuery({ division: nextDivision || null })
-                    }}
-                  />
-                )}
-              </form.AppField>
-              <form.AppField name='handicapIndex'>
-                {({ TextField }) => (
-                  <TextField
-                    id='book-handicap'
-                    type='number'
-                    icon='golf-flag'
-                    label='Handicap'
-                    placeholder='Optional'
-                    containerClassName='mb-0'
-                    className={entryControlClassName}
-                    disabled={isDraftBusy || isEntryLocked}
-                    onChange={(event) => {
-                      void setEntryQuery({ handicapIndex: event.currentTarget.value || null })
-                    }}
-                  />
-                )}
-              </form.AppField>
-            </div>
           </div>
 
           <div className='md:border-r border-slate-400 dark:border-slate-900 p-4 md:p-8'>
@@ -400,7 +374,7 @@ export const NewEntryForm = ({
                   label='Email'
                   icon='mail'
                   type='email'
-                  placeholder='you@example.com'
+                  placeholder='everything@awesome.com'
                   autoComplete='email'
                   required
                   containerClassName='mb-4'
@@ -517,12 +491,12 @@ export const NewEntryForm = ({
                   type='button'
                   variant='outline'
                   className='justify-center rounded-md bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
-                  disabled={!paymentQRCodeContent}
+                  disabled={!paymentMethod}
                   onClick={() => {
-                    void copyPaymentCode()
+                    void copyAccountDetails()
                   }}>
-                  <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4 opacity-80' />
-                  <span>{paymentCodeCopied ? 'Copied' : 'Copy Account Details'}</span>
+                  <Icon name={accountDetailsCopied ? 'check' : 'copy'} className='size-4 opacity-80' />
+                  <span>{accountDetailsCopied ? 'Copied' : 'Copy Account Details'}</span>
                 </Button>
                 <Button
                   type='button'

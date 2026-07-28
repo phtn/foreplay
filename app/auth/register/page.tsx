@@ -14,7 +14,7 @@ export default async function Register({ searchParams }: RegisterPageProps) {
 
   return (
     <AuthLayout
-      icon='golf-tee'
+      icon='foreplay'
       title='Foreplay'
       subtitle='Create new account'
       footer={

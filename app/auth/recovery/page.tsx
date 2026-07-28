@@ -6,7 +6,7 @@ import { RecoveryForm } from '../_components/recovery-form'
 export default function Recovery() {
   return (
     <AuthLayout
-      icon='re-up.ph'
+      icon='foreplay'
       title='Account Recovery'
       subtitle='Password Reset'
       footer={

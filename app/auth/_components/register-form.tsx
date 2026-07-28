@@ -132,6 +132,7 @@ export function RegisterForm({ redirectTo }: { redirectTo: string }) {
                 autoComplete='new-password'
                 placeholder='••••••••'
                 minLength={6}
+                showPasswordToggle
                 required
                 disabled={isSubmitting || isAuthLoading}
               />
@@ -147,6 +148,7 @@ export function RegisterForm({ redirectTo }: { redirectTo: string }) {
                 autoComplete='new-password'
                 placeholder='••••••••'
                 minLength={6}
+                showPasswordToggle
                 required
                 disabled={isSubmitting || isAuthLoading}
               />
