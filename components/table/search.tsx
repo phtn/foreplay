@@ -44,7 +44,7 @@ const SearchComponent = ({ col, value, onChange, onClear, ref }: Props<unknown>)
         id={id}
         ref={inputRef}
         className={cn(
-          'peer h-8 min-w-0 rounded-xs border-none bg-muted dark:bg-muted/30 ps-3 font-brk text-sm outline-0 placeholder:font-ios placeholder:text-foreground/60 w-54 md:w-64 md:min-w-64',
+          'peer h-8 min-w-0 rounded-xs border-none bg-muted dark:bg-muted/30 ps-3 font-brk text-sm outline-0 placeholder:font-ios placeholder:text-foreground/60 w-48 md:w-64 md:min-w-64',
           hasValue && 'pe-10'
         )}
         value={value}
