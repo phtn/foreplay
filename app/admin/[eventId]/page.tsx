@@ -77,9 +77,8 @@ export default async function EventPage({ params }: EventPageProps) {
   return (
     <main className='space-y-0 md:space-y-4'>
       <div className='flex gap-4 items-center justify-between px-2 md:px-2 pb-2 md:pb-0'>
-        <div className='space-y-4 mt-4 md:mt-0 w-full'>
-          <SectionTitle eyebrow='Events' href='/admin' />
-          {/*<Link
+        <SectionTitle eyebrow='Events' href='/admin' />
+        {/*<Link
             href='/admin'
             prefetch='auto'
             className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dotted dark:hover:decoration-sky-400 md:tracking-wider hover:text-sky-700 dark:hover:text-foreground'>
@@ -89,10 +88,9 @@ export default async function EventPage({ params }: EventPageProps) {
             />
             Events
           </Link>*/}
-        </div>
-        <div className='w-full flex items-center h-16 overflow-hidden'>
+        <div className='w-full flex items-center justify-center h-16 overflow-hidden'>
           <div className='space-y-2 flex flex-col items-center'>
-            <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl'>{event.title}</h1>
+            <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
             <EventToolbar event={event} />
           </div>
         </div>
