@@ -124,7 +124,7 @@ export function PodiumTable({ eventId, podiumAwards, registrations, eventName }:
   )
 
   return (
-    <div className='mx-auto flex min-h-screen w-full max-w-7xl flex-col border border-input'>
+    <div className='mx-auto flex min-h-screen w-full max-w-7xl flex-col'>
       <div className='flex items-center justify-between px-3 py-4'>
         <SectionTitle title={undefined} eyebrow='Pairings' href={`/admin/${eventId}/pairings`} />
         <div className='flex flex-col items-center'>
