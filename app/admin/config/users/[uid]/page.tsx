@@ -235,8 +235,8 @@ export default async function UserPage({ params }: UserPageProps) {
         User Directory
       </Link>
 
-      <section className='relative overflow-hidden rounded-3xl border border-foreground/10 bg-card px-5 py-6 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.45)] sm:px-7 sm:py-8'>
-        <div className='pointer-events-none absolute inset-0 bg-linear-to-br from-emerald-500/10 via-transparent to-sky-500/10' />
+      <section className='relative overflow-hidden rounded-3xl border border-foreground/10 bg-card px-5 py-6 sm:px-7 sm:py-8'>
+        <div className='pointer-events-none absolute inset-0 bg-linear-to-br from-emerald-500/5 via-transparent to-orange-500/5' />
         <div className='pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border border-foreground/5 bg-background/30' />
         <div className='pointer-events-none absolute -bottom-32 right-24 size-52 rounded-full border border-foreground/5 bg-background/30' />
 

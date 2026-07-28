@@ -145,11 +145,14 @@ function DateTimeCell({ timestamp, fallback = '—' }: { timestamp: number | nul
   )
 }
 
-function ReferenceCell({ row }: { row: EventSubscriptionTableRow }) {
+function ReferenceCell({ eventId, row }: { eventId: string; row: EventSubscriptionTableRow }) {
   return (
     <div className='min-w-0 space-y-1'>
-      <Link href={`/admin/users/${row.subscriptionId}`}>
-        <p className='truncate font-ios text-foreground/90'>{row.reference.substring(0, 4).toUpperCase()}</p>
+      <Link
+        href={`/admin/${encodeURIComponent(eventId)}/players/${encodeURIComponent(row.subscriptionId)}`}
+        title={`Edit registration ${row.reference}`}
+        className='inline-flex max-w-full rounded-sm font-ios text-sky-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-sky-400'>
+        <span className='truncate'>{row.reference.substring(0, 4).toUpperCase()}</span>
       </Link>
     </div>
   )
@@ -517,7 +520,7 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         size: 80,
         enableFiltering: false,
         enableSorting: false,
-        cell: ({ row }) => <ReferenceCell row={row.original} />
+        cell: ({ row }) => <ReferenceCell eventId={eventId} row={row.original} />
       },
       {
         id: 'created',

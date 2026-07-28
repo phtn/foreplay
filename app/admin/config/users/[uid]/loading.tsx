@@ -9,8 +9,8 @@ export default function UserLoading() {
         ))}
       </div>
       <div className='grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(20rem,0.75fr)]'>
-        <div className='h-[32rem] rounded-2xl bg-muted/70' />
-        <div className='h-[32rem] rounded-2xl bg-muted/70' />
+        <div className='h-128 rounded-2xl bg-muted/70' />
+        <div className='h-128 rounded-2xl bg-muted/70' />
       </div>
     </main>
   )

@@ -1,6 +1,7 @@
 import { v } from 'convex/values'
 import type { Doc, Id } from '../_generated/dataModel'
 import { query } from '../_generated/server'
+import { MAX_REGISTRATIONS_PER_SUBSCRIPTION } from '../registrations/ticket'
 
 const dedupeSubscriptions = (subscriptions: Doc<'subscriptions'>[]) => {
   return Array.from(new Map(subscriptions.map((subscription) => [subscription._id, subscription])).values()).sort(
@@ -111,5 +112,39 @@ export const getByIdForUser = query({
     }
 
     return subscription
+  }
+})
+
+export const getRegistrationDetailsForAdmin = query({
+  args: {
+    subscriptionId: v.string(),
+    tournamentId: v.string()
+  },
+  handler: async (ctx, { subscriptionId: routeSubscriptionId, tournamentId }) => {
+    const subscriptionId = ctx.db.normalizeId('subscriptions', routeSubscriptionId)
+
+    if (!subscriptionId) {
+      return null
+    }
+
+    const subscription = await ctx.db.get(subscriptionId)
+
+    if (!subscription || subscription.tournament_id !== tournamentId) {
+      return null
+    }
+
+    const registrations = await ctx.db
+      .query('registrations')
+      .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', subscriptionId))
+      .take(MAX_REGISTRATIONS_PER_SUBSCRIPTION + 1)
+
+    if (registrations.length > MAX_REGISTRATIONS_PER_SUBSCRIPTION) {
+      throw new Error('This subscription has more registrations than the supported limit.')
+    }
+
+    return {
+      registrations,
+      subscription
+    }
   }
 })

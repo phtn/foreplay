@@ -1,7 +1,7 @@
 import { ConvexError, v } from 'convex/values'
 import type { Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
-import { reconcileSubscriptionTickets } from '../registrations/ticket'
+import { MAX_REGISTRATIONS_PER_SUBSCRIPTION, reconcileSubscriptionTickets } from '../registrations/ticket'
 import {
   areSubscriptionStatusSnapshotsEqual,
   resolveAdminStatusTransition,
@@ -15,6 +15,38 @@ import { isSubscriptionEntryLocked } from './policy'
 const trimOrUndefined = (value: string | undefined) => {
   const trimmed = value?.trim()
   return trimmed ? trimmed : undefined
+}
+
+const trimRequiredAdminDetail = (value: string, label: string, maxLength: number) => {
+  const trimmed = value.trim()
+
+  if (!trimmed) {
+    throw new ConvexError(`${label} is required.`)
+  }
+
+  if (trimmed.length > maxLength) {
+    throw new ConvexError(`${label} must be ${maxLength} characters or fewer.`)
+  }
+
+  return trimmed
+}
+
+const trimOptionalAdminDetail = (value: string, label: string, maxLength: number) => {
+  const trimmed = value.trim()
+
+  if (trimmed.length > maxLength) {
+    throw new ConvexError(`${label} must be ${maxLength} characters or fewer.`)
+  }
+
+  return trimmed || undefined
+}
+
+const requireAdminIdentity = async (ctx: MutationCtx) => {
+  const identity = await ctx.auth.getUserIdentity()
+
+  if (!identity || identity.admin !== true) {
+    throw new ConvexError('Unauthorized')
+  }
 }
 
 const adminStatusChangeResult = v.object({
@@ -200,6 +232,113 @@ export const create = mutation({
     })
 
     return { subscriptionId }
+  }
+})
+
+export const updateRegistrationDetailsForAdmin = mutation({
+  args: {
+    subscriptionId: v.id('subscriptions'),
+    tournamentId: v.string(),
+    teamName: v.string(),
+    contactEmail: v.string(),
+    contactPhone: v.string(),
+    handicapIndex: v.string(),
+    division: v.string(),
+    registrations: v.array(
+      v.object({
+        registrationId: v.id('registrations'),
+        playerName: v.string(),
+        playerEmail: v.string(),
+        playerPhone: v.string(),
+        handicapIndex: v.string(),
+        division: v.string(),
+        shirtSize: v.string()
+      })
+    )
+  },
+  returns: v.object({
+    subscriptionId: v.id('subscriptions'),
+    updatedRegistrationCount: v.number()
+  }),
+  handler: async (ctx, args) => {
+    await requireAdminIdentity(ctx)
+
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription || subscription.tournament_id !== args.tournamentId) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    if (args.registrations.length > MAX_REGISTRATIONS_PER_SUBSCRIPTION) {
+      throw new ConvexError('This subscription has too many player registrations.')
+    }
+
+    const existingRegistrations = await ctx.db
+      .query('registrations')
+      .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', args.subscriptionId))
+      .take(MAX_REGISTRATIONS_PER_SUBSCRIPTION + 1)
+
+    if (existingRegistrations.length !== args.registrations.length) {
+      throw new ConvexError('The player list changed. Refresh the page before saving again.')
+    }
+
+    const existingById = new Map(
+      existingRegistrations.map((registration) => [registration._id, registration])
+    )
+    const submittedIds = new Set<Id<'registrations'>>()
+    const preparedRegistrations = args.registrations.map((registration, index) => {
+      const existing = existingById.get(registration.registrationId)
+
+      if (
+        submittedIds.has(registration.registrationId) ||
+        !existing ||
+        existing.subscription_id !== args.subscriptionId ||
+        existing.tournament_id !== args.tournamentId
+      ) {
+        throw new ConvexError('One or more player registrations do not belong to this entry.')
+      }
+
+      submittedIds.add(registration.registrationId)
+
+      return {
+        registrationId: registration.registrationId,
+        playerName: trimRequiredAdminDetail(registration.playerName, `Player ${index + 1} name`, 120),
+        playerEmail: trimOptionalAdminDetail(registration.playerEmail, `Player ${index + 1} email`, 320)?.toLowerCase(),
+        playerPhone: trimOptionalAdminDetail(registration.playerPhone, `Player ${index + 1} phone`, 64),
+        handicapIndex: trimOptionalAdminDetail(registration.handicapIndex, `Player ${index + 1} handicap`, 64),
+        division: trimOptionalAdminDetail(registration.division, `Player ${index + 1} division`, 120),
+        shirtSize: trimRequiredAdminDetail(registration.shirtSize, `Player ${index + 1} shirt size`, 64)
+      }
+    })
+
+    const contactEmail = trimRequiredAdminDetail(args.contactEmail, 'Contact email', 320).toLowerCase()
+    const updatedAt = Date.now()
+
+    await Promise.all([
+      ctx.db.patch(args.subscriptionId, {
+        team_name: trimOptionalAdminDetail(args.teamName, 'Team name', 120),
+        contact_email: contactEmail,
+        contact_phone: trimOptionalAdminDetail(args.contactPhone, 'Contact phone', 64),
+        handicap_index: trimOptionalAdminDetail(args.handicapIndex, 'Handicap', 64),
+        division: trimOptionalAdminDetail(args.division, 'Division', 120),
+        updatedAt
+      }),
+      ...preparedRegistrations.map((registration) =>
+        ctx.db.patch(registration.registrationId, {
+          player_name: registration.playerName,
+          player_email: registration.playerEmail,
+          player_phone: registration.playerPhone,
+          handicap_index: registration.handicapIndex,
+          division: registration.division,
+          shirt_size: registration.shirtSize
+        })
+      )
+    ])
+
+    return {
+      subscriptionId: args.subscriptionId,
+      updatedRegistrationCount: preparedRegistrations.length
+    }
   }
 })
 

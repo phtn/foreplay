@@ -187,7 +187,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [pairingByRegistrationId, setPairingByRegistrationId] = useState(() => buildInitialPairingState(registrations))
 
-  const rows = useMemo(() => {
+  const { rows, startingHoleCounts } = useMemo(() => {
     const sortedRegistrations = registrations.toSorted((left, right) => {
       const nameSort = left.player_name.localeCompare(right.player_name, undefined, {
         sensitivity: 'base'
@@ -195,11 +195,16 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
 
       return nameSort === 0 ? left._creationTime - right._creationTime : nameSort
     })
+    const nextStartingHoleCounts: Record<string, number> = {}
 
-    return sortedRegistrations.map((registration, index): PairingTableRow => {
+    const nextRows = sortedRegistrations.map((registration, index): PairingTableRow => {
       const pairing = pairingByRegistrationId.get(registration._id) ?? {
         pairingGroup: registration.pairing_group ?? 'A',
         startHole: registration.start_hole === undefined ? '' : String(registration.start_hole)
+      }
+
+      if (startHoleOptions.includes(pairing.startHole)) {
+        nextStartingHoleCounts[pairing.startHole] = (nextStartingHoleCounts[pairing.startHole] ?? 0) + 1
       }
 
       return {
@@ -213,6 +218,11 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         shirtSize: formatPrincipal(registration.shirt_size)
       }
     })
+
+    return {
+      rows: nextRows,
+      startingHoleCounts: nextStartingHoleCounts
+    }
   }, [isPending, pairingByRegistrationId, pendingRegistrationId, registrations])
 
   const updatePairing = useCallback(
@@ -316,6 +326,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
           <StartSelector
             value={row.original.startHole}
             disabled={row.original.pending}
+            startingHoleCounts={startingHoleCounts}
             onChangeAction={(startHole) =>
               updatePairing(row.original.id, row.original, {
                 startHole
@@ -366,7 +377,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         )
       }
     ],
-    [rows.length, updatePairing]
+    [rows.length, startingHoleCounts, updatePairing]
   )
   const renderExportMenu = useCallback(
     ({ getFilteredData }: TableToolbarContext<PairingTableRow>) => (
