@@ -455,8 +455,11 @@ export function TournamentHero({
                     'w-full font-poly sm:w-auto bg-slate-200/5 hover:bg-white hover:text-slate-900'
                   )}
                   href={secondaryHref}>
-                  <Icon name='service' className='size-4.5' />
-                  <span>{secondaryLabel}</span>
+                  <Icon name='service' className='size-8' />
+                  <div className='block ml-1'>
+                    <p className='tracking-wider'>{secondaryLabel}</p>
+                    <span className='text-sm font-okx font-normal tracking-wide'>Customer Support</span>
+                  </div>
                 </Link>
               )}
             </div>
@@ -487,22 +490,26 @@ export function TournamentHero({
           <Link
             className={cn(
               buttonVariants({ size: '2xl' }),
-              'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
-              { 'bg-foreground dark:bg-background': darkButton }
+              'w-full hover:bg-primary/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center h-18',
+              { 'bg-primary dark:bg-background': darkButton }
             )}
             href={primaryHref}>
-            <span>{primaryLabel}</span>
+            <span className='text-lg'>{primaryLabel}</span>
             <Icon name='chevron-right' className='size-4.5' />
           </Link>
         )}
         {secondaryHref && (
           <Link
             className={cn(
-              buttonVariants({ variant: 'secondary', size: 'xl' }),
-              'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900'
+              buttonVariants({ variant: 'secondary', size: '2xl' }),
+              'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900 h-18'
             )}
             href={secondaryHref}>
-            {secondaryLabel}
+            <Icon name='service' className='size-8' />
+            <div className='block ml-1'>
+              <p className='tracking-wider'>{secondaryLabel}</p>
+              <span className='text-sm font-okx font-normal tracking-wider'>Customer Support</span>
+            </div>
           </Link>
         )}
       </div>

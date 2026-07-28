@@ -273,8 +273,9 @@ export const Content = ({
                 <div className='space-y-1'>
                   <h2
                     id='book-now-title'
-                    className='font-heading text-base md:text-lg md:font-semibold tracking-tight sm:text-base'>
-                    {tournament.venue.split(',').shift()}
+                    className='font-heading text-base md:text-lg md:font-semibold tracking-tight sm:text-base flex items-center space-x-2'>
+                    <Icon name='location' className='size-4' />
+                    <span>{tournament.venue}</span>
                   </h2>
                 </div>
 
@@ -287,12 +288,12 @@ export const Content = ({
                       {price > 0 ? currencyFormatter.format(price) : tournament.entryFeeLabel}
                     </p>
                   </div>
-                  <div className='p-0 space-y-1.5'>
+                  {/*<div className='p-0 space-y-1.5'>
                     <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Total</p>
                     <p className='font-okx font-medium mt-1 text-base tracking-tight'>
                       {currencyFormatter.format(total)}
                     </p>
-                  </div>
+                  </div>*/}
                   <div className='p-0 space-y-1.5'>
                     <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Entries</p>
                     <p className='font-okx font-medium mt-1 text-base tracking-tight'>{players}</p>

@@ -30,7 +30,7 @@ export default function TourDetail({ tournament }: TourDetailProps) {
         description={tournament.description ?? ''}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
-        primaryLabel='Book Entry'
+        primaryLabel='Register Now'
         secondaryLabel={tournament.support?.phone}
         secondaryHref={`tel:${tournament.support?.phone}`}
         teeTimeAt={eventDate.toISOString()}
@@ -62,6 +62,20 @@ export default function TourDetail({ tournament }: TourDetailProps) {
                     <p className='font-ios '>{item.value}</p>
                   </div>
                 ))}
+                {tournament.support && (
+                  <div
+                    key={tournament.support.phone}
+                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
+                    <p className='text-okx text-xs uppercase tracking-widest'>{tournament.support.title}</p>
+                    <p className='font-ios space-x-2'>
+                      <span>{tournament.support.phone}</span>
+                      <span>&middot;</span>
+                      <span>{tournament.support.email}</span>
+                      <span>&middot;</span>
+                      <span className='capitalize'>{tournament.support.name}</span>
+                    </p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -83,22 +97,22 @@ export default function TourDetail({ tournament }: TourDetailProps) {
           </Card>
 
           <Card className='border border-border/40 dark:bg-slate-500/50'>
-            <CardHeader>
-              <CardTitle className='font-poly text-primary text-2xl text-center mt-2'>
-                Steps to book your entry
-              </CardTitle>
+            <CardHeader className='md:mt-2 border-b border-border/50 border-dashed'>
+              <CardTitle className='font-poly text-primary text-2xl text-center'>Steps to book your Entry</CardTitle>
             </CardHeader>
-            <CardContent className='space-y-4'>
+            <CardContent className='space-y-3'>
               {[
-                'Select how many entries you want to book.',
-                'Pay the entry fee and upload proof of payment.',
-                'Register players to confirm the slots.'
+                'Click Register Now.',
+                'Fill out the entry form.',
+                'Pay with QR or Bank transfer',
+                'Upload Proof of Payment',
+                'Go to My Entries to view ticket.'
               ].map((step, index) => (
-                <div key={step} className='flex gap-3 py-4.5'>
+                <div key={step} className='flex items-center gap-4 py-4.5'>
                   <div className='flex size-7.5 shrink-0 items-center justify-center rounded-full bg-foreground/80 font-semibold text-background'>
                     <span className='font-poly text-lg'>{index + 1}</span>
                   </div>
-                  <p className='text-sm md:text-base text-foreground'>{step}</p>
+                  <p className='text-base md:text-base text-foreground'>{step}</p>
                 </div>
               ))}
             </CardContent>

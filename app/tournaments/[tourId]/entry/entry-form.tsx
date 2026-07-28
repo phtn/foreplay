@@ -1,7 +1,8 @@
 'use client'
 
 import { useAppForm } from '@/components/form'
-import { createQRCodeSvg, QRCodeSVG } from '@/components/qrcode/viewer'
+import { downloadQRCodePng } from '@/components/qrcode/download-png'
+import { QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
@@ -20,6 +21,9 @@ import {
 
 const entryControlClassName =
   'h-12 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
+
+const mobileViewportQuery = '(max-width: 767px)'
+const reducedMotionQuery = '(prefers-reduced-motion: reduce)'
 
 type DivisionOption = {
   label: string
@@ -81,6 +85,7 @@ export const NewEntryForm = ({
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
   const receiptPreviewUrlRef = useRef<string | null>(null)
+  const paymentSectionRef = useRef<HTMLDivElement | null>(null)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
   const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(() =>
     initiallyLocked
@@ -122,6 +127,19 @@ export const NewEntryForm = ({
       terminate()
     }
   }, [terminate])
+
+  const scrollToPaymentSectionOnMobile = useCallback(() => {
+    if (!window.matchMedia(mobileViewportQuery).matches) {
+      return
+    }
+
+    window.requestAnimationFrame(() => {
+      paymentSectionRef.current?.scrollIntoView({
+        behavior: window.matchMedia(reducedMotionQuery).matches ? 'auto' : 'smooth',
+        block: 'start'
+      })
+    })
+  }, [])
 
   const form = useAppForm({
     defaultValues: {
@@ -175,6 +193,7 @@ export const NewEntryForm = ({
             ? 'Entry changes saved. You can continue editing until proof of payment is submitted.'
             : 'Entry request saved. You can update it until proof of payment is submitted.'
         )
+        scrollToPaymentSectionOnMobile()
       } catch {
         setErrorMessage('Unable to save this entry request.')
       }
@@ -196,24 +215,23 @@ export const NewEntryForm = ({
       setPaymentCodeCopied(false)
     }, 1600)
   }, [paymentQRCodeContent])
-  const downloadPaymentQR = useCallback(() => {
+  const downloadPaymentQR = useCallback(async () => {
     if (!paymentQRCodeContent) {
       return
     }
 
-    const svg = createQRCodeSvg({
-      content: paymentQRCodeContent,
-      width: 400,
-      height: 400
-    })
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-
-    link.href = url
-    link.download = `${formId}-payment-qr.svg`
-    link.click()
-    URL.revokeObjectURL(url)
+    try {
+      await downloadQRCodePng(
+        {
+          content: paymentQRCodeContent,
+          width: 400,
+          height: 400
+        },
+        `${formId}-payment-qr.png`
+      )
+    } catch {
+      setErrorMessage('Unable to download the payment QR code.')
+    }
   }, [formId, paymentQRCodeContent])
   const submitReceipt = useCallback(async () => {
     if ((!receiptFile && !isAdmin) || !subscriptionId || isEntryLocked) {
@@ -437,6 +455,7 @@ export const NewEntryForm = ({
               <Button
                 size='xl'
                 type='submit'
+                id='entry-info-submit'
                 variant='default'
                 className='w-full bg-slate-900 hover:bg-foreground/80 dark:bg-background text-white/80 md:min-w-64'
                 disabled={isDraftBusy || isEntryLocked}>
@@ -452,7 +471,10 @@ export const NewEntryForm = ({
 
         {/* PAYMENTS */}
         <Activity mode={isSaved ? 'visible' : 'hidden'}>
-          <div className='grid min-h-80 border-t border-slate-400 dark:border-slate-900 md:grid-cols-3'>
+          <div
+            ref={paymentSectionRef}
+            id='pay-with-qr-section'
+            className='grid min-h-80 scroll-mt-16 border-t border-slate-400 dark:border-slate-900 md:grid-cols-3'>
             <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-6 dark:border-slate-900 md:border-b-0 md:border-r'>
               <div className='space-y-6'>
                 <div className='flex items-center gap-4'>
@@ -490,7 +512,7 @@ export const NewEntryForm = ({
                   </div>
                 </div>
               </div>
-              <div className='grid grid-cols-2 gap-2'>
+              <div className='grid grid-cols-2 gap-2 font-okx'>
                 <Button
                   type='button'
                   variant='outline'
@@ -499,8 +521,8 @@ export const NewEntryForm = ({
                   onClick={() => {
                     void copyPaymentCode()
                   }}>
-                  <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4' />
-                  <span>{paymentCodeCopied ? 'Copied' : 'Copy QR'}</span>
+                  <Icon name={paymentCodeCopied ? 'check' : 'copy'} className='size-4 opacity-80' />
+                  <span>{paymentCodeCopied ? 'Copied' : 'Copy Account Details'}</span>
                 </Button>
                 <Button
                   type='button'
@@ -508,7 +530,7 @@ export const NewEntryForm = ({
                   className='justify-center bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
                   disabled={!paymentQRCodeContent}
                   onClick={downloadPaymentQR}>
-                  <Icon name='down-to-line' className='size-4' />
+                  <Icon name='down-to-line' className='size-4 opacity-80' />
                   <span>Download QR</span>
                 </Button>
               </div>
