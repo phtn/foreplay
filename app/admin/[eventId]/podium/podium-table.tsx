@@ -130,7 +130,7 @@ export function PodiumTable({ eventId, podiumAwards, registrations, eventName }:
         <div className='flex flex-col items-center'>
           <h1 className='font-poly text-base md:text-lg'>{'Podium'}</h1>
           <span className='font-ios text-xs opacity-70'>{eventName}</span>
-        </div>{' '}
+        </div>
         <LinkTitle title={undefined} href={undefined} />
       </div>
 
