@@ -32,10 +32,13 @@ const loadSvgImage = (svg: string) => {
   })
 }
 
-export const createQRCodePngBlob = async (options: QRCodeOptions) => {
-  const width = Math.max(1, Math.round(options.width ?? 280))
-  const height = Math.max(1, Math.round(options.height ?? 280))
-  const svg = createQRCodeSvg({ ...options, width, height })
+type SvgPngOptions = {
+  background?: string
+  height: number
+  width: number
+}
+
+const createSvgPngBlob = async (svg: string, { background = '#ffffff', height, width }: SvgPngOptions) => {
   const image = await loadSvgImage(svg)
   const canvas = document.createElement('canvas')
 
@@ -48,15 +51,14 @@ export const createQRCodePngBlob = async (options: QRCodeOptions) => {
     throw new Error('Unable to prepare the QR code download.')
   }
 
-  context.fillStyle = options.background ?? '#ffffff'
+  context.fillStyle = background
   context.fillRect(0, 0, width, height)
   context.drawImage(image, 0, 0, width, height)
 
   return await canvasToPngBlob(canvas)
 }
 
-export const downloadQRCodePng = async (options: QRCodeOptions, filename: string) => {
-  const png = await createQRCodePngBlob(options)
+const downloadPngBlob = (png: Blob, filename: string) => {
   const downloadUrl = URL.createObjectURL(png)
   const link = document.createElement('a')
 
@@ -70,4 +72,32 @@ export const downloadQRCodePng = async (options: QRCodeOptions, filename: string
     link.remove()
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
   }
+}
+
+export const createQRCodePngBlob = async (options: QRCodeOptions) => {
+  const width = Math.max(1, Math.round(options.width ?? 280))
+  const height = Math.max(1, Math.round(options.height ?? 280))
+  const svg = createQRCodeSvg({ ...options, width, height })
+
+  return await createSvgPngBlob(svg, {
+    background: options.background,
+    height,
+    width
+  })
+}
+
+export const downloadQRCodePng = async (options: QRCodeOptions, filename: string) => {
+  downloadPngBlob(await createQRCodePngBlob(options), filename)
+}
+
+export const downloadSvgAsPng = async (svg: string, filename: string, options: SvgPngOptions) => {
+  const width = Math.max(1, Math.round(options.width))
+  const height = Math.max(1, Math.round(options.height))
+  const png = await createSvgPngBlob(svg, {
+    ...options,
+    height,
+    width
+  })
+
+  downloadPngBlob(png, filename)
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { downloadSvgAsPng } from '@/components/qrcode/download-png'
 import { Button } from '@/components/ui/button'
 import {
   Drawer,
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/drawer'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Icon } from '@/lib/icons'
+import { useState, useTransition } from 'react'
 
 interface EventQrDrawerProps {
   eventTitle: string
@@ -22,7 +24,12 @@ interface EventQrDrawerProps {
 }
 
 export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: EventQrDrawerProps) {
-  const downloadQrCode = () => {
+  const [downloadError, setDownloadError] = useState<string | null>(null)
+  const [isDownloadingPng, startPngDownload] = useTransition()
+
+  const downloadSvgQrCode = () => {
+    setDownloadError(null)
+
     const qrBlob = new Blob([qrSvg], { type: 'image/svg+xml;charset=utf-8' })
     const downloadUrl = URL.createObjectURL(qrBlob)
     const downloadLink = document.createElement('a')
@@ -33,6 +40,24 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
     downloadLink.click()
     downloadLink.remove()
     window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0)
+  }
+
+  const downloadPngQrCode = () => {
+    if (isDownloadingPng) return
+
+    setDownloadError(null)
+    startPngDownload(async () => {
+      try {
+        const pngFileName = /\.svg$/i.test(fileName) ? fileName.replace(/\.svg$/i, '.png') : `${fileName}.png`
+        await downloadSvgAsPng(qrSvg, pngFileName, {
+          height: 720,
+          width: 720
+        })
+      } catch (error) {
+        console.error('Unable to download the event QR code as PNG.', error)
+        setDownloadError('Unable to create the PNG. Please try again.')
+      }
+    })
   }
 
   return (
@@ -112,18 +137,25 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
         <DrawerFooter className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2'>
           <Button
             type='button'
-            className='h-12 gap-2 font-poly bg-foreground hover:bg-foreground/80 text-background'
-            onClick={downloadQrCode}>
+            variant='outline'
+            className='h-12 gap-2 font-poly'
+            onClick={downloadSvgQrCode}>
             <Icon name='down-to-line' className='size-4' />
-            Download QR
+            Download SVG
           </Button>
-          <DrawerClose
-            render={
-              <Button type='button' variant='ghost' className='h-12 font-poly'>
-                Close
-              </Button>
-            }
-          />
+          <Button
+            type='button'
+            className='h-12 gap-2 bg-foreground font-poly text-background hover:bg-foreground/80'
+            disabled={isDownloadingPng}
+            onClick={downloadPngQrCode}>
+            <Icon name={isDownloadingPng ? 'spinner-ring' : 'down-to-line'} className='size-4' />
+            {isDownloadingPng ? 'Creating PNG' : 'Download PNG'}
+          </Button>
+          {downloadError ? (
+            <p role='alert' className='text-sm text-destructive sm:col-span-2'>
+              {downloadError}
+            </p>
+          ) : null}
         </DrawerFooter>
       </DrawerContent>
     </Drawer>
