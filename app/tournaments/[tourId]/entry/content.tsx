@@ -288,12 +288,7 @@ export const Content = ({
                       {price > 0 ? currencyFormatter.format(price) : tournament.entryFeeLabel}
                     </p>
                   </div>
-                  {/*<div className='p-0 space-y-1.5'>
-                    <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Total</p>
-                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>
-                      {currencyFormatter.format(total)}
-                    </p>
-                  </div>*/}
+
                   <div className='p-0 space-y-1.5'>
                     <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Entries</p>
                     <p className='font-okx font-medium mt-1 text-base tracking-tight'>{players}</p>

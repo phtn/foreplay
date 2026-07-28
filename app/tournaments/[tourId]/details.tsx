@@ -97,9 +97,6 @@ export default function TourDetail({ tournament }: TourDetailProps) {
                 <p className='font-okx font-medium text-2xl'>
                   {feeLabel} <span className='px-1 font-normal opacity-60'> entry</span>
                 </p>
-                {/*<p className='font-display text-xs text-foreground/80 tracking-wide leading-0'>
-                  Secure your slot before the field closes.
-                </p>*/}
               </div>
             </CardContent>
           </Card>

@@ -385,10 +385,13 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
 
   return (
     <div className='mx-auto flex w-full max-w-7xl flex-col min-h-screen _border border-input'>
-      <div className='flex items-center justify-between px-4'>
-        <SectionTitle title={eventName ?? 'Event Name'} eyebrow='Players' href={`/admin/${eventId}`} />
-        <h1 className='font-poly text-base md:text-lg hidden md:flex'>{'Pairings'}</h1>
-        <LinkTitle title='Podium' icon='trophy' href={`/admin/${eventId}/podium`} />
+      <div className='flex items-center justify-between px-2 w-full'>
+        <SectionTitle title={undefined} eyebrow='Players' href={`/admin/${eventId}`} />
+        <div className='flex flex-col items-center'>
+          <h1 className='font-poly text-base md:text-lg'>{'Pairings'}</h1>
+          <span className='font-ios text-xs opacity-70'>{eventName}</span>
+        </div>
+        <LinkTitle title={undefined} eyebrow='Podium' icon='trophy' href={`/admin/${eventId}/podium`} />
       </div>
 
       {errorMessage ? (

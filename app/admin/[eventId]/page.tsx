@@ -33,8 +33,6 @@ export default async function EventPage({ params }: EventPageProps) {
   }
 
   const eventDateLabel = formatEventDate(event.gate_open_at, event.event_date)
-  // const gateOpenTimeLabel = formatGateOpenTime(event.gate_open_at)
-  // const slotsLabel = formatSlotsLabel(event.registered_slots, event.slots_limit)
   const ticketsBySubscription = new Map<string, RegistrationTicketData[]>()
 
   for (const registration of registrations) {
@@ -77,13 +75,16 @@ export default async function EventPage({ params }: EventPageProps) {
 
   return (
     <main className='space-y-0 md:space-y-4'>
-      <div className='flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between px-4 pb-2 md:pb-0'>
+      <div className='flex gap-4 items-center justify-between px-2 md:px-2 pb-2 md:pb-0'>
         <div className='space-y-4 mt-4 md:mt-0 w-full'>
           <Link
             href='/admin'
             prefetch='auto'
-            className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dashed md:tracking-wider hover:text-sky-600'>
-            <Icon name='chevron-down' className='size-4 rotate-45 text-sky-500 group-hover:text-sky-600' />
+            className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dotted dark:hover:decoration-sky-400 md:tracking-wider hover:text-sky-700 dark:hover:text-foreground'>
+            <Icon
+              name='chevron-right'
+              className='size-4 -mb-0.5 rotate-90 text-sky-500 group-hover:text-sky-600 dark:group-hover:text-sky-400'
+            />
             Events
           </Link>
 
@@ -92,21 +93,26 @@ export default async function EventPage({ params }: EventPageProps) {
               <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl'>{event.title}</h1>
               <EventToolbar event={event} />
             </div>
-            <Link href={`/admin/${eventId}/pairings`} className='flex items-center space-x-1 md:space-x-2'>
-              <span className='font-poly text-sm md:text-base flex items-center gap-1'>Pairings</span>
-              <Icon name='document' className='size-4 opacity-80' />
-            </Link>
           </div>
         </div>
+        <div>
+          <Link
+            href={`/admin/${eventId}/pairings`}
+            className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dotted dark:hover:decoration-sky-400 md:tracking-wider hover:text-sky-700 dark:hover:text-foreground'>
+            <Icon
+              name='document'
+              className='size-3.5 md:size-4 opacity-80 dark:group-hover:opacity-100 dark:group-hover:text-foreground'
+            />
+            <span className=''>Pairings</span>
+            <Icon
+              name='chevron-right'
+              className='size-4 -mb-0.5 text-sky-500 group-hover:text-sky-700 dark:group-hover:text-sky-300'
+            />
+          </Link>
+          <p className='opacity-0 font-poly font-medium text-base sm:text-xl md:text-xl'>X</p>
+        </div>
       </div>
-
       <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />
-      {/*<EventHeader
-        eventDateLabel={eventDateLabel}
-        gateOpenTimeLabel={gateOpenTimeLabel}
-        fee={event.registration_fee}
-        slotsLabel={slotsLabel}
-      />*/}
     </main>
   )
 }
