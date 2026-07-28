@@ -2,10 +2,8 @@
 
 import { GroupSelect } from '@/components/examples/c-select-26'
 import { LinkTitle, SectionTitle } from '@/components/layouts/title'
-import { Badge } from '@/components/reui/badge'
 import { DataTable, type TableToolbarContext } from '@/components/table'
 import { type ColumnConfig, multiSelectFilterFn } from '@/components/table/create-column'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -53,16 +51,6 @@ const cmap = {
   B: 'orange text-orange-400',
   C: 'indigo text-indigo-500'
 }
-function getInitials(name: string) {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .map((part) => part[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-}
-
 function formatPrincipal(value: string) {
   if (value.includes('|')) {
     return value.split('|').at(-1) ?? value
@@ -167,8 +155,11 @@ function PairingsExportMenu({ eventId, eventTitle, getRows, hasRows }: PairingsE
         align='start'
         className='w-56 rounded-md ring-zinc-500/50 bg-zinc-100/20 dark:bg-zinc-900/20 backdrop-blur-2xl'>
         <DropdownMenuGroup>
-          <DropdownMenuLabel className='font-ios uppercase tracking-widest'>Export Table</DropdownMenuLabel>
-          <DropdownMenuSeparator className='border-dashed' />
+          <DropdownMenuLabel>
+            <span className='font-poly font-medium text-sm capitalize'>Export table</span>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className='border-dashed dark:border-zinc-700' />
+
           <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('csv')} className='rounded-md'>
             <Icon name='table' className='size-5 text-emerald-600' />
             <div>
@@ -267,13 +258,19 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
       {
         id: 'position',
         accessorKey: 'position',
-        header: <div className='flex justify-center w-full text-indigo-500'>{rows.length}</div>,
+        header: (
+          <div className='flex justify-center w-full font-poly text-indigo-500 dark:text-indigo-400 text-base'>
+            {rows.length}
+          </div>
+        ),
         size: 56,
         enableFiltering: false,
         enableGlobalFiltering: false,
         enableHiding: false,
         enableSorting: false,
-        cell: ({ row }) => <div className='text-center text-sm font-bold tabular-nums'>{row.original.position}</div>
+        cell: ({ row }) => (
+          <div className='font-poly font-medium text-base text-center tabular-nums'>{row.original.position}</div>
+        )
       },
       {
         id: 'player',
@@ -283,10 +280,6 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         enableHiding: false,
         cell: ({ row }) => (
           <div className='flex min-w-0 items-center gap-3'>
-            <Avatar size='sm'>
-              <AvatarImage src={row.original.playerId} alt={row.original.playerName} />
-              <AvatarFallback>{getInitials(row.original.playerName)}</AvatarFallback>
-            </Avatar>
             <span className='truncate font-okx text-sm font-medium capitalize'>{row.original.playerName}</span>
           </div>
         )
@@ -301,9 +294,13 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         meta: { filterOptions: checkedInOptions },
         cell: ({ row }) => (
           <div className='text-center'>
-            <Badge variant={row.original.checkedInStatus === 'Yes' ? 'success-light' : 'warning-light'} size='sm'>
+            <p
+              className={cn('font-okx font-medium text-base', {
+                'text-primary': row.original.checkedInStatus === 'Yes',
+                'text-orange-400': row.original.checkedInStatus === 'No'
+              })}>
               {row.original.checkedInStatus}
-            </Badge>
+            </p>
           </div>
         )
       },

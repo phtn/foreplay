@@ -151,11 +151,11 @@ const FilterComponent = <T,>({
           align='start'
           collisionAvoidance={{ side: 'flip', align: 'none' }}
           positionMethod='fixed'>
-          <Popover.Popup className='select-none w-64 rounded-md p-1 border border-dark-gray/30 bg-zinc-300/30 dark:bg-zinc-900/20 backdrop-blur-3xl dark:text-zinc-200'>
+          <Popover.Popup className='select-none w-64 rounded-md p-1 border border-zinc-400/80 dark:border-zinc-700 bg-zinc-100/20 dark:bg-zinc-700/20 backdrop-blur-3xl dark:text-zinc-200'>
             {availableColumns.length > 0 ? (
               <>
-                <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 dark:border-zinc-800'>
-                  <span className='text-sm font-okxs font-medium capitalize'>Add filter</span>
+                <div className='flex items-center border-b border-dashed border-zinc-500/50 px-4 py-2.5 dark:border-zinc-700'>
+                  <span className='font-poly font-medium text-sm capitalize'>Add filter</span>
                 </div>
                 <div className='p-2'>
                   {availableColumns.map((column) => (
@@ -164,8 +164,8 @@ const FilterComponent = <T,>({
                       type='button'
                       onClick={() => handleColumnAdd(column.id)}
                       className={cn(
-                        'flex h-8 w-full items-center justify-between rounded-sm px-3 text-left text-xs',
-                        'text-origin hover:bg-dark-table/10 dark:text-white dark:hover:bg-origin/40 dark:hover:text-orange-300'
+                        'flex h-8 w-full items-center justify-between rounded-sm px-3 font-okx text-left text-xs',
+                        'text-origin hover:bg-dark-table/10 dark:text-white dark:hover:bg-origin/40 dark:hover:text-indigo-300'
                       )}>
                       <span>{getColumnHeaderText(column)}</span>
                       <Icon name='add' className='size-4' />
@@ -178,7 +178,7 @@ const FilterComponent = <T,>({
             {activeFiltersData.length > 0 ? (
               <div
                 className={cn('space-y-3 p-2', {
-                  'border-t border-dashed border-dark-gray/25 dark:border-zinc-800': availableColumns.length > 0
+                  'border-t border-dashed border-dark-gray/25 dark:border-zinc-500': availableColumns.length > 0
                 })}>
                 {activeFiltersData.map((filterData, columnIndex) => (
                   <div key={filterData.column.id}>

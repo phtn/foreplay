@@ -63,7 +63,7 @@ function DropdownMenuLabel({
     <MenuPrimitive.GroupLabel
       data-slot='dropdown-menu-label'
       data-inset={inset}
-      className={cn('px-3 py-2.5 text-xs text-muted-foreground data-inset:pl-9.5', className)}
+      className={cn('px-3 py-2.5 text-xs data-inset:pl-9.5', className)}
       {...props}
     />
   )
@@ -211,7 +211,7 @@ function DropdownMenuSeparator({ className, ...props }: MenuPrimitive.Separator.
   return (
     <MenuPrimitive.Separator
       data-slot='dropdown-menu-separator'
-      className={cn('-mx-1 my-1 h-px border-b', className)}
+      className={cn('-mx-1 mb-1 h-px border-b', className)}
       {...props}
     />
   )

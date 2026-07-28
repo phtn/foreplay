@@ -477,19 +477,25 @@ function PlayersExportMenu({ eventId, eventTitle, getRows, hasRows }: PlayersExp
       />
       <DropdownMenuContent
         align='start'
-        className='w-56 rounded-md ring-zinc-500/50 bg-zinc-100/20 dark:bg-zinc-900/20 backdrop-blur-2xl'>
+        className='w-56 rounded-md ring-zinc-500/50 dark:ring-zinc-600 bg-zinc-100/20 dark:bg-zinc-700/20 backdrop-blur-2xl'>
         <DropdownMenuGroup>
-          <DropdownMenuLabel className='font-ios uppercase tracking-widest'>Export Table</DropdownMenuLabel>
-          <DropdownMenuSeparator className='border-dashed' />
+          <DropdownMenuLabel>
+            <span className='font-poly font-medium text-sm capitalize'>Export table</span>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator className='border-dashed dark:border-zinc-700' />
           <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('csv')} className='rounded-md'>
-            <Icon name='table' className='size-5 text-emerald-600' />
+            <div className='h-8'>
+              <Icon name='table' className='size-5 text-emerald-600' />
+            </div>
             <div>
               <p className='font-medium'>CSV spreadsheet</p>
               <p className='text-xs text-muted-foreground'>For Excel and Sheets</p>
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('pdf')} className='rounded-md'>
-            <Icon name='pdf' className='size-5 text-rose-600' />
+            <div className='h-8'>
+              <Icon name='pdf' className='size-5 text-rose-600 dark:text-rose-400' />
+            </div>
             <div>
               <p className='font-medium'>PDF report</p>
               <p className='text-xs text-muted-foreground'>Print-ready player list</p>

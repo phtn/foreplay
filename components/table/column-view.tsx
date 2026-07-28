@@ -45,9 +45,9 @@ const ColumnViewComponent = <T,>({ cols, columnVisibility, onColumnVisibilityCha
         render={
           <Button
             className={cn(
-              'relative flex h-8 grow-0 items-center justify-center rounded-sm px-2 text-sm transition-colors duration-75 select-none portrait:aspect-square md:h-7.5 md:w-auto md:space-x-2 md:px-3.5',
+              'relative flex h-8 grow-0 items-center justify-center rounded-sm px-2',
               'data-pressed:bg-orange-100/20 dark:data-pressed:bg-orange-100/10',
-              'select-none',
+              'text-sm transition-colors duration-75 select-none portrait:aspect-square md:h-7.5 md:w-auto md:space-x-2 md:px-3.5',
               'hover:bg-sidebar/60 dark:hover:bg-sidebar/50',
               'active:bg-sidebar dark:active:bg-dark-table/20',
               'focus-visible:bg-none focus-visible:-outline-offset-1 focus-visible:outline-1',
@@ -67,9 +67,9 @@ const ColumnViewComponent = <T,>({ cols, columnVisibility, onColumnVisibilityCha
       </Menu.Trigger>
       <Menu.Portal>
         <Menu.Positioner align='start' className='outline-none' sideOffset={3}>
-          <Menu.Popup className='select-none origin-(--transform-origin) w-64 rounded-md border border-dark-gray/30 bg-zinc-300/30 dark:bg-zinc-900/20 backdrop-blur-3xl py-1 text-origin shadow-none outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:bg-dark-table dark:text-zinc-200'>
-            <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-1 capitalize dark:border-zinc-800'>
-              <span className='font-okx text-sm font-medium'>Hide/Show columns</span>
+          <Menu.Popup className='select-none origin-(--transform-origin) w-64 rounded-md border border-zinc-400/80 dark:border-zinc-700 bg-zinc-100/20 dark:bg-zinc-700/20 backdrop-blur-3xl py-1 text-origin shadow-none outline-gray-200 transition-[transform,scale,opacity] data-ending-style:scale-90 data-ending-style:opacity-0 data-starting-style:scale-90 data-starting-style:opacity-0 dark:bg-dark-table dark:text-zinc-200'>
+            <div className='flex items-center border-b border-dashed border-dark-gray/25 px-4 py-2.5 capitalize dark:border-zinc-700'>
+              <span className='font-poly font-medium text-sm capitalize'>Hide/Show columns</span>
             </div>
             <div className='p-2 space-y-1'>
               {hideableColumns.map((column) => {
