@@ -1,7 +1,6 @@
 import { api } from '@/convex/_generated/api'
 import { fetchQuery } from 'convex/nextjs'
 import { CourseDrawingExport } from 'foreway/core'
-import { CourseMap } from 'foreway/react'
 import { notFound } from 'next/navigation'
 import TourDetail from './details'
 import { Sponsors } from './sponsors'
@@ -306,7 +305,7 @@ export async function TourContent({ tourId }: TourContentProps) {
     <main>
       <TourDetail tournament={tournament} />
       <div className='md:flex items-center'>
-        <CourseMap className='min-w-0 flex-1' drawing={courseDrawing} height={520} />
+        {/*<CourseMap className='min-w-0 flex-1' drawing={courseDrawing} height={520} />
         <div className='grid grid-cols-3 md:grid-cols-1 gap-4'>
           {courseStats.map((stat) => (
             <div key={stat.label} className='pb-4 text-center'>
@@ -317,7 +316,7 @@ export async function TourContent({ tourId }: TourContentProps) {
               </p>
             </div>
           ))}
-        </div>
+        </div>*/}
       </div>
       <Sponsors sponsors={tournament.sponsor_list ?? []} />
     </main>
