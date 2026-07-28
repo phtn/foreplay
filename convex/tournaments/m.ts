@@ -2,6 +2,7 @@ import { ConvexError, v } from 'convex/values'
 import type { Doc, Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
 import { tournamentSchema } from './d'
+import { normalizeTournamentSupport } from './support'
 
 const trimRequired = (value: string, label: string) => {
   const trimmed = value.trim()
@@ -142,31 +143,7 @@ export const updateSupport = mutation({
   returns: tournamentUpdateResult,
   handler: async (ctx, args) => {
     const tournament = await getTournament(ctx, args.tournamentId)
-    const name = trimOptionalWithLimit(args.support?.name, 'Support name', 120)
-    const title = trimOptionalWithLimit(
-      args.support?.title,
-      'Support title',
-      120
-    )
-    const email = trimOptionalWithLimit(
-      args.support?.email,
-      'Support email',
-      320
-    )?.toLowerCase()
-    const phone = trimOptionalWithLimit(
-      args.support?.phone,
-      'Support phone',
-      64
-    )
-    const support =
-      name || title || email || phone
-        ? {
-            ...(name ? { name } : {}),
-            ...(title ? { title } : {}),
-            ...(email ? { email } : {}),
-            ...(phone ? { phone } : {})
-          }
-        : undefined
+    const support = normalizeTournamentSupport(args.support)
 
     await ctx.db.patch(args.tournamentId, { support })
 

@@ -43,6 +43,7 @@ import type * as subscriptions_q from "../subscriptions/q.js";
 import type * as tournaments_d from "../tournaments/d.js";
 import type * as tournaments_m from "../tournaments/m.js";
 import type * as tournaments_q from "../tournaments/q.js";
+import type * as tournaments_support from "../tournaments/support.js";
 import type * as txns_d from "../txns/d.js";
 import type * as txns_m from "../txns/m.js";
 import type * as txns_q from "../txns/q.js";
@@ -93,6 +94,7 @@ declare const fullApi: ApiFromModules<{
   "tournaments/d": typeof tournaments_d;
   "tournaments/m": typeof tournaments_m;
   "tournaments/q": typeof tournaments_q;
+  "tournaments/support": typeof tournaments_support;
   "txns/d": typeof txns_d;
   "txns/m": typeof txns_m;
   "txns/q": typeof txns_q;

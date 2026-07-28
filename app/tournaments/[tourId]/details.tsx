@@ -52,21 +52,28 @@ export default function TourDetail({ tournament }: TourDetailProps) {
           />
 
           <Card className='border border-slate-400/20 dark:border-slate-500/80 dark:bg-slate-500/20 shadow-none p-0'>
-            <CardContent className='space-y-4 px-0 border-white'>
+            <CardContent className='space-y-4 px-0'>
               <div className='grid divide-y divide-border/80 dark:divide-slate-400/25 rounded-2xl border border-border/60'>
                 {tournamentFacts.map((item) => (
                   <div
                     key={item.label}
                     className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
-                    <p className='text-okx text-xs uppercase tracking-widest'>{item.label}</p>
-                    <p className='font-ios '>{item.value}</p>
+                    <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
+                      {item.label}
+                    </p>
+                    <p className='font-ios flex items-center space-x-1'>
+                      <Icon name='chevron-right' className='size-3 text-primary' />
+                      <span>{item.value}</span>
+                    </p>
                   </div>
                 ))}
                 {tournament.support && (
                   <div
                     key={tournament.support.phone}
                     className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 sm:grid-cols-[180px_1fr] sm:items-center'>
-                    <p className='text-okx text-xs uppercase tracking-widest'>{tournament.support.title}</p>
+                    <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
+                      {tournament.support.title}
+                    </p>
                     <p className='font-ios space-x-2'>
                       <span>{tournament.support.phone}</span>
                       <span>&middot;</span>

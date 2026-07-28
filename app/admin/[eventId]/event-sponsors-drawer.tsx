@@ -304,40 +304,41 @@ function SponsorEditor({
   const fieldId = `event-sponsor-${sponsor.key}`
 
   return (
-    <fieldset className='grid gap-4 bg-background p-4 shadow-sm sm:p-5'>
+    <fieldset className='grid gap-4 bg-background p-4 shadow-sm'>
       <legend className='sr-only'>Sponsor {index + 1}</legend>
 
       <div className='flex items-start justify-between gap-4'>
         <div>
-          <p className='font-ios text-xs uppercase tracking-widest text-rose-700 dark:text-rose-400'>
-            Sponsor {index + 1}
-          </p>
-          <p className='mt-1 text-xs text-muted-foreground'>
-            {sponsor.isActive ? 'Visible when published' : 'Saved as inactive'}
+          <p className='font-okx font-medium text-xs uppercase tracking-widest'>Sponsor {index + 1}</p>
+          <p className='mt-1 text-xs text-muted-foreground tracking-widest'>
+            {sponsor.isActive ? 'Visible' : 'Hidden'}
           </p>
         </div>
-
-        <Button
-          type='button'
-          variant='ghost'
-          size='icon-sm'
-          className='rounded-full text-destructive'
-          onClick={onRemove}
-          aria-label={`Remove sponsor ${index + 1}`}>
-          <Icon name='trash-delete' className='size-4' />
-        </Button>
-      </div>
-
-      <div className='flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-muted/20 px-3 py-3'>
-        <div>
-          <Label htmlFor={`${fieldId}-active`}>Active sponsor</Label>
-          <p className='mt-1 text-xs text-muted-foreground'>Keep the entry without showing it publicly.</p>
+        <div className='flex items-center space-x-3'>
+          <div className='flex items-center gap-2 rounded-lg _border border-border/60 bg-muted/20 px-1 py-1'>
+            <div>
+              <Label className='text-xs' htmlFor={`${fieldId}-active`}>
+                Active
+              </Label>
+              {/*<p className='mt-1 text-xs text-muted-foreground'>Keep the entry without showing it publicly.</p>*/}
+            </div>
+            <Switch
+              size='sm'
+              id={`${fieldId}-active`}
+              checked={sponsor.isActive}
+              onCheckedChange={(value) => onChange('isActive', value)}
+            />
+          </div>
+          <Button
+            type='button'
+            variant='ghost'
+            size='icon-sm'
+            className='rounded-full hover:text-destructive opacity-60 hover:opacity-100'
+            onClick={onRemove}
+            aria-label={`Remove sponsor ${index + 1}`}>
+            <Icon name='trash-delete' className='size-4' />
+          </Button>
         </div>
-        <Switch
-          id={`${fieldId}-active`}
-          checked={sponsor.isActive}
-          onCheckedChange={(value) => onChange('isActive', value)}
-        />
       </div>
 
       <div className='grid gap-4 sm:grid-cols-2'>
@@ -387,7 +388,9 @@ function SponsorInput({
 }) {
   return (
     <div className='grid gap-2'>
-      <Label htmlFor={id}>{label}</Label>
+      <Label className='text-xs' htmlFor={id}>
+        {label}
+      </Label>
       <Input
         id={id}
         value={value}

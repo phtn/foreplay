@@ -72,7 +72,11 @@ export const tournamentSchema = v.object({
       name: v.optional(v.string()),
       title: v.optional(v.string()),
       email: v.optional(v.string()),
-      phone: v.optional(v.string())
+      phone: v.optional(v.string()),
+      secondaryName: v.optional(v.string()),
+      secondaryTitle: v.optional(v.string()),
+      secondaryPhone: v.optional(v.string()),
+      secondaryEmail: v.optional(v.string())
     })
   )
 })

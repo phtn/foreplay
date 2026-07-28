@@ -26,6 +26,10 @@ type SupportDraft = {
   title: string
   email: string
   phone: string
+  secondaryName: string
+  secondaryTitle: string
+  secondaryEmail: string
+  secondaryPhone: string
 }
 
 interface EventSupportDrawerProps {
@@ -38,7 +42,11 @@ const emptySupportDraft: SupportDraft = {
   name: '',
   title: '',
   email: '',
-  phone: ''
+  phone: '',
+  secondaryName: '',
+  secondaryTitle: '',
+  secondaryEmail: '',
+  secondaryPhone: ''
 }
 
 function getSupportDraft(support: TournamentSupport | undefined): SupportDraft {
@@ -46,12 +54,25 @@ function getSupportDraft(support: TournamentSupport | undefined): SupportDraft {
     name: support?.name ?? '',
     title: support?.title ?? '',
     email: support?.email ?? '',
-    phone: support?.phone ?? ''
+    phone: support?.phone ?? '',
+    secondaryName: support?.secondaryName ?? '',
+    secondaryTitle: support?.secondaryTitle ?? '',
+    secondaryEmail: support?.secondaryEmail ?? '',
+    secondaryPhone: support?.secondaryPhone ?? ''
   }
 }
 
 function hasSupportDetails(support: TournamentSupport | undefined) {
-  return Boolean(support?.name || support?.title || support?.email || support?.phone)
+  return Boolean(
+    support?.name ||
+    support?.title ||
+    support?.email ||
+    support?.phone ||
+    support?.secondaryName ||
+    support?.secondaryTitle ||
+    support?.secondaryEmail ||
+    support?.secondaryPhone
+  )
 }
 
 export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventSupportDrawerProps) {
@@ -164,8 +185,9 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
         </DrawerHeader>
 
         <form onSubmit={handleSubmit} className='flex min-h-0 flex-1 flex-col'>
-          <div className='min-h-0 flex-1 overflow-y-auto bg-slate-950/5p-0'>
-            <div className='grid gap-5 _rounded-xl border border-border/0 bg-background p-4 shadow-sm sm:p-5'>
+          <div className='min-h-0 flex-1 overflow-y-auto bg-slate-950/5 p-0'>
+            <div className='h-12 font-poly flex items-center justify-center'>Primary Support</div>
+            <div className='grid gap-5 _rounded-xl bg-background p-4 shadow-sm'>
               <div className='grid gap-4'>
                 <SupportInput
                   id='event-support-title'
@@ -204,6 +226,72 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
                 type='tel'
                 value={draft.phone}
                 onChange={(value) => updateDraft('phone', value)}
+                placeholder='+63 917 123 4567'
+                autoComplete='tel'
+                maxLength={64}
+              />
+
+              <ul className='list-disc px-5'>
+                <li className='text-xs leading-5 text-muted-foreground'>Every field is optional.</li>
+                <li className='text-xs leading-5 text-muted-foreground'>
+                  Save all fields blank to remove the support contact from this tournament.
+                </li>
+              </ul>
+
+              {errorMessage ? (
+                <p role='alert' className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                  {errorMessage}
+                </p>
+              ) : null}
+
+              {successMessage ? (
+                <p
+                  role='status'
+                  className='rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-300'>
+                  {successMessage}
+                </p>
+              ) : null}
+            </div>
+            <div className='h-12 font-poly flex items-center justify-center'>Secondary Support</div>
+            <div className='grid gap-5 _rounded-xl border border-border/0 bg-background p-4 shadow-sm sm:p-5'>
+              <div className='grid gap-4'>
+                <SupportInput
+                  id='event-secondary-support-title'
+                  label='Title'
+                  value={draft.secondaryTitle}
+                  onChange={(value) => updateDraft('secondaryTitle', value)}
+                  placeholder='Customer Support'
+                  autoComplete='organization-title'
+                  maxLength={120}
+                />
+                <SupportInput
+                  id='event-secondary-support-name'
+                  label='Name'
+                  value={draft.secondaryName}
+                  onChange={(value) => updateDraft('secondaryName', value)}
+                  placeholder='Point of Contact'
+                  autoComplete='name'
+                  maxLength={120}
+                />
+              </div>
+
+              <SupportInput
+                id='event-secondary-support-email'
+                label='Email'
+                type='email'
+                value={draft.secondaryEmail}
+                onChange={(value) => updateDraft('secondaryEmail', value)}
+                placeholder='support@tournament.com'
+                autoComplete='email'
+                maxLength={320}
+              />
+
+              <SupportInput
+                id='event-secondary-support-phone'
+                label='Phone'
+                type='tel'
+                value={draft.secondaryPhone}
+                onChange={(value) => updateDraft('secondaryPhone', value)}
                 placeholder='+63 917 123 4567'
                 autoComplete='tel'
                 maxLength={64}
