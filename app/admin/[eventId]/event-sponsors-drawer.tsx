@@ -166,7 +166,7 @@ export function EventSponsorsDrawer({ eventTitle, sponsorList, tournamentId }: E
         <TooltipContent side='top'>{configured ? 'Edit sponsors' : 'Add sponsors'}</TooltipContent>
       </Tooltip>
 
-      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:46rem] rounded-xl'>
+      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:46rem] rounded-lg'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 border-dashed pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
             <p className='font-ios text-xs uppercase tracking-widest text-rose-700 dark:text-rose-400'>
@@ -258,7 +258,7 @@ export function EventSponsorsDrawer({ eventTitle, sponsorList, tournamentId }: E
             </div>
           </div>
 
-          <DrawerFooter className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2'>
+          <DrawerFooter className='grid border-t border-border/70 p-4'>
             {/*<DrawerClose
               render={
                 <Button type='button' variant='ghost' className='h-12 font-poly' disabled={isSubmitting}>

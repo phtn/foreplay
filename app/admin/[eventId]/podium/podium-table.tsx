@@ -131,7 +131,8 @@ export function PodiumTable({ eventId, podiumAwards, registrations, eventName }:
           <h1 className='font-poly text-base md:text-lg'>{'Podium'}</h1>
           <span className='font-ios text-xs opacity-70'>{eventName}</span>
         </div>
-        <LinkTitle title={undefined} href={undefined} />
+
+        <LinkTitle title={undefined} eyebrow='Players' icon={undefined} href={`/admin/${eventId}`} />
       </div>
 
       <div className='grid grid-cols-3 border-y border-border/80 bg-slate-100/50 dark:bg-slate-400/20'>

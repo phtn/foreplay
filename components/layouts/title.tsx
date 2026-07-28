@@ -12,7 +12,7 @@ interface SectionTitleProps {
 export const SectionTitle = ({ title, eyebrow, href }: SectionTitleProps) => {
   return (
     <div className='flex items-start justify-between'>
-      <div className={href ? '-space-y-2' : ''}>
+      <div className={href ? '_-space-y-2' : ''}>
         {href ? (
           <Link
             href={href}

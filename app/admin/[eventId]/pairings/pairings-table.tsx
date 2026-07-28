@@ -163,14 +163,14 @@ function PairingsExportMenu({ eventId, eventTitle, getRows, hasRows }: PairingsE
           <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('csv')} className='rounded-md'>
             <Icon name='table' className='size-5 text-emerald-600' />
             <div>
-              <p className='font-medium'>CSV spreadsheet</p>
+              <p className='font-medium'>CSV Spreadsheet</p>
               <p className='text-xs text-muted-foreground'>For Excel and Sheets</p>
             </div>
           </DropdownMenuItem>
           <DropdownMenuItem disabled={exporting !== null} onClick={() => void exportRows('pdf')} className='rounded-md'>
             <Icon name='pdf' className='size-5 text-rose-600' />
             <div>
-              <p className='font-medium'>PDF report</p>
+              <p className='font-medium'>PDF Report</p>
               <p className='text-xs text-muted-foreground'>Print-ready pairings list</p>
             </div>
           </DropdownMenuItem>
@@ -287,6 +287,8 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         accessorKey: 'playerName',
         header: 'Player',
         size: 280,
+        enableFiltering: false,
+        enableGlobalFiltering: false,
         enableHiding: false,
         cell: ({ row }) => (
           <div className='flex min-w-0 items-center gap-3'>
@@ -342,7 +344,6 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         size: 180,
         filterFn: multiSelectFilterFn,
         enableGlobalFiltering: false,
-        enableHiding: false,
         meta: { filterOptions: pairingGroupOptions },
         cell: ({ row }) => (
           <div className='flex justify-center'>
@@ -365,7 +366,8 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         accessorKey: 'pairingGroup',
         header: <div className='flex justify-center w-full'>Color</div>,
         size: 110,
-        filterFn: multiSelectFilterFn,
+        enableFiltering: false,
+        // filterFn: multiSelectFilterFn,
         cell: ({ row }) => (
           <div
             className={cn(
