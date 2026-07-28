@@ -434,7 +434,7 @@ export const NewEntryForm = ({
                 disabled={isDraftBusy || isEntryLocked}>
                 {isSubmitting ? <Icon name='spinner-ring' className='size-4' /> : null}
                 <span className='px-2 font-poly capitalize'>
-                  {isEntryLocked ? 'Entry Locked' : isSaved ? 'Save Changes' : 'Submit Entries'}
+                  {isEntryLocked ? 'Entry Locked' : isSaved ? 'Save Changes' : 'Submit Entry'}
                 </span>
                 {isEntryLocked ? <Icon name='check' className='size-4' /> : null}
               </Button>
