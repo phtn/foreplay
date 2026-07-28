@@ -1,143 +1,236 @@
-# JS/TS → Gleam quick reference
+# JavaScript/TypeScript to Gleam reference
 
-Use this when sketching a Gleam port of a candidate file. This is not
-exhaustive — check https://gleam.run and https://gleam.run/documentation
-for anything unusual (Claude should web-search current Gleam docs/stdlib
-signatures rather than rely on memory, since Gleam's stdlib API can shift
-between versions).
+This reference targets modern Gleam on the JavaScript target and was reviewed
+against Gleam 1.17. Check the project compiler, stdlib, and official
+documentation before relying on version-sensitive package APIs.
 
-## Functions
+## Contents
+
+- [Functions and control flow](#functions-and-control-flow)
+- [Custom types and pattern matching](#custom-types-and-pattern-matching)
+- [Lists and arrays](#lists-and-arrays)
+- [Result and Option](#result-and-option)
+- [Records and structural objects](#records-and-structural-objects)
+- [Strings and numbers](#strings-and-numbers)
+- [Mutation, loops, and recursion](#mutation-loops-and-recursion)
+- [JavaScript boundary](#javascript-boundary)
+- [External functions](#external-functions)
+- [Validation](#validation)
+
+## Functions and control flow
 
 ```ts
-// TS
-export function area(shape: Shape): number { ... }
+export function area(shape: Shape): number {
+  return calculate(shape)
+}
 ```
-```gleam
-// Gleam
-pub fn area(shape: Shape) -> Float { ... }
-```
-No default params, no overloads, no `this`. Labeled arguments exist for
-readability: `pub fn area(shape s: Shape) -> Float`.
 
-## Types / discriminated unions
+```gleam
+pub fn area(shape: Shape) -> Float {
+  calculate(shape)
+}
+```
+
+Gleam is expression-oriented and has no `return` statement, default
+parameters, overloads, `this`, exceptions, or implicit numeric conversion.
+Labelled arguments place the external label before the internal name:
+
+```gleam
+pub fn clamp(value: Int, minimum min: Int, maximum max: Int) -> Int
+```
+
+## Custom types and pattern matching
 
 ```ts
 type Shape =
   | { type: "circle"; radius: number }
-  | { type: "rect"; width: number; height: number };
+  | { type: "rect"; width: number; height: number }
 ```
+
 ```gleam
 pub type Shape {
   Circle(radius: Float)
   Rect(width: Float, height: Float)
 }
 ```
-Gleam custom types *are* the tag — no separate `type` field needed.
 
-## Pattern matching (switch → case)
-
-```ts
-switch (shape.type) {
-  case "circle": return Math.PI * shape.radius ** 2.0;
-  case "rect":   return shape.width * shape.height;
+```gleam
+pub fn area(shape: Shape) -> Float {
+  case shape {
+    Circle(radius) -> 3.14159 *. radius *. radius
+    Rect(width, height) -> width *. height
+  }
 }
 ```
-```gleam
-case shape {
-  Circle(radius: r) -> 3.14159 *. r *. r
-  Rect(width: w, height: h) -> w *. h
-}
-```
-`case` must be exhaustive — the compiler enforces every variant is handled
-(no fallthrough bugs). Note Gleam uses `+.`, `-.`, `*.`, `/.` for Float math
-and `+`, `-`, `*`, `/` for Int — there's no implicit numeric coercion.
 
-## Lists / arrays
+`case` is exhaustive. The custom-type constructor is the tag; do not preserve
+a redundant `type` field unless the external data format requires it.
+
+## Lists and arrays
+
+Internal collection pipelines often translate directly:
 
 ```ts
-items.map(f)
-items.filter(p)
-items.reduce((acc, x) => ..., init)
-items.flatMap(f)
-[...items, x]
+items.filter(predicate).map(transform)
 ```
+
 ```gleam
-list.map(items, f)
-list.filter(items, p)
-list.fold(items, init, fn(acc, x) { ... })
-list.flat_map(items, f)
-[x, ..items]   // prepend; Gleam lists are singly-linked
-```
-`import gleam/list`. Piping is idiomatic:
-```gleam
+import gleam/list
+
 items
-|> list.filter(p)
-|> list.map(f)
+|> list.filter(predicate)
+|> list.map(transform)
 ```
 
-## Option / Result instead of null / undefined / throw
+Use `list.fold(items, initial, fn(acc, item) { ... })` for a left fold.
+
+Do not reverse append semantics:
 
 ```ts
-function find(items: Item[], id: string): Item | null { ... }
-function parse(input: string): { ok: true, value: number } | { ok: false, error: string } { ... }
+[...items, item] // append
 ```
+
 ```gleam
-pub fn find(items: List(Item), id: String) -> Option(Item) { ... }
-pub fn parse(input: String) -> Result(Float, String) { ... }
+list.append(items, [item]) // append; traverses/copies `items`
+[item, ..items]            // prepend; different order, constant time
 ```
-`import gleam/option.{type Option, Some, None}`. `Result(a, e)` is built in
-(`Ok(a)` / `Error(e)`). No exceptions for expected failure paths.
 
-## Records (object literals with fixed shape)
+A Gleam list is a linked-list runtime value, not a native JavaScript array.
+For public JS boundaries, evaluate `gleam/javascript/array` from the
+`gleam_javascript` package or add explicit conversion wrappers.
+
+## Result and Option
+
+Use `Result(value, error)` for operations that can fail:
+
+```gleam
+pub type ParseError {
+  EmptyInput
+  InvalidNumber(String)
+}
+
+pub fn parse(input: String) -> Result(Int, ParseError) {
+  // Ok(value) or Error(reason)
+}
+```
+
+Use `Option(value)` for optional stored data or optional arguments:
+
+```gleam
+import gleam/option.{type Option, None, Some}
+
+pub type User {
+  User(name: String, nickname: Option(String))
+}
+```
+
+Do not mechanically translate every nullable or throwing API to `Option`.
+Current stdlib search functions such as `list.find` return `Result(a, Nil)`.
+Choose an error type that preserves information when failure matters.
+
+## Records and structural objects
 
 ```ts
-interface User { id: string; name: string; age: number }
-const u = { id: "1", name: "Ada", age: 30 };
-const older = { ...u, age: u.age + 1 };
+interface User {
+  id: string
+  name: string
+  age: number
+}
+
+const older = { ...user, age: user.age + 1 }
 ```
+
 ```gleam
 pub type User {
   User(id: String, name: String, age: Int)
 }
-let u = User(id: "1", name: "Ada", age: 30)
-let older = User(..u, age: u.age + 1)
+
+let older = User(..user, age: user.age + 1)
 ```
 
-## Strings, string interpolation
+This is an internal modeling translation, not automatic JS interop. Plain JS
+objects are not instances of Gleam custom types. At a boundary, use generated
+constructors, a wrapper, an external type, or `gleam/dynamic/decode`.
 
-```ts
-`Hello ${name}, you are ${age}`
-```
+## Strings and numbers
+
 ```gleam
+import gleam/int
+
 "Hello " <> name <> ", you are " <> int.to_string(age)
 ```
-No native interpolation — string concatenation via `<>`, explicit
-`int.to_string` / `float.to_string` conversions (`import gleam/int`,
-`import gleam/float`).
 
-## Immutability
+Gleam uses `+`, `-`, `*`, `/` for `Int` and `+.`, `-.`, `*.`, `/.` for
+`Float`. TypeScript `number` can represent either and can also carry `NaN` or
+infinity. Validate JavaScript inputs before promising an `Int` or a finite
+`Float`.
 
-Everything in Gleam is immutable — there is no `let` reassignment
-equivalent. "Mutating" state means building a new value and (usually)
-returning it or rebinding a new `let` name in the same scope. If the source
-file relies on iterative mutation (`let x = ...; x = f(x)` in a loop), the
-Gleam version becomes a `list.fold` or recursive function instead.
+Review JS-specific coercion, UTF-16 indexing, regular expressions,
+`Date`/`Intl`, and property-order behavior rather than assuming identical
+semantics.
 
-## Calling into existing JS (FFI)
+## Mutation, loops, and recursion
 
-If a small slice of a ported module still needs a real JS API (e.g. `Date`,
-`crypto`), Gleam supports external functions:
+Gleam values are immutable. Rebind a new name, fold a collection, or use
+tail recursion:
+
 ```gleam
-@external(javascript, "./my_ffi.mjs", "now")
-pub fn now() -> Int
+fn sum(items: List(Int), total: Int) -> Int {
+  case items {
+    [] -> total
+    [item, ..rest] -> sum(rest, total + item)
+  }
+}
 ```
-Flag this explicitly in the sketch rather than pretending the whole file
-has zero JS dependencies if it doesn't.
 
-## What NOT to attempt a 1:1 sketch of
+Property assignment, `push`, `Map.set`, and accumulator loops are redesign
+points. They do not automatically make a bounded parser a bad candidate.
 
-Classes with inheritance, JSX components, and heavily dynamic code (the
-scanner's disqualifiers) don't have a clean mechanical translation — for
-those, note that a port would require a redesign, not just a syntax sketch,
-and briefly describe what that redesign would look like instead of writing
-literal Gleam code.
+## JavaScript boundary
+
+Compiled Gleam modules are `.mjs` ES modules. Since Gleam 1.13, JavaScript can
+use generated constructor, test, and accessor APIs for Gleam custom types.
+That API is not the same as passing ordinary tagged objects.
+
+Before fixing a public signature, decide:
+
+- native JS array versus Gleam list;
+- plain JS object versus custom type, dict, external type, or decoded dynamic;
+- `null`/`undefined` policy;
+- `Int` versus `Float` validation;
+- callback or Promise integration;
+- which side owns thrown exceptions and runtime validation.
+
+The `gleam_javascript` package provides JavaScript-target modules including
+arrays and promises. Confirm its installed version and current API before
+writing version-sensitive code.
+
+## External functions
+
+```gleam
+pub type DateTime
+
+@external(javascript, "./clock_ffi.mjs", "now")
+pub fn now() -> DateTime
+```
+
+The JavaScript path is relative to the Gleam module. Gleam trusts the declared
+signature but cannot type-check the external implementation or verify that
+the export exists. Test externals more heavily than pure Gleam code.
+
+Prefer an existing Gleam package when suitable. A JavaScript-only external
+also prevents Erlang-target compilation unless an Erlang implementation or
+Gleam fallback exists.
+
+## Validation
+
+For a real feasibility module:
+
+```bash
+gleam format src/path/to/module.gleam
+gleam check --target javascript
+```
+
+Use `todo` only for intentionally omitted implementation. Record whether the
+module was checked, which package versions it assumes, and which adapter code
+remains.

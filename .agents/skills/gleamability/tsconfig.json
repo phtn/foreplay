@@ -4,6 +4,7 @@
     "module": "CommonJS",
     "strict": true,
     "noImplicitAny": true,
+    "noEmitOnError": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "esModuleInterop": true,

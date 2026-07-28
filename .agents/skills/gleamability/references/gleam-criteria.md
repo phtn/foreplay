@@ -1,88 +1,120 @@
-# What makes a JS/TS file a good Gleam port candidate
+# Gleam migration criteria
 
-Gleam is a statically-typed functional language (sound type system, no `null`,
-no exceptions for control flow, pattern matching via `case`, immutable data)
-that compiles to JS (or Erlang/BEAM). It shines for the same reasons ML-family
-languages always do: logic-heavy, data-transforming, type-shaped code. It is
-a poor fit for code whose job is to talk to a messy, dynamic, mutable outside
-world.
+Use this reference to correct the analyzer after reading each candidate. A
+file is attractive only when its language fit, JavaScript boundary, and
+migration value all make sense.
 
-Use this as the "why" behind the scanner's score, and as your own checklist
-when reading a candidate file by eye (the scanner is a heuristic first pass —
-always sanity-check the top few candidates yourself).
+## Contents
 
-## Strong fit — look for these
+- [Language fit](#language-fit)
+- [JavaScript boundary cost](#javascript-boundary-cost)
+- [Migration value](#migration-value)
+- [Interpreting analyzer output](#interpreting-analyzer-output)
+- [Manual review checklist](#manual-review-checklist)
 
-- **Discriminated unions + switch/case on a tag field.** This is the single
-  strongest signal. JS code that does `switch (shape.type) { case "circle": ... }`
-  over a `{ type: "circle" | "rect", ... }` union is *already* thinking in
-  Gleam's native idiom: custom types + `case` expressions. The port is often
-  close to mechanical.
-- **Pure data transformation.** Functions that take data in and return data
-  out, with no side effects — parsers, validators, formatters, calculators,
-  reducers, state-machine transition functions, business-rule engines.
-- **Functional pipelines.** Heavy `.map/.filter/.reduce/.flatMap` chains map
-  almost 1:1 to Gleam's `list.map`, `list.filter`, `list.fold`, piped with `|>`.
-- **Already-typed code.** Files with lots of `interface`/`type` declarations
-  mean the author has already done the hard part (modeling the domain);
-  translating those shapes into Gleam's `type` definitions is mechanical.
-- **Little to no mutation.** `const`-only code with no reassignment, no
-  `.push`/`.splice`, no mutated objects, translates cleanly since Gleam values
-  are immutable by default.
-- **Small, self-contained dependency surface.** Files that import few (or no)
-  third-party packages are easy to port because there's nothing to find a
-  Gleam/FFI equivalent for.
-- **Result/Option-shaped error handling.** Code that already returns
-  `{ ok: true, value }` / `{ ok: false, error }`-style objects instead of
-  throwing exceptions maps directly onto Gleam's `Result(a, b)` and `Option(a)`.
+## Language fit
 
-## Poor fit — treat as reasons to deprioritize or disqualify
+Strong signals:
 
-- **JSX / component rendering.** React (or similar) component files are
-  fundamentally about DOM rendering and framework lifecycle, not data
-  transformation. Gleam has UI frameworks (e.g. Lustre) but porting a
-  component is a much bigger, different project than porting a utility
-  module — don't recommend it via this scanner.
-- **Heavy DOM/browser API usage.** `document.*`, `window.*`, `localStorage`,
-  event listeners — this is imperative interaction with a stateful host
-  environment, which Gleam doesn't remove, it just relocates behind FFI. Low
-  value to port in isolation.
-- **OOP with inheritance/mixins/decorators.** Gleam has no classes or
-  inheritance. A `class Dog extends Animal` hierarchy needs a real redesign
-  (typically into a variant type + functions), not a mechanical port.
-- **Lots of mutation (`let` reassignment, in-place array/object mutation).**
-  Each mutation site is a decision point in the port (make a new value
-  instead), which multiplies effort.
-- **Large third-party dependency surface.** Every npm import is either (a)
-  something with no Gleam equivalent, requiring FFI/JS-interop glue, or (b)
-  something to find/write bindings for. Files that are mostly "glue code"
-  around several libraries rarely benefit from a port.
-- **Dynamic metaprogramming** (`eval`, `new Function`, `Proxy`, `Reflect`,
-  prototype hacking). Fundamentally incompatible with a statically-typed
-  language; these files should never be recommended.
-- **Node-native / I/O-heavy code** (`fs`, `net`, `child_process`, raw
-  `process`). Not impossible (Gleam can FFI to Node), but the win is smaller
-  since the file is mostly orchestration/I/O rather than logic.
+- Discriminated unions, literal unions, and state transitions that become
+  custom types plus exhaustive `case`.
+- Parsers, validators, normalizers, calculators, formatters, reducers, and
+  business rules that compute outputs from inputs.
+- Composition through `map`, `filter`, folds, recursion, and small named
+  functions.
+- Explicit domain models and expected-failure paths that become typed
+  `Result` values.
+- Little shared mutation, inheritance, metaprogramming, or exception-driven
+  control flow.
 
-## A useful mental test
+Mutation and loops are redesign cost, not automatic rejection. A bounded
+parser that fills an accumulator may still port cleanly using a fold or
+tail-recursive helper.
 
-Ask: **"If I deleted the types and just looked at what this file *does*, is
-it computing something, or is it talking to something?"**
+Poor whole-file fits:
 
-- Computing (parsing, validating, transforming, calculating, routing on a
-  tag) → good Gleam candidate.
-- Talking (to the DOM, to a database, to the filesystem, to a UI framework's
-  lifecycle) → keep it in JS/TS, maybe call into a Gleam module for its
-  actual logic via a clean function boundary.
+- JSX rendering, component lifecycle, hooks, and UI framework adapters.
+- DOM, filesystem, network, database, process, timer, or audio orchestration.
+- Inheritance, decorators, prototype mutation, `eval`, `Function`, `Proxy`,
+  or reflective behavior.
+- Thin wrappers whose behavior belongs to an npm library or host runtime.
+- Existing generated Gleam imports or JavaScript `_ffi` modules.
 
-## Reviewing top candidates (when explaining results to the user)
+## JavaScript boundary cost
 
-For each top-ranked file, explain in plain language:
-1. What the file does (one sentence).
-2. Which specific signals from the scanner justify the score (cite them,
-   don't just repeat the number).
-3. Any risk/friction the scanner *wouldn't* catch — e.g. a subtle mutation
-   pattern, a tricky generic type, an implicit dependency on JS's `NaN`/`==`
-   coercion quirks, a function that's pure-looking but throws.
-4. A one-line verdict: "good first module to port" / "portable but only
-   worth it if X is also being ported" / etc.
+Inspect exported signatures and actual callers, not only internal logic.
+
+- Compiled Gleam modules are ES modules.
+- A Gleam `List(a)` is not a JavaScript array. Convert deliberately or use
+  `gleam/javascript/array` from `gleam_javascript` when a native array is the
+  right boundary type.
+- Gleam custom types do not accept arbitrary tagged JS objects. JavaScript
+  callers use generated constructors/accessors, a wrapper, an external type,
+  or decoded `Dynamic` data.
+- Optional JS fields may be absent, `undefined`, or `null`; choose and enforce
+  one Gleam representation.
+- TypeScript `number` does not decide `Int` versus `Float`. Whole-number,
+  `NaN`, and infinity constraints matter at runtime.
+- Promises and callback APIs need an explicit JavaScript-target design.
+- Returning a caller-owned object, function, or cached value preserves
+  observable JavaScript identity; a structurally equal fresh Gleam value may
+  not be equivalent.
+- URI codecs, JSON, Unicode normalization, numeric coercion, property
+  enumeration, and weak-key caches carry JavaScript-specific semantics that
+  need differential tests.
+- External functions are trusted declarations: Gleam cannot verify their
+  implementation or runtime return values.
+
+Boundary work can change a whole-file recommendation into “extract pure
+core.” Keep host interaction in a small JS adapter and call a typed Gleam
+module for the computation.
+
+## Migration value
+
+Easy is not the same as worthwhile. Verify:
+
+- the module contains behavior, not only declarations or constants;
+- important production callers would actually use the compiled module;
+- tests or stable examples protect semantics;
+- the boundary is smaller than the logic being protected;
+- the code changes often enough, or is risky enough, for stronger modeling to
+  pay back;
+- the module is not already a wrapper around Gleam output.
+
+Prefer a small vertical slice with a stable API over a large isolated rewrite.
+
+## Interpreting analyzer output
+
+- `Strong candidate`: high combined evidence; still inspect the file and
+  boundary.
+- `Possible candidate`: review-worthy, often with redesign or extraction.
+- `Low priority`: weak benefit or excessive boundary cost.
+- `Not a fit`: excluded from whole-file ranking because of JSX, dynamic
+  metaprogramming, prototype writes, existing Gleam interop, or FFI-adapter
+  status.
+
+`languageFit` is higher-is-better. `boundaryCost` is higher-is-worse.
+`migrationValue` is only a local heuristic; the analyzer does not know
+business importance or fully resolve the call graph.
+
+The TypeScript engine parses syntax but does not run a type checker. The
+lexical fallback masks comments and strings yet is less precise. Neither
+engine proves purity or semantic equivalence.
+
+## Manual review checklist
+
+For each leading file:
+
+1. Summarize its real responsibility.
+2. Separate computation from coordination.
+3. Verify mutations, exceptions, dynamic types, globals, and runtime imports.
+4. Inspect exported arrays, objects, callbacks, promises, optional values,
+   and numbers.
+5. Inspect direct callers and tests.
+6. Check JS-specific semantics: identity, coercion, URI/Unicode behavior,
+   property order, regex behavior, `Date`/`Intl`, `NaN`, infinity, and thrown
+   library errors.
+7. Choose whole port, redesign, pure-core extraction, keep, or already
+   migrated.
+8. Explain why the migration would improve safety or maintainability, not
+   merely why translation is possible.

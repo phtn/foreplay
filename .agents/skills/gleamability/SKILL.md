@@ -1,123 +1,150 @@
 ---
 name: gleamability
-description: Scans a JS/TS codebase (or set of files) to find which files would benefit from being ported to Gleam and compiled back to JS, then writes Gleam sketches for the best candidates. Use this whenever the user asks to find "gleamable" files, wants to know which JS/TS modules are good candidates for porting to Gleam, mentions evaluating a codebase for Gleam migration, or asks for a Gleam rewrite/sketch of specific files. Trigger even if they just say something like "which of my files would be better in Gleam" or "help me start migrating to Gleam" without using the word "gleamable" explicitly.
+description: Analyze JavaScript and TypeScript modules for worthwhile migration to Gleam on the JavaScript target, rank whole-file and extraction candidates, inspect JS/Gleam boundary costs, and produce validated Gleam port sketches. Use when asked which JS/TS files are “gleamable,” whether code should move to Gleam, where to begin a Gleam migration, or how a specific JS/TS module would look in Gleam.
 ---
 
-# Gleamability - Gleam Portability Analyzer
+# Gleamability
 
-Finds JS/TS files that are strong candidates for porting to [Gleam](https://gleam.run)
-(a statically-typed functional language that compiles to JS) and produces a
-ranked report plus Gleam sketches for the top candidates.
+Find high-value Gleam migration candidates without mistaking framework glue,
+host APIs, or already-migrated adapters for domain logic.
 
-Two-stage workflow: a **fast deterministic scanner** does a first pass over
-every file, then **Claude reviews the top-ranked files by hand** to confirm
-the score, explain the reasoning, flag anything the scanner missed, and write
-a Gleam sketch.
+Use two stages:
 
-## Step 1 — Confirm scope
+1. Run the deterministic analyzer across the requested scope.
+2. Read the leading files and correct the heuristic with boundary and value
+   analysis.
 
-If not already clear from the request, confirm (don't over-ask — one
-question is fine, default to reasonable choices):
+The score is triage evidence, not a port decision. Read
+[references/gleam-criteria.md](references/gleam-criteria.md) before judging
+candidates. Read
+[references/gleam-syntax-cheatsheet.md](references/gleam-syntax-cheatsheet.md)
+before writing Gleam.
 
-- Target directory or list of files to scan (default: current project root
-  the user is working in).
-- Roughly how many top candidates they want sketches for (default: top 5).
+## 1. Establish scope
 
-## Step 2 — Run the scanner
+Default to the current project root and five manually reviewed candidates.
+Ask one concise question only when the target or expected deliverable is
+materially ambiguous. Accept multiple directories or files.
 
-The scanner is a zero-dependency Node script — no `npm install` needed.
+## 2. Run the analyzer
+
+Resolve `GLEAMABILITY_SKILL_DIR` to the directory containing this `SKILL.md`;
+do not assume the shell is currently inside the skill:
 
 ```bash
-node scripts/analyze.js <targetDir> --json /tmp/gleam-report.json --top 15
+node "$GLEAMABILITY_SKILL_DIR/scripts/analyze.cjs" . \
+  --top 15 \
+  --json /tmp/gleamability-report.json
 ```
 
-Options:
+Replace `.` with one or more requested targets.
 
-- `--top N` — how many results to print to stdout (the JSON always contains
-  everything).
-- `--json <path>` — write the full ranked report as JSON (recommended —
-  read this back to get per-file signal breakdowns).
-- `--ext .ts,.tsx,.js,.jsx` — restrict extensions if needed (defaults to all
-  four).
+Useful options:
 
-The scanner ignores `node_modules`, `dist`, `build`, `out`, `.git`, `.next`,
-`assets`, `coverage`, `convex`, `.turbo`, and `.d.ts` files automatically.
+- `--top N`: print the top N eligible files. Exclusions never consume these
+  slots.
+- `--json PATH`: write every result and all signal details. Use `-` for JSON
+  on stdout.
+- `--ext .ts,.tsx,.js`: override the default modern JS/TS extensions.
+- `--include-tests`: include test, spec, and story files; they are skipped by
+  default.
+- `--engine auto|typescript|lexical`: prefer the target project's TypeScript
+  parser or force the masked lexical fallback.
+- Multiple positional targets are supported. With no target, the analyzer
+  scans `.`.
 
-Each file gets a `score` (0–100), a `tier` (`Strong candidate` /
-`Possible candidate` / `Low priority` / `Not a fit`), and lists of the
-specific `positiveSignals` / `negativeSignals` / `disqualifiers` that drove
-the score. Read `/mnt/skills/.../references/gleam-criteria.md` (path will be
-under wherever this skill is installed) to understand _why_ each signal
-matters — you'll need that reasoning for step 3.
+The report separates:
 
-This is a heuristic regex-based pass, not a real parser — treat the ranking
-as a strong prior, not ground truth. Files disqualified for JSX/dynamic-eval
-reasons are correctly excluded almost all the time; borderline scores in the
-40–70 range are where your own read of the file matters most.
+- `languageFit`: algebraic data, transformations, immutability, and
+  pattern-matching opportunity minus redesign pressure.
+- `boundaryCost`: npm/framework/host APIs, async behavior, and public
+  JS-representation friction. Higher is worse.
+- `migrationValue`: a deliberately conservative estimate from substantive,
+  exported domain behavior. Verify callers, tests, and business importance
+  manually.
 
-## Step 3 — Review top candidates and explain
+Prefer the parser engine. When the report says `lexical`, treat close scores
+as weaker leads.
 
-For each of the top N candidates (skip anything tiered `Not a fit`):
+## 3. Review candidates
 
-1. Open and actually read the file — don't just trust the score.
-2. Confirm or correct the scanner's verdict in plain language: what the file
-   does, which signals justify porting it, and anything the scanner couldn't
-   see (see the "Reviewing top candidates" section of
-   `references/gleam-criteria.md` for the checklist).
-3. If a `Possible candidate` or borderline `Strong candidate` doesn't hold up
-   on manual review, say so and drop or downgrade it rather than forcing a
-   sketch.
+Open each leading eligible file. Also inspect its direct callers, tests, and
+nearby modules when they affect the boundary.
 
-## Step 4 — Write Gleam sketches for confirmed candidates
+For every reviewed file:
 
-For each file that survives review, write a Gleam sketch demonstrating the
-port: type definitions, function signatures, and the core logic translated
-into idiomatic Gleam (pattern matching via `case`, `|>` pipelines, `Result`/
-`Option` instead of null/throw). Use `references/gleam-syntax-cheatsheet.md`
-for the JS/TS → Gleam mapping. This is a sketch to demonstrate feasibility
-and rough shape, not a production-ready, fully compiling module — say so
-explicitly, and call out any part that would need FFI (`@external`) to
-existing JS or a genuine redesign (e.g. anything with mutation-in-a-loop that
-becomes a fold).
+1. State what the module computes or coordinates.
+2. Verify the positive, negative, and boundary signals against the code.
+3. Choose one verdict:
+   - whole-file candidate;
+   - port with redesign;
+   - extract a pure core and keep orchestration in JS/TS;
+   - keep in JS/TS;
+   - already migrated or an interop adapter.
+4. Check public inputs and outputs: JS arrays are not Gleam lists; structural
+   objects are not automatically Gleam custom types; optional values,
+   callbacks, promises, and `number` need explicit designs.
+5. Downgrade false positives. Promote missed pure cores, including helpers
+   inside UI, backend, or I/O modules, but label extraction scope precisely.
 
-If Gleam syntax specifics are uncertain (stdlib function names/signatures
-change between versions), web-search the current Gleam documentation rather
-than guessing from memory.
+Never infer value from type density alone. Constants, declarations, tests,
+thin library wrappers, and framework adapters may be easy to rewrite yet
+offer little benefit.
 
-## Step 5 — Deliver the report
+## 4. Produce ports or sketches
 
-Produce a single Markdown report containing:
+For confirmed candidates, show:
 
-- A ranked table (file, score, tier, one-line reason) for everything above
-  `Low priority`.
-- For each top candidate: the explanation from Step 3 and the Gleam sketch
-  from Step 4, in a fenced ```gleam code block.
-- A short closing note on which 1–2 files would be the best _first_ port
-  (smallest risk, highest signal) if the user wants to start incrementally.
+- proposed Gleam module and public API;
+- custom types and function signatures;
+- core logic using `case`, pipelines, `Result`, recursion, or folds;
+- the JS adapter or `@external` surface that remains;
+- semantic changes required for nullability, exceptions, arrays, numbers, or
+  async behavior.
 
-This is a substantial, save-worthy document — create it as a markdown file
-via the docx/md file-creation workflow (see the `md` conventions in the main
-skill list) rather than dumping the whole thing inline in chat, unless the
-user only asked about a small number of files, in which case answering
-inline is fine.
+Use `Result` for fallible operations. Use `Option` for genuinely optional
+stored data or arguments, not as a generic substitute for errors.
 
-## Notes on the scanner's scoring model
+Prefer a compiling feasibility module over pseudocode. If a Gleam project and
+compiler are available, run:
 
-- Positive signals (switch-on-tag, functional pipelines, type declarations,
-  const-heavy/immutable style, Result/Option-shaped returns) push the score
-  up.
-- Negative signals (`let` reassignment, class inheritance, DOM/browser
-  globals, Node-native I/O, heavy external-package imports, array mutation
-  methods, decorators) push it down.
-- Hard disqualifiers (JSX render output, React imports, `eval`/`Function`/
-  `Proxy`/`Reflect`, prototype hacking) force the tier to `Not a fit`
-  regardless of other signals — these are fundamentally poor Gleam fits, not
-  just low-scoring ones.
-- Score is normalized per ~50 lines of code so a 20-line file and a 400-line
-  file are comparable.
+```bash
+gleam format src/path/to/module.gleam
+gleam check --target javascript
+```
 
-If the scanner script needs modification (new signal, different weights),
-edit `scripts/src/analyze.ts` (strict TypeScript, zero runtime deps beyond
-Node's `fs`/`path`) and recompile with `npx tsc -p tsconfig.json`, then copy
-`dist/analyze.js` over `scripts/analyze.js` — the shipped `scripts/analyze.js`
-is the one actually executed and must stay in sync with the source.
+Use `todo` for intentionally omitted implementation, and identify it. Never
+claim a sketch compiles unless it was checked. If syntax, stdlib, or
+JavaScript interop behavior is uncertain, consult current official Gleam
+documentation.
+
+## 5. Deliver the result
+
+For a repository scan, provide:
+
+- a ranked table with file, overall score, language fit, boundary cost,
+  analyzer verdict, and corrected manual verdict;
+- short assessments for the reviewed candidates;
+- Gleam sketches only for candidates that survive review;
+- the best one or two first ports, favoring a stable boundary, useful tests,
+  and incremental adoption.
+
+Answer inline for a small scope. Save a Markdown report when the scan is
+substantial or the user requests an artifact; do not invent a separate
+document workflow.
+
+## Analyzer maintenance
+
+Edit `scripts/src/analyze.ts`, not the generated executable. Rebuild and
+verify from a repository that provides TypeScript:
+
+```bash
+npx --no-install tsc -p "$GLEAMABILITY_SKILL_DIR/tsconfig.json"
+cp "$GLEAMABILITY_SKILL_DIR/dist/analyze.js" \
+  "$GLEAMABILITY_SKILL_DIR/scripts/analyze.cjs"
+node --test "$GLEAMABILITY_SKILL_DIR/scripts/analyze.test.cjs"
+```
+
+Keep `scripts/analyze.cjs` synchronized because it is the portable runtime
+artifact. It is intentionally `.cjs` so host projects using
+`"type": "module"` cannot reinterpret it as ESM.
