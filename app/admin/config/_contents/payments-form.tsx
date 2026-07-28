@@ -14,6 +14,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { type SubmitEvent, useEffect, useRef, useState } from 'react'
 import { generatePaymentMethodQrUploadUrl, saveManualPaymentMethod } from '../actions'
+import { PaymentQRCode } from './payment-qrcode'
 import type { ManualPaymentMethod } from './payments'
 
 type BarcodeDetectorConstructor = new (options?: { formats?: string[] }) => {
@@ -105,6 +106,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [previewPaymentMethodId, setPreviewPaymentMethodId] = useState<Id<'paymentMethods'> | null>(null)
   const objectUrlRef = useRef<string | null>(null)
   const { convert, terminate } = useImageConverter()
 
@@ -294,6 +296,10 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
                 selected={paymentMethod._id === selectedPaymentMethod?._id && !isCreating}
                 onView={() => loadPaymentMethod(paymentMethod)}
                 onEdit={() => loadPaymentMethod(paymentMethod, true)}
+                previewOpen={previewPaymentMethodId === paymentMethod._id}
+                onTogglePreview={() => {
+                  setPreviewPaymentMethodId((current) => (current === paymentMethod._id ? null : paymentMethod._id))
+                }}
               />
             ))
           ) : (
@@ -489,15 +495,22 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
 
 function PaymentDestinationCard({
   onEdit,
+  onTogglePreview,
   onView,
   paymentMethod,
+  previewOpen,
   selected
 }: {
   onEdit: () => void
+  onTogglePreview: () => void
   onView: () => void
   paymentMethod: ManualPaymentMethod
+  previewOpen: boolean
   selected: boolean
 }) {
+  const previewId = `payment-qr-preview-${paymentMethod._id}`
+  const hasQrCode = Boolean(paymentMethod.qrCodeContent?.trim() || paymentMethod.qrCodeImageUrl)
+
   return (
     <article
       className={cn(
@@ -539,17 +552,39 @@ function PaymentDestinationCard({
         </div>
       </div>
 
-      <div className='flex items-center justify-between gap-2 p-3'>
+      <div className='flex flex-wrap items-center justify-between gap-2 p-3'>
         <button
           type='button'
           className='text-sm text-muted-foreground transition-colors hover:text-foreground'
           onClick={onView}>
           View details
         </button>
-        <Button type='button' variant='outline' size='sm' onClick={onEdit}>
-          Edit
-        </Button>
+        <div className='flex items-center gap-2'>
+          <Button
+            type='button'
+            variant='ghost'
+            size='sm'
+            aria-controls={previewId}
+            aria-expanded={previewOpen}
+            disabled={!hasQrCode && !previewOpen}
+            title={
+              hasQrCode || previewOpen ? undefined : 'Add QR code content or an image to preview this destination'
+            }
+            onClick={onTogglePreview}>
+            <Icon name={previewOpen ? 'eye-close' : 'qrcode'} className='size-4' />
+            <span>{previewOpen ? 'Hide QR' : 'Preview QR'}</span>
+          </Button>
+          <Button type='button' variant='outline' size='sm' onClick={onEdit}>
+            Edit
+          </Button>
+        </div>
       </div>
+
+      {previewOpen ? (
+        <div id={previewId} className='border-t border-border/70 bg-muted/20 p-3 sm:p-4'>
+          <PaymentQRCode paymentMethod={paymentMethod} />
+        </div>
+      ) : null}
     </article>
   )
 }

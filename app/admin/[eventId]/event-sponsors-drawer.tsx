@@ -238,7 +238,6 @@ export function EventSponsorsDrawer({ eventTitle, sponsorList, tournamentId }: E
                   <li className='text-xs leading-5 text-muted-foreground'>Sponsor is required.</li>
                   <li className='text-xs leading-5 text-muted-foreground'>Title/Label and Link URL are optional. </li>
                   <li className='text-xs leading-5 text-muted-foreground'>
-                    {' '}
                     Remove every row and save to clear the list.
                   </li>
                 </ul>
@@ -260,27 +259,24 @@ export function EventSponsorsDrawer({ eventTitle, sponsorList, tournamentId }: E
           </div>
 
           <DrawerFooter className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2'>
-            <DrawerClose
+            {/*<DrawerClose
               render={
                 <Button type='button' variant='ghost' className='h-12 font-poly' disabled={isSubmitting}>
                   Close
                 </Button>
               }
-            />
+            />*/}
             <Button
               type='submit'
               className='h-12 gap-2 bg-foreground hover:bg-foreground/80 font-poly text-background'
               disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
+                  <span>Saving</span>
                   <Icon name='spinner-ring' className='size-3.5' />
-                  Saving
                 </>
               ) : (
-                <>
-                  <Icon name='check' className='size-3.5' />
-                  Save
-                </>
+                <span>Save</span>
               )}
             </Button>
           </DrawerFooter>

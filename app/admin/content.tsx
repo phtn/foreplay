@@ -50,7 +50,7 @@ export const Content = ({ events }: ContentProps) => {
         ))}
       </div>
 
-      <Card className='p-0 md:py-1 bg-border/10 rounded-xs md:rounded-xl'>
+      <Card className='p-0 md:py-1 bg-border/0 rounded-xs md:rounded-xl'>
         <CardContent className='px-0 rounded-xs md:rounded-xl border-0'>
           {tournamentList.length ? (
             <EventsList data={tournamentList} />

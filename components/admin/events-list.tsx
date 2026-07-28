@@ -144,7 +144,7 @@ export const List = EventsList
 
 const EventRow = (row: EventRow) => {
   return (
-    <div className='px-1 py-2 space-y-4'>
+    <div className='px-1 py-2'>
       {row.monthLabel ? (
         <p className='my-2 px-3 text-xs font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
           {row.monthLabel}
@@ -152,8 +152,8 @@ const EventRow = (row: EventRow) => {
       ) : null}
 
       {/* Mobile */}
-      <article className='overflow-hidden rounded-xs _border border-[#1d2824]/8 backdrop-blur-xl md:hidden'>
-        <div className='space-y-4 p-2 sm:p-5'>
+      <article className='overflow-hidden rounded-xs md:hidden'>
+        <div className='space-y-8 px-2 pt-5 sm:p-5 border rounded-xs'>
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
               <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-11 aspect-square text-white '>
@@ -212,7 +212,7 @@ const EventRow = (row: EventRow) => {
       </article>
 
       {/* Desktop */}
-      <article className='hidden rounded-sm border border-[#1d2824]/8 bg-white dark:bg-slate-300 p-4 md:grid md:grid-cols-[64px_minmax(0,1.35fr)_auto_auto_auto] md:items-center md:gap-4'>
+      <article className='hidden rounded-sm border border-[#1d2824]/0 bg-white dark:bg-slate-300 p-4 md:grid md:grid-cols-[64px_minmax(0,1.35fr)_auto_auto_auto] md:items-center md:gap-4'>
         <div className='flex items-center justify-center border-r border-[#1d2824]/10 pr-4'>
           <div className='text-center space-y-1'>
             <p className='font-okx text-sm text-hermes'>{row.day}</p>

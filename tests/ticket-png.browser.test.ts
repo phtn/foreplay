@@ -75,7 +75,7 @@ function runChrome(
 }
 
 test(
-  'exports a ticket when the document background uses lab()',
+  'exports content with lab() colors and inline SVG',
   { skip: chromeExecutable === undefined, timeout: 20_000 },
   async () => {
     assert.ok(chromeExecutable)
@@ -159,10 +159,19 @@ test(
                   color: lab(35% 0 0) !important;
                   padding: 16px;
                 }
+
+                #ticket svg {
+                  color: lab(45% 12 8) !important;
+                }
               </style>
             </head>
             <body>
-              <div id="ticket">Ticket export reproduction</div>
+              <div id="ticket">
+                Ticket export reproduction
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                  <path fill="currentColor" d="M2 2h20v20H2z" />
+                </svg>
+              </div>
               <output id="result">pending</output>
               <script src="./bundle.js"></script>
             </body>

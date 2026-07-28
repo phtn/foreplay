@@ -20,7 +20,8 @@ const colorProperties = [
   'fill',
   'outline-color',
   'stroke',
-  'text-decoration-color'
+  'text-decoration-color',
+  '-webkit-text-stroke-color'
 ] as const
 
 function createColorResolver(documentRef: Document) {

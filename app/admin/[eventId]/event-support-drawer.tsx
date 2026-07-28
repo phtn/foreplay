@@ -157,7 +157,7 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
         </TooltipContent>
       </Tooltip>
 
-      <DrawerContent className='[--drawer-content-width:calc(100vw-1rem)] sm:[--drawer-content-width:44rem] md:[--drawer-content-width:48rem] rounded-xl'>
+      <DrawerContent className='[--drawer-content-width:calc(100vw-0.5rem)] sm:[--drawer-content-width:44rem] md:[--drawer-content-width:48rem] rounded-xl'>
         <DrawerHeader className='flex-row items-start justify-between gap-4 border-b border-border/60 border-dashed pb-4 text-left'>
           <div className='min-w-0 space-y-1'>
             <p className='font-ios text-xs uppercase tracking-widest text-violet-700 dark:text-violet-400'>
@@ -321,27 +321,24 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
           </div>
 
           <DrawerFooter className='grid gap-2 border-t border-border/70 p-4 sm:grid-cols-2'>
-            <DrawerClose
+            {/*<DrawerClose
               render={
                 <Button type='button' variant='ghost' className='h-12 font-poly' disabled={isSubmitting}>
                   Close
                 </Button>
               }
-            />
+            />*/}
             <Button
               type='submit'
               className='h-12 gap-2 bg-foreground hover:bg-foreground/80 font-poly text-background'
               disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
+                  <span>Saving</span>
                   <Icon name='spinner-ring' className='size-3.5' />
-                  Saving
                 </>
               ) : (
-                <>
-                  <Icon name='check' className='size-3.5' />
-                  Save
-                </>
+                <span>Save</span>
               )}
             </Button>
           </DrawerFooter>
