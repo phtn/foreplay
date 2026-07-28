@@ -1,10 +1,7 @@
 'use client'
 
 import { useAppForm } from '@/components/form'
-import {
-  createPaymentQRCodeSvg,
-  PaymentQRExportSurface
-} from '@/components/qrcode/payment-export-surface'
+import { createPaymentQRCodeSvg, PaymentQRExportSurface } from '@/components/qrcode/payment-export-surface'
 import { QRCodeSVG } from '@/components/qrcode/viewer'
 import { Button } from '@/components/ui/button'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
@@ -214,10 +211,7 @@ export const NewEntryForm = ({
   const isSaved = subscriptionId !== null
   const isDraftBusy = isSubmitting || isSubmittingReceipt
   const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
-  const paymentDownloadQrSvg = useMemo(
-    () => createPaymentQRCodeSvg(paymentQRCodeContent),
-    [paymentQRCodeContent]
-  )
+  const paymentDownloadQrSvg = useMemo(() => createPaymentQRCodeSvg(paymentQRCodeContent), [paymentQRCodeContent])
   const paymentAccountDetails = paymentMethod ? formatPaymentAccountDetails(paymentMethod) : null
   const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
   const copyAccountDetails = useCallback(async () => {
@@ -236,12 +230,7 @@ export const NewEntryForm = ({
     }
   }, [paymentAccountDetails])
   const downloadPaymentQR = useCallback(async () => {
-    if (
-      !paymentMethod ||
-      !paymentDownloadQrSvg ||
-      !paymentQrExportRef.current ||
-      paymentQrExportLockRef.current
-    ) {
+    if (!paymentMethod || !paymentDownloadQrSvg || !paymentQrExportRef.current || paymentQrExportLockRef.current) {
       return
     }
 
@@ -647,7 +636,7 @@ export const NewEntryForm = ({
         </Activity>
 
         {paymentMethod && paymentDownloadQrSvg ? (
-          <div aria-hidden className='pointer-events-none fixed left-[-10000px] top-0 w-96'>
+          <div aria-hidden className='pointer-events-none fixed -left-2500 top-0 w-96'>
             <PaymentQRExportSurface
               ref={paymentQrExportRef}
               accountName={paymentMethod.accountName}
