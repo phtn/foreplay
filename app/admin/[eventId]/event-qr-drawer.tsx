@@ -89,7 +89,7 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
             <p className='font-ios text-xs uppercase tracking-widest text-sky-700 dark:text-sky-400'>Event QR code</p>
             <DrawerTitle className='truncate font-poly text-xl'>{eventTitle}</DrawerTitle>
             <DrawerDescription className='truncate font-ios text-xs tracking-wider'>
-              Public tournament page
+              Tournament Page Link
             </DrawerDescription>
           </div>
 
@@ -107,9 +107,9 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
           />
         </DrawerHeader>
 
-        <div className='min-h-0 flex-1 overflow-y-auto bg-slate-950/5 p-4 sm:p-5'>
+        <div className='min-h-0 flex-1 overflow-y-auto bg-slate-950/5 p-0'>
           <div className='flex min-h-full flex-col items-center justify-center gap-5'>
-            <div className='w-full max-w-sm rounded-2xl border border-border/70 bg-white p-5 shadow-sm'>
+            <div className='w-full max-w-sm rounded-none bg-white p-5'>
               <div
                 role='img'
                 aria-label={`QR code for ${eventTitle}`}
@@ -118,8 +118,8 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
               />
             </div>
 
-            <div className='w-full max-w-sm space-y-2 rounded-xl border border-border/60 bg-background p-4'>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Destination</p>
+            <div className='w-full max-w-sm space-y-2 p-4'>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-foreground/70'>URL Link</p>
               <a
                 href={tournamentUrl}
                 target='_blank'
@@ -127,9 +127,6 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
                 className='block break-all text-sm font-medium text-sky-700 underline-offset-4 hover:underline dark:text-sky-300'>
                 {tournamentUrl}
               </a>
-              <p className='text-xs leading-5 text-muted-foreground'>
-                Scanning this code opens the public tournament page.
-              </p>
             </div>
           </div>
         </div>
