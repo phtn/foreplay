@@ -1,43 +1,6 @@
-## Foreplay
+---
+name: foreplay.pro
+description: A multi-event hosting platform for onboarding participants and audiences.
+---
 
-Pinatubo:
-Hole
-Par
-black
-S.I.
-1
-4
-343
-10
-2
-3
-185
-16
-3
-4
-443
-2
-4
-4
-321
-14
-5
-3
-192
-18
-6
-5
-543
-6
-7
-5
-531
-8
-8
-4
-454
-4
-9
-5
-498
-12
+
