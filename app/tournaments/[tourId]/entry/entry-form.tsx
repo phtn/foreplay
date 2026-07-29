@@ -399,7 +399,7 @@ export const NewEntryForm = ({
           <div className='absolute top-0 left-0 h-5 w-6.5 flex items-center justify-center font-poly text-white text-base overflow-hidden bg-sky-500'>
             <span className='-mb-0.5'>1</span>
           </div>
-          <div className='grid gap-8 p-4 sm:grid-cols-2 md:p-8'>
+          <div className='grid gap-8 px-4 py-8 sm:grid-cols-2 md:p-8'>
             <fieldset className='space-y-4'>
               <legend className='mb-4 font-poly text-base font-medium text-foreground'>Entry details</legend>
               <form.AppField name='fullName'>
@@ -493,7 +493,7 @@ export const NewEntryForm = ({
 
           <section
             aria-labelledby='entry-submit-title'
-            className='flex min-h-64 flex-col justify-center gap-5 bg-muted/25 p-6 text-center md:p-8'>
+            className='flex min-h-64 flex-col justify-center gap-5 p-6 text-center md:p-8'>
             <div className='space-y-2'>
               <h2 id='entry-submit-title' className='font-poly text-lg font-medium text-foreground'>
                 {isSaved ? 'Review your entry' : 'Submit your entry'}
@@ -555,8 +555,8 @@ export const NewEntryForm = ({
             ref={paymentSectionRef}
             id='pay-with-qr-section'
             aria-labelledby='payment-section-title'
-            className='scroll-mt-16 border-t border-border/60'>
-            <header className='space-y-1 border-b border-border/60 px-6 py-5 md:px-8'>
+            className='scroll-mt-16 border-t border-slate-300 dark:border-slate-700'>
+            <header className='space-y-1 border-b border-slate-300 dark:border-slate-700 px-6 py-5 md:px-8'>
               <h2 id='payment-section-title' className='font-poly text-lg font-medium text-foreground'>
                 Payment
               </h2>
@@ -571,7 +571,7 @@ export const NewEntryForm = ({
               </div>
               <section
                 aria-labelledby='payment-details-title'
-                className='flex flex-col justify-between gap-6 border-b border-border/60 p-6 md:border-e md:border-b-0'>
+                className='flex flex-col justify-between gap-6 border-b border-slate-300 dark:border-slate-700 p-6 md:border-e md:border-b-0'>
                 <div className='space-y-6'>
                   <div className='flex items-center gap-3'>
                     <div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-success/5 text-success-foreground'>
@@ -582,7 +582,7 @@ export const NewEntryForm = ({
                     </h3>
                   </div>
 
-                  <div className='rounded-lg bg-muted/50 p-4'>
+                  <div className='rounded-lg p-4'>
                     <p className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Amount due</p>
                     <p className='mt-1 font-poly text-2xl font-semibold text-foreground tabular-nums'>
                       {currencyFormatter.format(totalAmount)}
@@ -659,7 +659,7 @@ export const NewEntryForm = ({
 
               <section
                 aria-labelledby='payment-qr-title'
-                className='flex flex-col border-b border-border/60 p-6 md:border-e md:border-b-0'>
+                className='flex flex-col border-b border-slate-300 dark:border-slate-700 p-6 md:border-e md:border-b-0'>
                 <h3 id='payment-qr-title' className='font-poly text-base font-medium text-foreground'>
                   Scan to pay
                 </h3>
@@ -676,6 +676,13 @@ export const NewEntryForm = ({
                       </p>
                     </div>
                   )}
+                </div>
+                <div className='flex items-center justify-center space-x-4'>
+                  <Icon name='gcash' className='size-8' />
+                  <Icon name='maya' className='size-10' />
+                  <Icon name='gotyme-icon' className='size-8' />
+                  <Icon name='coinsph' className='size-8' />
+                  <Icon name='instapay' className='size-12' />
                 </div>
               </section>
 

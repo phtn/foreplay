@@ -315,7 +315,7 @@ export const Content = ({
                 </div>
               </div>
 
-              <div className='h-2 rounded-xs border-y border-slate-300 dark:border-slate-900 bg-slate-200 dark:bg-slate-800 -mx-4 sm:-mx-5' />
+              <div className='h-2 rounded-xs border-y border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 -mx-4 sm:-mx-5' />
               <NewEntryForm
                 key={formId}
                 tourId={tourId}
