@@ -1,4 +1,4 @@
-export const formatDateTime = (value: string | null) => {
+const formatDateTime = (value: string | null) => {
   if (!value) {
     return 'N/A'
   }

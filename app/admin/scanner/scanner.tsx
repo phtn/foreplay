@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { api } from '@/convex/_generated/api'
+import { onError, onInfo, onSuccess } from '@/ctx/toast'
 import { Icon } from '@/lib/icons'
 import {
   normalizeScanTicketTonesConfig,
@@ -41,7 +42,7 @@ const getBarcodeDetector = () => {
 function ResultPanel({ result }: { result: CheckInResult | null }) {
   if (!result) {
     return (
-      <div className='flex min-h-32 items-center justify-center rounded-xl border border-dashed border-border/70 bg-muted/10 p-5 text-center text-sm text-muted-foreground'>
+      <div className='hidden _flex min-h-32 items-center justify-center rounded-xl border border-dashed border-border/70 bg-muted/10 p-5 text-center text-sm text-muted-foreground'>
         Scan a player gate pass to check them in.
       </div>
     )
@@ -109,38 +110,48 @@ export function GateScanner({ operator }: GateScannerProps) {
     setActive(false)
   }, [])
 
-  const handlePayload = useCallback(async (payload: string) => {
-    const normalizedPayload = payload.trim()
+  const handlePayload = useCallback(
+    async (payload: string) => {
+      const normalizedPayload = payload.trim()
 
-    if (!normalizedPayload || checkingRef.current) {
-      return
-    }
+      if (!normalizedPayload || checkingRef.current) {
+        return
+      }
 
-    const now = Date.now()
+      const now = Date.now()
 
-    if (lastPayloadRef.current === normalizedPayload && now - lastPayloadAtRef.current < 2500) {
-      return
-    }
+      if (lastPayloadRef.current === normalizedPayload && now - lastPayloadAtRef.current < 2500) {
+        return
+      }
 
-    checkingRef.current = true
-    lastPayloadRef.current = normalizedPayload
-    lastPayloadAtRef.current = now
-    setIsChecking(true)
-    setErrorMessage(null)
+      checkingRef.current = true
+      lastPayloadRef.current = normalizedPayload
+      lastPayloadAtRef.current = now
+      setIsChecking(true)
+      setErrorMessage(null)
 
-    try {
-      const nextResult = await checkInGatePass(normalizedPayload)
-      setResult(nextResult)
-      playScanTone(nextResult.alreadyCheckedIn ? 'used' : 'good')
-    } catch (error) {
-      setResult(null)
-      playScanTone('invalid')
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to check in this gate pass.')
-    } finally {
-      checkingRef.current = false
-      setIsChecking(false)
-    }
-  }, [playScanTone])
+      try {
+        const nextResult = await checkInGatePass(normalizedPayload)
+        setResult(nextResult)
+        playScanTone(nextResult.alreadyCheckedIn ? 'used' : 'good')
+
+        if (nextResult.alreadyCheckedIn) {
+          onInfo('Ticket Already Used')
+          return
+        }
+        onSuccess('Scan Successful!')
+      } catch (error) {
+        setResult(null)
+        playScanTone('invalid')
+        onError('Invalid Ticket')
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to check in this gate pass.')
+      } finally {
+        checkingRef.current = false
+        setIsChecking(false)
+      }
+    },
+    [playScanTone]
+  )
 
   const startScanner = useCallback(async () => {
     setErrorMessage(null)
@@ -248,63 +259,62 @@ export function GateScanner({ operator }: GateScannerProps) {
         </Badge>
       </div>
 
-      <Card className='rounded-none md:rounded-sm p-0 pb-4'>
-        <CardHeader className='rounded-none md:rounded-t-sm border-b border-border/50 bg-slate-100 dark:bg-slate-400/40 h-10 pt-2 pb-0'>
+      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80'>
+        <CardHeader className='relative rounded-none md:rounded-t-xs border-b border-slate-400/50 bg-slate-200 dark:bg-slate-400/40 h-10 pt-2 pb-0 px-2'>
           <div className='flex items-center justify-between'>
             <CardTitle className='flex items-center font-okx'>
               <span
-                className={cn('aspect-square rounded-full scale-120 mr-2 text-slate-400', {
-                  'text-emerald-500 animate-pulse': active
-                })}>
-                ⏺
-              </span>
-              <span className={cn('opacity-50', { 'opacity-100': active })}>{active ? 'Ready' : 'Scanner Idle'}</span>
+                className={cn('aspect-square rounded-full size-3.5 mx-2 bg-slate-300 shadow-inner', {
+                  'bg-green-500 border-2 border-slate-400': active
+                })}
+              />
+
+              <span className={cn('opacity-40 text-sm', { 'opacity-100': active })}>{active ? 'Ready' : ''}</span>
             </CardTitle>
-            <span
+            <div
               className={cn('font-okx font-semibold', {
                 'text-emerald-600': result?.checkedIn,
                 'text-orange-600': result?.alreadyCheckedIn
               })}>
-              {result?.alreadyCheckedIn ? 'TICKET USED' : result?.checkedIn ? 'TICKET OK' : ''}
-            </span>
-            <div className='flex items-center space-x-2'>
+              {result?.alreadyCheckedIn ? (
+                'TICKET USED'
+              ) : result?.checkedIn ? (
+                'TICKET OK'
+              ) : (
+                <Icon name='slumbering' className='size-20 opacity-40 absolute -top-4 -right-2 rotate-20' />
+              )}
+            </div>
+            <div
+              className={cn(
+                'flex items-center space-x-1 h-7 bg-slate-500 px-1.5 rounded-md border-3 border-slate-400 relative z-10',
+                { 'bg-foreground': active }
+              )}>
               <Icon
-                name={active ? 'camera-fill' : 'camera-off-line'}
-                className={cn('size-5 text-foreground/50', { 'text-emerald-500': active })}
+                name={active ? 'camera' : 'camera-off-line'}
+                className={cn('size-4.5 text-white/80', { 'text-white': active })}
               />
-              <span>{active ? 'ON' : 'OFF'}</span>
+              <span className={cn('font-poly text-white text-sm leading-none mt-0.5', { ' text-green-500': active })}>
+                {active ? 'ON' : 'OFF'}
+              </span>
             </div>
             {/*<Badge variant={active ? 'success-light' : 'outline'} size='lg'>
               {active ? 'Camera ON' : 'Camera OFF'}
             </Badge>*/}
           </div>
         </CardHeader>
-        <CardContent className='space-y-4 px-4'>
-          <div className='overflow-hidden rounded-xl border border-border/70 bg-black'>
+        <CardContent className='space-y-0 p-0'>
+          <div className='overflow-hidden rounded-none bg-black'>
             <video ref={videoRef} playsInline muted className='aspect-3/4 w-full object-cover sm:aspect-video' />
           </div>
 
-          <div className='grid gap-2 sm:grid-cols-2'>
+          <div className=' w-full'>
             <Button
               type='button'
-              size='xl'
+              size='2xl'
               onClick={active ? stopScanner : startScanner}
-              className='bg-pink-500 text-white text-base'>
-              <Icon name={active ? 'close' : 'ticket'} className='size-4' />
-              {active ? 'Stop scanner' : 'Start scanner'}
-            </Button>
-            <Button
-              size='xl'
-              type='button'
-              variant='outline'
-              disabled={isChecking || !manualPayload.trim()}
-              className='text-base'
-              onClick={() => {
-                void prepareTonePlayback().catch(() => undefined)
-                void handlePayload(manualPayload)
-              }}>
-              <Icon name={isChecking ? 'spinner-ring' : 'check'} className='size-4' />
-              Check manual payload
+              className='bg-pink-500 hover:bg-pink-600/70 font-poly text-white text-base w-full rounded-xs border-none transition-colors duration-300'>
+              <Icon name={active ? 'close' : 'qr-code-scanner'} className='size-4' />
+              {active ? 'Stop Scanner' : 'Start Scanner'}
             </Button>
           </div>
 
@@ -316,7 +326,7 @@ export function GateScanner({ operator }: GateScannerProps) {
 
           <ResultPanel result={result} />
 
-          <div className='space-y-2'>
+          <div className='hidden space-y-2'>
             <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Manual fallback</p>
             <Input
               value={manualPayload}

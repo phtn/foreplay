@@ -38,7 +38,7 @@ export const timeFormatter = new Intl.DateTimeFormat('en-US', {
 //   dateStyle: 'medium',
 //   timeStyle: 'short'
 // })
-export const createdAtNano = new Intl.DateTimeFormat('en-US', {
+const createdAtNano = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'short',
   timeStyle: 'short'
 })
