@@ -8,12 +8,14 @@ import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { formatRegistrationFee, formatSlotsLabel, getPublicationLabel, timeFormatter } from '@/utils/formatters'
+import type { TournamentRegistrationAction } from './registration-action'
 
 interface TourDetailProps {
   tournament: Doc<'tournaments'>
+  registrationAction: TournamentRegistrationAction | null
 }
 
-export default function TourDetail({ tournament }: TourDetailProps) {
+export default function TourDetail({ tournament, registrationAction }: TourDetailProps) {
   const eventDate = new Date(tournament.gate_open_at)
   const dateLabel = tournament.event_date
   const feeLabel = formatRegistrationFee(tournament.registration_fee)
@@ -35,6 +37,8 @@ export default function TourDetail({ tournament }: TourDetailProps) {
         secondaryHref={`tel:${tournament.support?.phone}`}
         teeTimeAt={eventDate.toISOString()}
         teeTimeLabel={teeTimeLabel}
+        updateLabel={registrationAction?.updateLabel}
+        updateHref={registrationAction?.updateHref}
         metrics={[
           { label: 'Venue', value: tournament.venue, icon: 'location' },
           { label: 'Date', value: dateLabel, icon: 'calendar' },

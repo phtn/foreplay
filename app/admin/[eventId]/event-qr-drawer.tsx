@@ -70,9 +70,9 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
               render={
                 <Button
                   type='button'
-                  variant='ghost'
                   size='icon-sm'
-                  className='rounded-full text-sky-600 hover:text-sky-500'
+                  variant='ghost'
+                  className='rounded-full text-sky-600 hover:text-sky-500 flex items-center w-full'
                   aria-label={`Show QR code for ${eventTitle}`}>
                   <Icon name='qrcode' className='size-5' />
                 </Button>

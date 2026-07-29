@@ -1,5 +1,6 @@
 'use client'
 
+import { EventToolbar } from '@/app/admin/[eventId]/event-toolbar'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
@@ -13,6 +14,7 @@ type Tournament = Doc<'tournaments'>
 type EventRow = {
   date: string
   day: string
+  event: Tournament
   feeLabel: string
   href: string | null
   monthLabel: string | null
@@ -113,6 +115,7 @@ function buildEventRows(events: Tournament[]): EventRow[] {
     previousMonthLabel = monthLabel
 
     return {
+      event,
       tournamentId: event._id,
       sortOrder: -event.gate_open_at,
       monthLabel: shouldShowMonth ? monthLabel : null,
@@ -168,28 +171,25 @@ const EventRow = (row: EventRow) => {
             </div>
           </div>
 
-          <p className='text-sm leading-6 text-[#1d2824]/70 dark:text-foreground'>{row.summary}</p>
+          <div className='flex items-center justify-end'>
+            <EventToolbar event={row.event} />
+          </div>
 
-          <div className='grid grid-cols-4 gap-3 md:rounded-2xl border-b-2 border-[#1d2824]/10 bg-white/60 dark:bg-slate-400/4 p-3'>
-            <div>
+          <div className='grid grid-cols-3 gap-3 md:rounded-2xl border-b-2 border-[#1d2824]/10 bg-white/60 dark:bg-slate-400/4 p-3 border'>
+            <div className='flex flex-col items-center justify-center'>
               <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Start
               </p>
               <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.time}</p>
             </div>
-            <div>
+            <div className='flex flex-col items-center justify-center'>
               <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Entry fee
               </p>
               <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.feeLabel}</p>
             </div>
-            <div className=''>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
-                Slots
-              </p>
-              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.slotsLabel}</p>
-            </div>
-            <div className='flex items-center justify-end'>
+
+            <div className='flex flex-col items-center justify-center'>
               <Link
                 className={cn(buttonVariants({ size: 'sm' }), 'bg-foreground hover:bg-foreground/80 rounded-full')}
                 href={row.href ?? '#'}>
@@ -197,17 +197,6 @@ const EventRow = (row: EventRow) => {
               </Link>
             </div>
           </div>
-
-          {/*<div className='flex items-center justify-end'>
-            {row.href ? (
-              <Link className={cn(buttonVariants({ size: 'sm' }), 'gap-2 rounded-full px-4')} href={row.href}>
-                Open event
-                <Icon name='arrow-right' className='size-4' />
-              </Link>
-            ) : (
-              <span className='text-sm text-[#1d2824]/45'>Public route unavailable</span>
-            )}
-          </div>*/}
         </div>
       </article>
 
@@ -230,16 +219,14 @@ const EventRow = (row: EventRow) => {
             <Icon name='map-pin' className='size-3.5 opacity-80' />
             <span className='truncate'>{row.place}</span>
           </div>
-
-          {/*<p className='line-clamp-2 text-sm leading-6 text-[#1d2824]/65'>{row.summary}</p>*/}
         </div>
         <div className='px-4 space-y-2'>
           <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Entry fee</p>
           <p className='mt-1 font-medium text-[#1d2824]'>{row.feeLabel}</p>
         </div>
-        <div className='px-4 space-y-2'>
-          <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Slots</p>
-          <p className='mt-1 font-medium text-[#1d2824]'>{row.slotsLabel}</p>
+
+        <div className='flex items-center justify-end'>
+          <EventToolbar event={row.event} />
         </div>
 
         <div className='flex items-center justify-end min-w-36'>

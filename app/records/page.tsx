@@ -1,15 +1,9 @@
 import ProtectedLayout from '@/ctx/protected'
 import Link from 'next/link'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  LeaderboardCard,
-  MetricGrid,
-  leaderboardRows,
-  recordMetrics,
-  SectionTitle
-} from '@/components/protected/tournament-experience'
+import { SectionTitle } from '@/components/protected/tournament-experience'
 import { buttonVariants } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 
@@ -23,10 +17,10 @@ export default function RecordsPage() {
           description='The records page should feel like a scoreboard, not a spreadsheet.'
         />
 
-        <MetricGrid metrics={recordMetrics} />
+        {/*<MetricGrid metrics={recordMetrics} />*/}
 
         <div className='grid gap-6 lg:grid-cols-[1.05fr_0.95fr]'>
-          <LeaderboardCard rows={leaderboardRows} />
+          {/*<LeaderboardCard rows={leaderboardRows} />*/}
 
           <div className='space-y-4'>
             <Card className='border-border/70 bg-muted/20'>

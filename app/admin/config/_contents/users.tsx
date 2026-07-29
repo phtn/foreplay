@@ -23,8 +23,7 @@ export const UsersContent = async () => {
   return (
     <section className='rounded-lg border border-border/70 bg-card'>
       <div className='border-b border-border/70 p-4 sm:p-5'>
-        <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Users</p>
-        <h2 className='mt-1 font-poly font-medium text-xl'>All users</h2>
+        <h2 className='mt-1 font-poly font-medium text-lg'>All users</h2>
       </div>
 
       <Table>

@@ -138,15 +138,15 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
                   type='button'
                   variant='ghost'
                   size='icon-sm'
-                  className='relative rounded-full text-sky-600 hover:text-sky-500'
+                  className='relative rounded-full text-sky-600 hover:text-sky-500 flex items-center justify-center w-full'
                   aria-label={`${configured ? 'Edit' : 'Add'} support details for ${eventTitle}`}>
                   <Icon name='service' className='size-5' />
-                  {configured ? (
+                  {/*{configured ? (
                     <span
                       aria-hidden
                       className='absolute right-0.5 top-0.5 size-1.5 rounded-full bg-emerald-500 ring-2 ring-background'
                     />
-                  ) : null}
+                  ) : null}*/}
                 </Button>
               }
             />

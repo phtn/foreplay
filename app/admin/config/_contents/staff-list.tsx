@@ -1,4 +1,5 @@
 'use client'
+
 import { HyperList } from '@/components/list/hyperlist'
 import { Badge } from '@/components/reui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
@@ -6,61 +7,179 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
+import { useDeferredValue, useId, useMemo, useRef, useState } from 'react'
 import { grantAdminClaim, removeCustomClaim, setCustomClaim } from '../actions'
+import { filterStaffUsers, type UserWithClaims } from './staff-list-filter'
 
-type UserWithClaims = {
-  claims: Record<string, unknown>
-  user: Doc<'users'>
-}
 interface StaffListProps {
   data: UserWithClaims[] | undefined
 }
-function formatDate(value: number) {
-  return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  }).format(value)
+
+type StaffListEntry = UserWithClaims & {
+  id: string
 }
+
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeStyle: 'short'
+})
+
 export const StaffList = ({ data }: StaffListProps) => {
+  const searchId = useId()
+  const searchDescriptionId = `${searchId}-description`
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
+  const deferredQuery = useDeferredValue(query)
+  const filteredUsers = useMemo(() => filterStaffUsers(data, deferredQuery), [data, deferredQuery])
+  const listData = useMemo<StaffListEntry[]>(
+    () => filteredUsers.map((entry) => ({ ...entry, id: entry.user._id })),
+    [filteredUsers]
+  )
+  const listVersion = useMemo(
+    () => listData.map(({ claims, id }) => `${id}:${JSON.stringify(claims)}`).join('|'),
+    [listData]
+  )
+  const isSearching = deferredQuery.trim().length > 0
+  const resultLabel = isSearching
+    ? `${listData.length} ${listData.length === 1 ? 'user' : 'users'} found`
+    : `${listData.length} ${listData.length === 1 ? 'account has' : 'accounts have'} staff or admin access`
+
+  const clearSearch = () => {
+    setQuery('')
+    searchInputRef.current?.focus()
+  }
+
   return (
-    <div>
-      <HyperList data={data} container='mb-auto w-full' component={StaffListItem} />
-    </div>
+    <section aria-labelledby={`${searchId}-heading`} className='space-y-4'>
+      <div className='grid gap-3 px-2 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)] md:items-end'>
+        <div className='space-y-1'>
+          <h2 id={`${searchId}-heading`} className='font-poly text-lg font-medium'>
+            Staff
+          </h2>
+          {/*<p id={searchDescriptionId} className='text-sm text-muted-foreground'>
+            Search any account to grant or revoke claims.
+          </p>*/}
+        </div>
+
+        <div className='space-y-1.5'>
+          <label htmlFor={searchId} className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+            Search users
+          </label>
+          <div className='relative'>
+            <Icon
+              name='search'
+              aria-hidden='true'
+              className='pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground'
+            />
+            <Input
+              ref={searchInputRef}
+              id={searchId}
+              type='search'
+              inputMode='search'
+              autoComplete='off'
+              spellCheck={false}
+              maxLength={160}
+              value={query}
+              aria-describedby={searchDescriptionId}
+              placeholder='Name, email, phone, or user ID'
+              className='h-11 px-10'
+              onChange={(event) => setQuery(event.currentTarget.value)}
+            />
+            {query ? (
+              <Button
+                type='button'
+                size='icon-lg'
+                variant='ghost'
+                aria-label='Clear user search'
+                className='absolute inset-y-0 right-0 my-auto'
+                onClick={clearSearch}>
+                <Icon name='close' aria-hidden='true' className='size-4' />
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <p
+        className='px-2 font-ios text-xs uppercase tracking-widest text-muted-foreground'
+        role='status'
+        aria-live='polite'
+        aria-atomic='true'>
+        {resultLabel}
+      </p>
+
+      {listData.length ? (
+        <HyperList
+          key={listVersion}
+          data={listData}
+          keyId='id'
+          max={listData.length}
+          container='mb-auto w-full'
+          component={StaffListItem}
+        />
+      ) : (
+        <Card className='rounded-lg border-border/70'>
+          <CardContent className='flex min-h-48 flex-col items-center justify-center gap-3 px-6 text-center'>
+            <Icon
+              name={isSearching ? 'search' : 'person-multiple'}
+              aria-hidden='true'
+              className='size-8 text-muted-foreground'
+            />
+            <div className='space-y-1'>
+              <p className='font-okx text-base'>{isSearching ? 'No users found' : 'No staff or admins yet'}</p>
+              <p className='text-sm text-muted-foreground'>
+                {isSearching
+                  ? 'Try a name, email, phone number, or user ID.'
+                  : 'Search for a user to grant staff or admin access.'}
+              </p>
+            </div>
+            {isSearching ? (
+              <Button type='button' size='sm' variant='outline' onClick={clearSearch}>
+                Clear search
+              </Button>
+            ) : null}
+          </CardContent>
+        </Card>
+      )}
+    </section>
   )
 }
 
-const StaffListItem = ({ user, claims }: UserWithClaims) => (
-  <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none'>
-    <AccordionItem value={user._id} className='bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
-      <AccordionTrigger className='items-center px-1 py-4 hover:no-underline'>
-        <div className='flex items-center gap-2 md:gap-4'>
-          <Avatar className='size-8 border'>
-            <AvatarImage src={user.pictureUrl ?? undefined} alt={user.name ?? 'staff-name'} />
-            <AvatarFallback className='text-xs'>{user.name}</AvatarFallback>
-          </Avatar>
-          <div className='inline-flex items-center gap-3'>
-            <span className='font-okx font-medium text-foreground/80 text-lg'>{user.name}</span>
-            <div className='flex shrink-0 items-center gap-2 uppercase'>
-              <Badge variant={claims.admin === true ? 'info-light' : 'outline'} size='lg'>
-                {claims.admin === true ? 'Admin' : 'User'}
-              </Badge>
-              {claims.staff === true ? (
-                <Badge variant='info-light' size='lg'>
-                  Staff
+const StaffListItem = ({ user, claims }: StaffListEntry) => {
+  const displayName = user.name ?? user.preferredUsername ?? user.email ?? user.subject
+
+  return (
+    <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none'>
+      <AccordionItem value={user._id} className='bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
+        <AccordionTrigger className='items-center px-1 py-4 hover:no-underline'>
+          <div className='flex items-center gap-2 md:gap-4'>
+            <Avatar className='size-8 border'>
+              <AvatarImage src={user.pictureUrl ?? undefined} alt='' />
+              <AvatarFallback className='text-xs'>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div className='inline-flex items-center gap-3'>
+              <span className='font-okx font-medium text-foreground/80 text-lg'>{displayName}</span>
+              <div className='flex shrink-0 items-center gap-2 uppercase'>
+                <Badge variant={claims.admin === true ? 'info-light' : 'outline'} size='lg'>
+                  {claims.admin === true ? 'Admin' : 'User'}
                 </Badge>
-              ) : null}
+                {claims.staff === true ? (
+                  <Badge variant='info-light' size='lg'>
+                    Staff
+                  </Badge>
+                ) : null}
+              </div>
             </div>
           </div>
-        </div>
-      </AccordionTrigger>
-      <AccordionContent className='rounded-none bg-transparent md:pb-4 md:pl-11 md:pr-4'>
-        <UserClaimCard claims={claims} user={user} />
-      </AccordionContent>
-    </AccordionItem>
-  </Accordion>
-)
+        </AccordionTrigger>
+        <AccordionContent className='rounded-none bg-transparent md:pb-4 md:pl-11 md:pr-4'>
+          <UserClaimCard claims={claims} user={user} />
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  )
+}
 
 function UserClaimCard({ claims, user }: UserWithClaims) {
   const hasAdminClaim = claims.admin === true
@@ -127,7 +246,7 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
 
         <div className='grid md:gap-2 md:border-t border-border/70 md:pt-4 text-xs text-muted-foreground sm:grid-cols-2'>
           <p>Provider: {user.nickname ?? 'Unknown'}</p>
-          <p className='md:text-right'>Updated: {formatDate(user.updatedAt)}</p>
+          <p className='md:text-right'>Updated: {dateFormatter.format(user.updatedAt)}</p>
         </div>
       </CardContent>
     </Card>

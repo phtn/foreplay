@@ -7,7 +7,6 @@ import { formatEventDate } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { EventToolbar } from './event-toolbar'
 import { PlayersDataTable, type EventSubscriptionTableRow } from './players-data-table'
 
 interface EventPageProps {
@@ -81,7 +80,6 @@ export default async function EventPage({ params }: EventPageProps) {
         <div className='w-full flex items-center justify-center h-16 overflow-hidden'>
           <div className='space-y-0.5 flex flex-col items-center'>
             <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
-            <EventToolbar event={event} />
           </div>
         </div>
         <div>

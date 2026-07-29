@@ -1,12 +1,11 @@
-import Link from 'next/link'
-import type { ReactNode } from 'react'
-
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Icon, type IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import Link from 'next/link'
+import { Activity, type ReactNode } from 'react'
 
 export type TournamentSpotlight = {
   id: string
@@ -170,102 +169,7 @@ export const featuredTournament: TournamentSpotlight = {
 
 export const seoulOfManilaTournament = featuredTournament
 
-export const batangasSpringClassic: TournamentSpotlight = {
-  id: 'tour-01',
-  title: 'Batangas Spring Classic',
-  venue: 'Mt Malarayat Golf & Country Club',
-  dateLabel: 'August 8, 2026',
-  feeLabel: '₱2,500 entry',
-  slotsLabel: '120 players',
-  formatLabel: '36-hole stroke play',
-  statusLabel: 'Entry open',
-  description:
-    'A polished tournament experience for serious amateurs and club players who want a premium field, well-run logistics, and a clean path to pay, confirm, and play.',
-  divisions: ['Championship', 'Amateur', 'Ladies', 'Senior'],
-  teeTimeAt: '2026-08-08T05:30:00+08:00',
-  teeTimeLabel: 'August 8, 2026 at 5:30 AM',
-  prizes: ['Champion trophy', 'Best net prize', 'Closest-to-the-pin awards'],
-  events: [
-    { label: 'Registration opens', detail: '5:00 AM' },
-    { label: 'Breakfast and bag drop', detail: '5:15 AM' },
-    { label: 'Shotgun start', detail: '5:30 AM' },
-    { label: 'Scoring closes', detail: '11:15 AM' },
-    { label: 'Awards brunch', detail: '12:00 PM' }
-  ],
-  specialGuests: ['Guest starter: Liza Cruz', 'Sponsor rep: Niko Tan', 'Rules officer: Jose Mercado']
-}
-
-export const tournamentList: TournamentSpotlight[] = [
-  featuredTournament,
-  batangasSpringClassic,
-  {
-    id: 'tour-02',
-    title: 'Coastal Classic Open',
-    venue: 'Southlinks Golf Club',
-    dateLabel: 'September 5, 2026',
-    feeLabel: '₱1,800 entry',
-    slotsLabel: '96 players',
-    formatLabel: 'Stableford qualifier',
-    statusLabel: 'Selling fast',
-    description: 'Fast-moving weekend field with a lighter format and a strong sponsor prize table.',
-    divisions: ['Open', 'Amateur', 'Net'],
-    teeTimeAt: '2026-09-05T06:00:00+08:00',
-    teeTimeLabel: 'September 5, 2026 at 6:00 AM',
-    prizes: ['Top gross prize', 'Net podium', 'Sponsor raffle pack'],
-    events: [
-      { label: 'Check-in', detail: '4:45 AM' },
-      { label: 'First tee', detail: '6:00 AM' },
-      { label: 'Live scoring update', detail: 'Every 3 holes' },
-      { label: 'Award ceremony', detail: 'After final card' }
-    ],
-    specialGuests: ['Host: Clara Delos Santos', 'Sponsor lead: Miguel Tan']
-  },
-  {
-    id: 'tour-03',
-    title: 'Mid-Summer Championship',
-    venue: 'The Orchard Golf & Country Club',
-    dateLabel: 'October 10, 2026',
-    feeLabel: '₱3,500 entry',
-    slotsLabel: '144 players',
-    formatLabel: 'Two-day championship',
-    statusLabel: 'Premium field',
-    description: 'Built for players chasing a bigger purse, tighter tee sheets, and a more competitive bracket.',
-    divisions: ['Championship', 'Ladies', 'Senior'],
-    teeTimeAt: '2026-10-10T05:45:00+08:00',
-    teeTimeLabel: 'October 10, 2026 at 5:45 AM',
-    prizes: ['Overall champion', 'Low amateur', 'Division podium'],
-    events: [
-      { label: 'Pro-am mixer', detail: 'Night before' },
-      { label: 'Round one tee off', detail: '5:45 AM shotgun' },
-      { label: 'Cut line posted', detail: 'After round one' },
-      { label: 'Final round', detail: 'Next day' }
-    ],
-    specialGuests: ['Tournament chair: Paolo Reyes', 'Sponsor rep: Anne Lim']
-  },
-  {
-    id: 'tour-04',
-    title: 'Sunset Links Invitational',
-    venue: 'Splendido Taal Country Club',
-    dateLabel: 'November 14, 2026',
-    feeLabel: '₱2,000 entry',
-    slotsLabel: '84 players',
-    formatLabel: '18-hole match play',
-    statusLabel: 'New listing',
-    description:
-      'A compact invitational built around match play brackets, tighter fields, and a premium twilight finish.',
-    divisions: ['Open', 'Senior'],
-    teeTimeAt: '2026-11-14T13:30:00+08:00',
-    teeTimeLabel: 'November 14, 2026 at 1:30 PM',
-    prizes: ['Bracket champion', 'Runner-up prize', 'Putting contest award'],
-    events: [
-      { label: 'Lobby check-in', detail: '12:30 PM' },
-      { label: 'Bracket reveal', detail: '1:00 PM' },
-      { label: 'Match play start', detail: '1:30 PM' },
-      { label: 'Sunset awards', detail: '5:45 PM' }
-    ],
-    specialGuests: ['Starter: Nina Bautista', 'Sponsor host: Carlo Dizon']
-  }
-]
+export const tournamentList: TournamentSpotlight[] = [featuredTournament]
 
 export const protectedEntries: ProtectedEntry[] = [
   {
@@ -277,60 +181,7 @@ export const protectedEntries: ProtectedEntry[] = [
     step: 'Confirm your sponsor flight or player access with the secretariat.',
     feeLabel: '₱20,000+',
     division: 'Corporate'
-  },
-  {
-    id: 'entry-002',
-    tournament: 'Batangas Spring Classic',
-    venue: 'Mt Malarayat Golf & Country Club',
-    dateLabel: 'August 8, 2026',
-    status: 'Confirmed',
-    step: 'Pairings will arrive 24 hours before tee off.',
-    feeLabel: '₱2,500',
-    division: 'Amateur'
-  },
-  {
-    id: 'entry-003',
-    tournament: 'Coastal Classic Open',
-    venue: 'Southlinks Golf Club',
-    dateLabel: 'September 5, 2026',
-    status: 'Needs verification',
-    step: 'Your receipt is waiting for manual review.',
-    feeLabel: '₱1,800',
-    division: 'Open'
-  },
-  {
-    id: 'entry-004',
-    tournament: 'Mid-Summer Championship',
-    venue: 'The Orchard Golf & Country Club',
-    dateLabel: 'October 10, 2026',
-    status: 'Confirmed',
-    step: 'Pairings and cart assignments arrive the day before.',
-    feeLabel: '₱3,500',
-    division: 'Championship'
   }
-]
-
-export const leaderboardRows: LeaderboardRow[] = [
-  { rank: 1, name: 'M. Reyes', club: 'Alabang Country Club', score: '-6', note: 'Birdie run on the back nine' },
-  { rank: 2, name: 'A. Santos', club: 'The Orchard', score: '-4', note: 'Best driving accuracy in field' },
-  { rank: 3, name: 'J. Lim', club: 'Southlinks', score: '-3', note: 'Clean weekend with zero doubles' },
-  { rank: 4, name: 'P. Dela Cruz', club: 'Mt Malarayat', score: '-2', note: 'Best short-game save rate' },
-  { rank: 5, name: 'R. Navarro', club: 'Manila Southwoods', score: '-1', note: 'Steady scoring under pressure' },
-  { rank: 6, name: 'K. Dizon', club: 'Splendido Taal', score: 'E', note: 'Late surge on the closing stretch' }
-]
-
-export const homeMetrics = [
-  { label: 'Ready', value: '132', icon: 'golf-flag' as const },
-  // { label: 'Average fill rate', value: '86%', icon: 'trophy' as const },
-  { label: 'Max', value: '200', icon: 'golf-tee' as IconName },
-  { label: 'Purse', value: '₱120K', icon: 'coins' as IconName }
-]
-
-export const recordMetrics = [
-  { label: 'Best round', value: '-8', note: 'J. Lim at Southlinks' },
-  { label: 'Average score', value: '+2.4', note: 'Across 18 holes' },
-  { label: 'Fairways hit', value: '71%', note: 'Field average this month' },
-  { label: 'Birdie streak', value: '6', note: 'Held by M. Reyes' }
 ]
 
 export function findTournament(id: string): TournamentSpotlight {
@@ -377,6 +228,8 @@ interface TournamentHeroProps {
   events?: Array<{ label: string; detail: string }>
   specialGuests?: Array<string>
   darkButton?: boolean
+  updateLabel?: string
+  updateHref?: string
 }
 
 export function TournamentHero({
@@ -391,7 +244,9 @@ export function TournamentHero({
   metrics,
   primaryAction,
   teeTimeLabel,
-  darkButton = false
+  darkButton = false,
+  updateLabel,
+  updateHref
 }: TournamentHeroProps) {
   return (
     <div>
@@ -436,6 +291,19 @@ export function TournamentHero({
               </div>
             </div>
             <div className='hidden md:flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
+              <Activity mode={updateLabel && updateHref !== undefined ? 'visible' : 'hidden'}>
+                <Link
+                  id='update-and-resume'
+                  className={cn(
+                    buttonVariants({ size: '2xl' }),
+                    'w-full hover:bg-foreground/80 backdrop-blur-3xl text-orange-200 px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
+                    { 'bg-foreground/80 dark:bg-background/80': darkButton }
+                  )}
+                  href={updateHref ?? '#'}>
+                  <span>{updateLabel}</span>
+                  <Icon name='chevron-right' className='size-4.5' />
+                </Link>
+              </Activity>
               {primaryAction ?? (
                 <Link
                   className={cn(
@@ -486,6 +354,19 @@ export function TournamentHero({
         </CardContent>
       </Card>
       <div className='md:hidden flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto mt-4'>
+        <Activity mode={updateLabel && updateHref !== undefined ? 'visible' : 'hidden'}>
+          <Link
+            id='update-and-resume'
+            className={cn(
+              buttonVariants({ size: '2xl' }),
+              'w-full hover:bg-foreground/80 backdrop-blur-3xl text-orange-200 px-8 text-sm font-poly font-medium sm:w-auto flex items-center h-18',
+              { 'bg-foreground/80 dark:bg-background/80': darkButton }
+            )}
+            href={updateHref ?? '#'}>
+            <span>{updateLabel}</span>
+            <Icon name='chevron-right' className='size-4.5' />
+          </Link>
+        </Activity>
         {primaryAction ?? (
           <Link
             className={cn(
