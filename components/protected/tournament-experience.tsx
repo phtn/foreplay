@@ -502,7 +502,7 @@ export function TournamentHero({
           <Link
             className={cn(
               buttonVariants({ variant: 'secondary', size: '2xl' }),
-              'w-full font-poly sm:w-auto bg-foreground/5 hover:bg-white hover:text-slate-900 h-18'
+              'w-full font-poly sm:w-auto bg-foreground/5 dark:bg-slate-700/5 hover:bg-white hover:text-slate-900 h-18'
             )}
             href={secondaryHref}>
             <Icon name='service' className='size-8' />

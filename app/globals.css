@@ -175,7 +175,7 @@
   --sidebar-ring: oklch(0.556 0 0);
   --destructive-foreground: var(--color-red-600);
   --success: var(--color-emerald-500);
-  --success-foreground: var(--color-emerald-600);
+  --success-foreground: var(--color-emerald-300);
   --info: var(--color-violet-500);
   --info-foreground: var(--color-violet-600);
   --warning: var(--color-yellow-500);
@@ -198,6 +198,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
+
   *::-webkit-scrollbar {
     display: none;
   }

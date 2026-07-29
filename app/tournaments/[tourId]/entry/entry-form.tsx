@@ -9,6 +9,8 @@ import { isSubscriptionEntryLocked } from '@/convex/subscriptions/policy'
 import { useImageConverter } from '@/hooks/use-image-converter'
 import { Icon } from '@/lib/icons'
 import { createPngFilename, downloadElementAsPng } from '@/lib/tickets/download-ticket-png'
+import { cn } from '@/lib/utils'
+import { revalidateLogic } from '@tanstack/react-form'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
@@ -19,17 +21,23 @@ import {
   submitAdminOverrideReceipt,
   updateTournamentSubscriptionReceipt
 } from './actions'
+import { type EntryPricingOption, validateEntryFormValues } from './entry-logic'
 
 const entryControlClassName =
-  'h-12 bg-input/40 hover:bg-input/40 focus-visible:bg-input/30 border-border/40 pr-3 py-1 font-ios text-foreground/80 text-sm shadow-none dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20 dark:border-white/20'
+  'h-12 border-border/40 bg-input/40 py-1 pe-3 font-ios text-base text-foreground/80 shadow-none hover:bg-input/40 focus-visible:bg-input/30 sm:text-sm dark:border-white/20 dark:bg-input/20 dark:hover:bg-input/20 dark:focus-visible:bg-input/20'
 
 const mobileViewportQuery = '(max-width: 767px)'
 const reducedMotionQuery = '(prefers-reduced-motion: reduce)'
+const receiptHintId = 'payment-receipt-hint'
+const receiptErrorId = 'payment-receipt-error'
+const paymentToolsErrorId = 'payment-tools-error'
 
-type DivisionOption = {
-  label: string
-  value: string
-}
+const currencyFormatter = new Intl.NumberFormat('en-PH', {
+  currency: 'PHP',
+  currencyDisplay: 'code',
+  maximumFractionDigits: 0,
+  style: 'currency'
+})
 
 type Subscription = Doc<'subscriptions'>
 
@@ -40,11 +48,13 @@ type PaymentMethod = {
   qrCodeContent: string | null
 }
 
-const formatPaymentAccountDetails = (paymentMethod: PaymentMethod) =>
+const formatPaymentDetails = (paymentMethod: PaymentMethod, amount: number, reference: string) =>
   [
-    `Bank: ${paymentMethod.bankOrEwallet}`,
+    `Payment Service: ${paymentMethod.bankOrEwallet}`,
     `Account Name: ${paymentMethod.accountName}`,
-    `Account Number: ${paymentMethod.accountNumber}`
+    `Account Number: ${paymentMethod.accountNumber}`,
+    `Amount: ${currencyFormatter.format(amount)}`,
+    `Reference: ${reference}`
   ].join('\n')
 
 interface NewEntryFormProps {
@@ -59,7 +69,8 @@ interface NewEntryFormProps {
   isAdmin: boolean
   initialSubscription: Subscription | null
   paymentMethod: PaymentMethod | null
-  divisionOptions: DivisionOption[]
+  divisionOptions: EntryPricingOption[]
+  divisionLabel: string
   onPlayersChange: (nextPlayers: number) => void
   onDivisionChange: (nextDivision: string) => void
 }
@@ -76,13 +87,16 @@ export const NewEntryForm = ({
   isAdmin,
   initialSubscription,
   paymentMethod,
-  onPlayersChange
+  divisionOptions,
+  divisionLabel,
+  onPlayersChange,
+  onDivisionChange
 }: NewEntryFormProps) => {
   const initiallyLocked = isSubscriptionEntryLocked(initialSubscription)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(() =>
     initialSubscription && !initiallyLocked
-      ? 'Entry request saved. You can update it until proof of payment is submitted.'
+      ? 'Entry saved. You can make changes until you submit your receipt.'
       : null
   )
   const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(initialSubscription?._id ?? null)
@@ -91,9 +105,12 @@ export const NewEntryForm = ({
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null)
   const receiptPreviewUrlRef = useRef<string | null>(null)
-  const paymentSectionRef = useRef<HTMLDivElement | null>(null)
+  const formElementRef = useRef<HTMLFormElement | null>(null)
+  const paymentSectionRef = useRef<HTMLElement | null>(null)
   const paymentQrExportRef = useRef<HTMLDivElement | null>(null)
   const paymentQrExportLockRef = useRef(false)
+  const receiptInputRef = useRef<HTMLInputElement | null>(null)
+  const copiedStatusTimeoutRef = useRef<number | null>(null)
   const [receiptErrorMessage, setReceiptErrorMessage] = useState<string | null>(null)
   const [receiptSuccessMessage, setReceiptSuccessMessage] = useState<string | null>(() =>
     initiallyLocked
@@ -103,7 +120,9 @@ export const NewEntryForm = ({
       : null
   )
   const [isSubmittingReceipt, setIsSubmittingReceipt] = useState(false)
-  const [accountDetailsCopied, setAccountDetailsCopied] = useState(false)
+  const [isDownloadingQr, setIsDownloadingQr] = useState(false)
+  const [paymentDetailsCopied, setPaymentDetailsCopied] = useState(false)
+  const [paymentToolsErrorMessage, setPaymentToolsErrorMessage] = useState<string | null>(null)
   const { convert, terminate } = useImageConverter()
   const [entryQuery, setEntryQuery] = useQueryStates(
     {
@@ -132,6 +151,10 @@ export const NewEntryForm = ({
         URL.revokeObjectURL(receiptPreviewUrlRef.current)
       }
 
+      if (copiedStatusTimeoutRef.current !== null) {
+        window.clearTimeout(copiedStatusTimeoutRef.current)
+      }
+
       terminate()
     }
   }, [terminate])
@@ -150,6 +173,7 @@ export const NewEntryForm = ({
   }, [])
 
   const form = useAppForm({
+    validationLogic: revalidateLogic({ mode: 'submit', modeAfterSubmission: 'change' }),
     defaultValues: {
       fullName: initiallyLocked
         ? (initialSubscription?.team_name ?? initialFullName)
@@ -171,6 +195,14 @@ export const NewEntryForm = ({
       handicapIndex: initiallyLocked
         ? (initialSubscription?.handicap_index ?? '')
         : (entryQuery.handicapIndex ?? initialSubscription?.handicap_index ?? '')
+    },
+    validators: {
+      onDynamic: ({ value }) => validateEntryFormValues(value)
+    },
+    onSubmitInvalid: () => {
+      window.requestAnimationFrame(() => {
+        formElementRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()
+      })
     },
     onSubmit: async ({ value }) => {
       setErrorMessage(null)
@@ -198,8 +230,8 @@ export const NewEntryForm = ({
         setSubscriptionId(result.value.subscriptionId)
         setSuccessMessage(
           wasSaved
-            ? 'Entry changes saved. You can continue editing until proof of payment is submitted.'
-            : 'Entry request saved. You can update it until proof of payment is submitted.'
+            ? 'Changes saved. You can keep editing until you submit your receipt.'
+            : 'Entry saved. You can make changes until you submit your receipt.'
         )
         scrollToPaymentSectionOnMobile()
       } catch {
@@ -212,29 +244,45 @@ export const NewEntryForm = ({
   const isDraftBusy = isSubmitting || isSubmittingReceipt
   const paymentQRCodeContent = paymentMethod?.qrCodeContent ?? null
   const paymentDownloadQrSvg = useMemo(() => createPaymentQRCodeSvg(paymentQRCodeContent), [paymentQRCodeContent])
-  const paymentAccountDetails = paymentMethod ? formatPaymentAccountDetails(paymentMethod) : null
-  const hasActivePaymentDestination = Boolean(paymentMethod && paymentQRCodeContent)
-  const copyAccountDetails = useCallback(async () => {
-    if (!navigator.clipboard || !paymentAccountDetails) {
+  const paymentDetails = paymentMethod ? formatPaymentDetails(paymentMethod, totalAmount, formId) : null
+  const hasPaymentDestination = Boolean(paymentMethod)
+  const copyPaymentDetails = useCallback(async () => {
+    setPaymentToolsErrorMessage(null)
+
+    if (!navigator.clipboard) {
+      setPaymentToolsErrorMessage('Copying is unavailable in this browser. Select the payment details instead.')
+      return
+    }
+
+    if (!paymentDetails) {
+      setPaymentToolsErrorMessage('Payment details are unavailable. Contact the tournament organizer.')
       return
     }
 
     try {
-      await navigator.clipboard.writeText(paymentAccountDetails)
-      setAccountDetailsCopied(true)
-      window.setTimeout(() => {
-        setAccountDetailsCopied(false)
+      await navigator.clipboard.writeText(paymentDetails)
+      setPaymentDetailsCopied(true)
+
+      if (copiedStatusTimeoutRef.current !== null) {
+        window.clearTimeout(copiedStatusTimeoutRef.current)
+      }
+
+      copiedStatusTimeoutRef.current = window.setTimeout(() => {
+        setPaymentDetailsCopied(false)
+        copiedStatusTimeoutRef.current = null
       }, 1600)
     } catch {
-      setErrorMessage('Unable to copy the payment account details.')
+      setPaymentToolsErrorMessage('Unable to copy the payment details. Select them and copy manually.')
     }
-  }, [paymentAccountDetails])
+  }, [paymentDetails])
   const downloadPaymentQR = useCallback(async () => {
     if (!paymentMethod || !paymentDownloadQrSvg || !paymentQrExportRef.current || paymentQrExportLockRef.current) {
       return
     }
 
     paymentQrExportLockRef.current = true
+    setPaymentToolsErrorMessage(null)
+    setIsDownloadingQr(true)
 
     try {
       await downloadElementAsPng(
@@ -246,18 +294,31 @@ export const NewEntryForm = ({
       )
     } catch (error) {
       console.error('Unable to export the payment QR code.', error)
-      setErrorMessage('Unable to download the payment QR code.')
+      setPaymentToolsErrorMessage('Unable to download the payment QR code. Try again.')
     } finally {
       paymentQrExportLockRef.current = false
+      setIsDownloadingQr(false)
     }
   }, [formId, paymentDownloadQrSvg, paymentMethod])
   const submitReceipt = useCallback(async () => {
-    if ((!receiptFile && !isAdmin) || !subscriptionId || isEntryLocked) {
+    if (!subscriptionId || isEntryLocked) {
       return
     }
 
     setReceiptErrorMessage(null)
     setReceiptSuccessMessage(null)
+
+    if (!isAdmin && !hasPaymentDestination) {
+      setReceiptErrorMessage('Payment details are unavailable. Contact the tournament organizer.')
+      return
+    }
+
+    if (!receiptFile && !isAdmin) {
+      setReceiptErrorMessage('Choose a receipt file before submitting.')
+      window.requestAnimationFrame(() => receiptInputRef.current?.focus())
+      return
+    }
+
     setIsSubmittingReceipt(true)
 
     try {
@@ -270,7 +331,7 @@ export const NewEntryForm = ({
 
         setDidSubmitReceipt(true)
         setSuccessMessage(null)
-        setReceiptSuccessMessage('Admin override submitted. Payment is pending review.')
+        setReceiptSuccessMessage('Submitted without a receipt. Payment is pending review.')
         return
       }
 
@@ -320,319 +381,484 @@ export const NewEntryForm = ({
     } finally {
       setIsSubmittingReceipt(false)
     }
-  }, [convert, formId, isAdmin, isEntryLocked, receiptFile, subscriptionId])
+  }, [convert, formId, hasPaymentDestination, isAdmin, isEntryLocked, receiptFile, subscriptionId])
 
   const router = useRouter()
+  const canChooseReceipt = !isEntryLocked && !isDraftBusy && (isAdmin || hasPaymentDestination)
+  const receiptActionUnavailable = !isEntryLocked && !isAdmin && !hasPaymentDestination
 
   return (
     <form.AppForm>
       <form
+        ref={formElementRef}
         aria-busy={isDraftBusy}
+        noValidate
         onSubmit={(event) => {
           event.preventDefault()
           void form.handleSubmit()
         }}>
-        <div className='grid md:grid-cols-3'>
-          <div className='md:p-8 p-4 md:border-r border-slate-400 dark:border-slate-900'>
-            <form.AppField name='fullName'>
-              {({ TextField }) => (
-                <TextField
-                  id='name'
-                  type='text'
-                  label={`Player's Name`}
-                  icon={'user'}
-                  placeholder='First and Last name'
-                  autoComplete='name'
-                  containerClassName='mb-4'
-                  className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
-                  onChange={(event) => {
-                    void setEntryQuery({ teamName: event.currentTarget.value || null })
-                  }}></TextField>
-              )}
-            </form.AppField>
-            <form.AppField name='playerCount'>
-              {({ TextField }) => (
-                <TextField
-                  id='book-players'
-                  label='Number of Players'
-                  type='number'
-                  icon='person-multiple'
-                  min='1'
-                  max='20'
-                  required
-                  containerClassName='mb-4'
-                  className={entryControlClassName}
-                  disabled
-                  onChange={(event) => {
-                    const nextPlayers = Number.parseInt(event.currentTarget.value, 10)
-                    const playerCount = Number.isNaN(nextPlayers) ? players : nextPlayers
-                    onPlayersChange(playerCount)
-                  }}></TextField>
-              )}
-            </form.AppField>
+        <div className='grid lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]'>
+          <div className='grid gap-8 p-4 sm:grid-cols-2 md:p-8'>
+            <p className='text-xs text-muted-foreground sm:col-span-2'>
+              <span aria-hidden='true' className='text-destructive'>
+                *
+              </span>{' '}
+              Required field
+            </p>
+
+            <fieldset className='space-y-4'>
+              <legend className='mb-4 font-poly text-base font-medium text-foreground'>Entry details</legend>
+              <form.AppField name='fullName'>
+                {({ TextField }) => (
+                  <TextField
+                    id='entry-name'
+                    type='text'
+                    label='Player or team name'
+                    icon='user'
+                    placeholder='Juan dela Cruz or Fairway Four'
+                    autoComplete='name'
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      void setEntryQuery({ teamName: event.currentTarget.value || null })
+                    }}
+                  />
+                )}
+              </form.AppField>
+
+              <form.AppField name='playerCount'>
+                {({ TextField }) => (
+                  <TextField
+                    id='entry-players'
+                    label='Number of players'
+                    type='number'
+                    icon='person-multiple'
+                    min='1'
+                    max='20'
+                    inputMode='numeric'
+                    required
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      const nextPlayers = Number(event.currentTarget.value)
+                      if (Number.isInteger(nextPlayers) && nextPlayers >= 1 && nextPlayers <= 20) {
+                        onPlayersChange(nextPlayers)
+                      }
+                    }}
+                  />
+                )}
+              </form.AppField>
+
+              <form.AppField name='division'>
+                {({ SelectField }) => (
+                  <SelectField
+                    id='entry-division'
+                    label={divisionLabel}
+                    options={divisionOptions}
+                    required
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      onDivisionChange(event.currentTarget.value)
+                    }}
+                  />
+                )}
+              </form.AppField>
+
+              <form.AppField name='handicapIndex'>
+                {({ TextField }) => (
+                  <TextField
+                    id='entry-handicap'
+                    type='text'
+                    inputMode='decimal'
+                    label='Handicap index (optional)'
+                    icon='golf-tee'
+                    placeholder='e.g. 12.4'
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      void setEntryQuery({ handicapIndex: event.currentTarget.value || null })
+                    }}
+                  />
+                )}
+              </form.AppField>
+            </fieldset>
+
+            <fieldset className='space-y-4'>
+              <legend className='mb-4 font-poly text-base font-medium text-foreground'>Contact details</legend>
+              <form.AppField name='email'>
+                {({ TextField }) => (
+                  <TextField
+                    id='entry-email'
+                    label='Email'
+                    icon='mail'
+                    type='email'
+                    placeholder='name@example.com'
+                    autoComplete='email'
+                    spellCheck={false}
+                    required
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      void setEntryQuery({ email: event.currentTarget.value || null })
+                    }}
+                  />
+                )}
+              </form.AppField>
+
+              <form.AppField name='phone'>
+                {({ TextField }) => (
+                  <TextField
+                    id='entry-phone'
+                    type='tel'
+                    label='Phone'
+                    icon='phone-accept'
+                    placeholder='+63 917 123 4567'
+                    autoComplete='tel'
+                    required
+                    containerClassName='mb-0'
+                    className={entryControlClassName}
+                    disabled={isDraftBusy || isEntryLocked}
+                    onChange={(event) => {
+                      void setEntryQuery({ phone: event.currentTarget.value || null })
+                    }}
+                  />
+                )}
+              </form.AppField>
+            </fieldset>
           </div>
 
-          <div className='md:border-r border-slate-400 dark:border-slate-900 p-4 md:p-8'>
-            <form.AppField name='email'>
-              {({ TextField }) => (
-                <TextField
-                  id='book-email'
-                  label='Email'
-                  icon='mail'
-                  type='email'
-                  placeholder='everything@awesome.com'
-                  autoComplete='email'
-                  required
-                  containerClassName='mb-4'
-                  className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
-                  onChange={(event) => {
-                    void setEntryQuery({ email: event.currentTarget.value || null })
-                  }}></TextField>
-              )}
-            </form.AppField>
-            <form.AppField name='phone'>
-              {({ TextField }) => (
-                <TextField
-                  id='book-phone'
-                  type='tel'
-                  label='Phone'
-                  icon='phone-accept'
-                  placeholder='+63'
-                  autoComplete='tel'
-                  required
-                  containerClassName='mb-0'
-                  className={entryControlClassName}
-                  disabled={isDraftBusy || isEntryLocked}
-                  onChange={(event) => {
-                    void setEntryQuery({ phone: event.currentTarget.value || null })
-                  }}
-                />
-              )}
-            </form.AppField>
-          </div>
-          <div className='h-full flex flex-col md:pt-4 gap-4 md:gap-4 text-center md:justify-center bg-sky-500/0'>
-            <div className='px-5 space-y-4'>
-              <p className='font-okx text-foreground/80 text-xs px-4 md:text-base text-balance text-center'>
-                By continuing, you reserve a request for <span className='px-2 font-medium uppercase'>{tourId}</span>.
-                Confirmation follows payment review.
+          <section
+            aria-labelledby='entry-submit-title'
+            className='flex min-h-64 flex-col justify-center gap-5 bg-muted/25 p-6 text-center md:p-8'>
+            <div className='space-y-2'>
+              <h2 id='entry-submit-title' className='font-poly text-lg font-medium text-foreground'>
+                {isSaved ? 'Review your entry' : 'Submit your entry'}
+              </h2>
+              <p id='entry-submit-help' className='text-pretty text-sm leading-normal text-muted-foreground'>
+                {isSaved
+                  ? 'You can edit these details until you submit your receipt.'
+                  : `Submit your entry request for ${tourId}. Your spot is confirmed after payment review.`}
               </p>
-              {errorMessage ? (
-                <p role='alert' className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
-                  {errorMessage}
-                </p>
-              ) : null}
+            </div>
+
+            {errorMessage ? (
+              <p role='alert' className='rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                {errorMessage}
+              </p>
+            ) : null}
+
+            <div
+              role='status'
+              aria-live='polite'
+              aria-atomic='true'
+              className={cn(
+                successMessage
+                  ? 'flex items-start justify-center gap-2 rounded-lg bg-success/10 px-4 py-3 text-sm leading-normal text-success-foreground'
+                  : 'sr-only'
+              )}>
               {successMessage ? (
-                <div
-                  role='status'
-                  className='flex items-center justify-center gap-2 rounded-md bg-emerald-500/5 px-4 py-2 text-sm text-emerald-700'>
-                  <span className='line-clamp-2 text-balance'>{successMessage}</span>
-                  <Icon name='check' className='size-3' />
-                </div>
+                <>
+                  <Icon name='check' className='mt-0.5 size-4 shrink-0' />
+                  <span className='text-pretty'>{successMessage}</span>
+                </>
               ) : null}
             </div>
-            <div className='flex items-center justify-center w-full px-8 mb-8 md:mb-0'>
+
+            {isEntryLocked ? (
+              <div className='flex min-h-12 items-center justify-center gap-2 rounded-lg bg-muted px-4 py-3 text-sm text-muted-foreground'>
+                <Icon name='check' className='size-4' />
+                <span>Entry details locked</span>
+              </div>
+            ) : (
               <Button
                 size='xl'
                 type='submit'
                 id='entry-info-submit'
-                variant='default'
-                className='w-full bg-slate-900 hover:bg-foreground/80 dark:bg-background text-white/80 md:min-w-64'
-                disabled={isDraftBusy || isEntryLocked}>
+                variant={isSaved ? 'outline' : 'default'}
+                className='w-full font-poly'
+                aria-describedby='entry-submit-help'
+                aria-busy={isSubmitting}
+                disabled={isDraftBusy}>
                 {isSubmitting ? <Icon name='spinner-ring' className='size-4' /> : null}
-                <span className='px-2 font-poly capitalize'>
-                  {isEntryLocked ? 'Entry Locked' : isSaved ? 'Save Changes' : 'Submit Entry'}
-                </span>
-                {isEntryLocked ? <Icon name='check' className='size-4' /> : null}
+                <span>{isSaved ? 'Save changes' : 'Submit entry'}</span>
               </Button>
-            </div>
-          </div>
+            )}
+          </section>
         </div>
 
-        {/* PAYMENTS */}
         <Activity mode={isSaved ? 'visible' : 'hidden'}>
-          <div
+          <section
             ref={paymentSectionRef}
             id='pay-with-qr-section'
-            className='grid min-h-80 scroll-mt-16 border-t border-slate-400 dark:border-slate-900 md:grid-cols-3'>
-            <div className='flex flex-col justify-between gap-6 border-b border-slate-400 p-6 dark:border-slate-900 md:border-b-0 md:border-r'>
-              <div className='space-y-6'>
-                <div className='flex items-center gap-4'>
-                  <div className='flex size-9 items-center justify-center rounded-lg bg-emerald-100/10 dark:text-emerald-100'>
-                    <Icon name='bank-transfer-in' className='size-6' />
+            aria-labelledby='payment-section-title'
+            className='scroll-mt-16 border-t border-border/60'>
+            <header className='space-y-1 border-b border-border/60 px-6 py-5 md:px-8'>
+              <h2 id='payment-section-title' className='font-poly text-lg font-medium text-foreground'>
+                Payment
+              </h2>
+              <p className='text-sm leading-normal text-muted-foreground'>
+                Transfer the amount due, then upload your proof of payment.
+              </p>
+            </header>
+
+            <div className='grid min-h-80 md:grid-cols-3'>
+              <section
+                aria-labelledby='payment-details-title'
+                className='flex flex-col justify-between gap-6 border-b border-border/60 p-6 md:border-e md:border-b-0'>
+                <div className='space-y-6'>
+                  <div className='flex items-center gap-3'>
+                    <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success-foreground'>
+                      <Icon name='bank-transfer-in' className='size-5' />
+                    </div>
+                    <h3 id='payment-details-title' className='font-poly text-base font-medium text-foreground'>
+                      Transfer details
+                    </h3>
                   </div>
-                  <div>
-                    <p className='font-okx text-lg text-foreground'>Pay with QR</p>
+
+                  <div className='rounded-lg bg-muted/50 p-4'>
+                    <p className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Amount due</p>
+                    <p className='mt-1 font-poly text-2xl font-semibold text-foreground tabular-nums'>
+                      {currencyFormatter.format(totalAmount)}
+                    </p>
                   </div>
+
+                  <dl className='space-y-4 text-sm'>
+                    <div className='space-y-1'>
+                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Reference</dt>
+                      <dd className='font-medium text-foreground break-all'>{formId}</dd>
+                    </div>
+                    <div className='space-y-1'>
+                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
+                        Payment service
+                      </dt>
+                      <dd className='text-foreground'>{paymentMethod?.bankOrEwallet ?? 'Unavailable'}</dd>
+                    </div>
+                    <div className='space-y-1'>
+                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Account name</dt>
+                      <dd className='text-foreground'>{paymentMethod?.accountName ?? 'Unavailable'}</dd>
+                    </div>
+                    <div className='space-y-1'>
+                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
+                        Account number
+                      </dt>
+                      <dd className='text-foreground break-all'>{paymentMethod?.accountNumber ?? 'Unavailable'}</dd>
+                    </div>
+                  </dl>
                 </div>
-                <div className='md:flex justify-start space-y-6 md:space-x-0 md:flex-col text-left'>
-                  <div className='space-y-1'>
-                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80'>
-                      Reference Number
-                    </p>
-                    <p className='font-okx font-medium text-sm md:text-base uppercase text-foreground tracking-wide'>
-                      {formId}
-                    </p>
+
+                <div className='space-y-2'>
+                  <div className='grid gap-2 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='justify-center'
+                      aria-describedby={paymentToolsErrorMessage ? paymentToolsErrorId : undefined}
+                      disabled={!paymentDetails}
+                      onClick={() => {
+                        void copyPaymentDetails()
+                      }}>
+                      <Icon name={paymentDetailsCopied ? 'check' : 'copy'} className='size-4' />
+                      <span>{paymentDetailsCopied ? 'Copied' : 'Copy details'}</span>
+                    </Button>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      className='justify-center'
+                      aria-busy={isDownloadingQr}
+                      aria-describedby={paymentToolsErrorMessage ? paymentToolsErrorId : undefined}
+                      disabled={!paymentQRCodeContent || isDownloadingQr}
+                      onClick={downloadPaymentQR}>
+                      <Icon name={isDownloadingQr ? 'spinner-ring' : 'down-to-line'} className='size-4' />
+                      <span>{isDownloadingQr ? 'Downloading' : 'Download QR'}</span>
+                    </Button>
                   </div>
-                  <div className='space-y-1'>
-                    <p className='font-ios font-light text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80 whitespace-nowrap'>
-                      Account Name
-                    </p>
-                    <p className='font-okx font-medium text-sm md:text-base text-foreground tracking-wide'>
-                      {paymentMethod?.accountName ?? 'Unavailable'}
-                    </p>
+
+                  <div role='status' aria-live='polite' aria-atomic='true' className='sr-only'>
+                    {paymentDetailsCopied ? 'Payment details copied.' : null}
                   </div>
-                  <div className='space-y-1'>
-                    <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest dark:text-slate-300/80 whitespace-nowrap'>
-                      Account Number
+
+                  {paymentToolsErrorMessage ? (
+                    <p
+                      id={paymentToolsErrorId}
+                      role='alert'
+                      className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                      {paymentToolsErrorMessage}
                     </p>
-                    <p className='font-okx font-medium text-sm md:text-base text-foreground tracking-wide'>
-                      {paymentMethod ? `${paymentMethod.bankOrEwallet} ${paymentMethod.accountNumber}` : 'Unavailable'}
-                    </p>
-                  </div>
+                  ) : null}
                 </div>
-              </div>
-              <div className='grid grid-cols-2 gap-2 font-okx'>
-                <Button
-                  type='button'
-                  variant='outline'
-                  className='justify-center rounded-md bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
-                  disabled={!paymentMethod}
-                  onClick={() => {
-                    void copyAccountDetails()
-                  }}>
-                  <Icon name={accountDetailsCopied ? 'check' : 'copy'} className='size-4 opacity-80' />
-                  <span>{accountDetailsCopied ? 'Copied' : 'Account Details'}</span>
-                </Button>
-                <Button
-                  type='button'
-                  variant='outline'
-                  className='justify-center bg-background hover:bg-muted/40 dark:bg-slate-500/40 dark:hover:bg-slate-500/20'
-                  disabled={!paymentQRCodeContent}
-                  onClick={downloadPaymentQR}>
-                  <Icon name='down-to-line' className='size-4 opacity-80' />
-                  <span>Download QR</span>
-                </Button>
-              </div>
-            </div>
-            <div className='flex items-center justify-center border-b border-slate-400 p-4 dark:border-slate-900 md:border-b-0 md:border-r'>
-              {paymentQRCodeContent ? (
-                <PaymentQR content={paymentQRCodeContent} />
-              ) : (
-                <div className='flex min-h-64 flex-col items-center justify-center gap-3 text-center text-muted-foreground'>
-                  <Icon name='file' className='size-8' />
-                  <p className='text-sm'>Payment QR is unavailable.</p>
-                </div>
-              )}
-            </div>
-            <div className='flex flex-col justify-between gap-6 p-8'>
-              <div className='space-y-4'>
-                <div className='flex items-center space-x-4'>
-                  <div className='flex size-9 items-center justify-center rounded-lg bg-sky-100/10 dark:text-sky-100'>
-                    <Icon name='upload' className='size-5' />
-                  </div>
-                  <p className='font-okx text-lg text-foreground'>Upload your proof of payment.</p>
-                  {/*<p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Proof of transfer</p>*/}
-                </div>
-                <label
-                  htmlFor='payment-receipt'
-                  aria-disabled={isEntryLocked}
-                  className={`flex h-40 flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-400 bg-input/20 text-center transition-colors dark:border-slate-700 ${
-                    isEntryLocked ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-input/30'
-                  }`}>
-                  {receiptPreviewUrl ? (
-                    <Image
-                      src={receiptPreviewUrl}
-                      width={200}
-                      height={200}
-                      alt='Selected receipt preview'
-                      className='size-full object-cover'
-                    />
+              </section>
+
+              <section
+                aria-labelledby='payment-qr-title'
+                className='flex flex-col border-b border-border/60 p-6 md:border-e md:border-b-0'>
+                <h3 id='payment-qr-title' className='font-poly text-base font-medium text-foreground'>
+                  Scan to pay
+                </h3>
+                <div className='flex min-h-64 flex-1 items-center justify-center py-4'>
+                  {paymentQRCodeContent ? (
+                    <PaymentQR content={paymentQRCodeContent} />
                   ) : (
-                    <div className='flex size-full flex-col items-center justify-center gap-3 px-4'>
-                      <Icon
-                        name={isEntryLocked || receiptFile ? 'check' : 'receipt-plus'}
-                        className='size-10 text-foreground'
-                      />
-                      <span className='max-w-full truncate font-okx dark:text-sky-400 text-sm text-foreground tracking-wide'>
-                        {isEntryLocked ? 'Receipt submitted' : receiptFile ? receiptFile.name : 'Browse receipt file'}
-                      </span>
-                      <span className='font-ios text-[9px] md:text-xs dark:text-slate-300'>
-                        PNG, JPG, WEBP, AVIF, TIFF
-                      </span>
+                    <div className='flex flex-col items-center justify-center gap-3 text-center text-muted-foreground'>
+                      <Icon name='file' className='size-8' />
+                      <p className='max-w-56 text-sm leading-normal'>
+                        {paymentMethod
+                          ? 'No QR code is available. Use the transfer details instead.'
+                          : 'Payment details are unavailable. Contact the tournament organizer.'}
+                      </p>
                     </div>
                   )}
-                </label>
-                <input
-                  id='payment-receipt'
-                  type='file'
-                  accept='image/png,image/jpeg,image/webp,image/avif,image/tiff,image/gif,image/bmp,application/pdf'
-                  className='sr-only'
-                  disabled={isEntryLocked || isDraftBusy}
-                  onChange={(event) => {
-                    const nextReceiptFile = event.currentTarget.files?.[0] ?? null
+                </div>
+              </section>
 
-                    if (receiptPreviewUrlRef.current) {
-                      URL.revokeObjectURL(receiptPreviewUrlRef.current)
-                      receiptPreviewUrlRef.current = null
-                    }
+              <section aria-labelledby='receipt-upload-title' className='flex flex-col justify-between gap-6 p-6'>
+                <div className='space-y-4'>
+                  <div className='flex items-center gap-3'>
+                    <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary'>
+                      <Icon name='upload' className='size-5' />
+                    </div>
+                    <h3 id='receipt-upload-title' className='font-poly text-base font-medium text-foreground'>
+                      Proof of payment
+                    </h3>
+                  </div>
 
-                    if (nextReceiptFile?.type.startsWith('image/')) {
-                      const nextPreviewUrl = URL.createObjectURL(nextReceiptFile)
-                      receiptPreviewUrlRef.current = nextPreviewUrl
-                      setReceiptPreviewUrl(nextPreviewUrl)
-                    } else {
-                      setReceiptPreviewUrl(null)
-                    }
+                  <input
+                    ref={receiptInputRef}
+                    id='payment-receipt'
+                    type='file'
+                    accept='image/png,image/jpeg,image/webp,image/avif,image/tiff,image/gif,image/bmp,application/pdf'
+                    className='peer sr-only'
+                    aria-describedby={`${receiptHintId}${receiptErrorMessage ? ` ${receiptErrorId}` : ''}`}
+                    aria-invalid={receiptErrorMessage ? true : undefined}
+                    disabled={!canChooseReceipt}
+                    onChange={(event) => {
+                      const nextReceiptFile = event.currentTarget.files?.[0] ?? null
 
-                    setReceiptFile(nextReceiptFile)
-                    setReceiptErrorMessage(null)
-                    setReceiptSuccessMessage(null)
-                  }}
-                />
-                {receiptErrorMessage ? (
-                  <p role='alert' className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
-                    {receiptErrorMessage}
+                      if (receiptPreviewUrlRef.current) {
+                        URL.revokeObjectURL(receiptPreviewUrlRef.current)
+                        receiptPreviewUrlRef.current = null
+                      }
+
+                      if (nextReceiptFile?.type.startsWith('image/')) {
+                        const nextPreviewUrl = URL.createObjectURL(nextReceiptFile)
+                        receiptPreviewUrlRef.current = nextPreviewUrl
+                        setReceiptPreviewUrl(nextPreviewUrl)
+                      } else {
+                        setReceiptPreviewUrl(null)
+                      }
+
+                      setReceiptFile(nextReceiptFile)
+                      setReceiptErrorMessage(null)
+                      setReceiptSuccessMessage(null)
+                    }}
+                  />
+
+                  <label
+                    htmlFor='payment-receipt'
+                    aria-disabled={!canChooseReceipt}
+                    className={cn(
+                      'flex min-h-40 flex-col items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-input/20 text-center outline-hidden transition-colors peer-aria-invalid:border-destructive peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background',
+                      canChooseReceipt ? 'cursor-pointer hover:bg-input/40' : 'cursor-not-allowed opacity-60'
+                    )}>
+                    {receiptPreviewUrl ? (
+                      <div className='relative size-full min-h-40'>
+                        <Image
+                          src={receiptPreviewUrl}
+                          width={320}
+                          height={200}
+                          alt=''
+                          className='absolute inset-0 size-full object-cover'
+                        />
+                        <div className='absolute inset-x-0 bottom-0 space-y-0.5 bg-background/90 px-3 py-2 text-start backdrop-blur-sm'>
+                          <span className='block text-sm font-medium text-foreground'>Change receipt file</span>
+                          <span className='block text-xs text-muted-foreground break-all'>{receiptFile?.name}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className='flex size-full min-h-40 flex-col items-center justify-center gap-3 px-4'>
+                        <Icon
+                          name={isEntryLocked || receiptFile ? 'check' : 'receipt-plus'}
+                          className='size-8 text-foreground'
+                        />
+                        <span className='max-w-full text-sm font-medium text-foreground'>
+                          {isEntryLocked
+                            ? 'Receipt submitted'
+                            : receiptFile
+                              ? 'Change receipt file'
+                              : 'Choose receipt file'}
+                        </span>
+                        {receiptFile ? (
+                          <span className='max-w-full text-xs text-muted-foreground break-all'>{receiptFile.name}</span>
+                        ) : null}
+                      </div>
+                    )}
+                  </label>
+
+                  <p id={receiptHintId} className='text-xs leading-normal text-muted-foreground'>
+                    PNG, JPG, WebP, AVIF, TIFF, GIF, BMP, or PDF.
                   </p>
-                ) : null}
-                {receiptSuccessMessage ? (
-                  <p role='status' className='rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700'>
+
+                  {receiptActionUnavailable ? (
+                    <p className='text-sm leading-normal text-muted-foreground'>
+                      Receipt uploads will open when the organizer adds payment details.
+                    </p>
+                  ) : null}
+
+                  {receiptErrorMessage ? (
+                    <p
+                      id={receiptErrorId}
+                      role='alert'
+                      className='rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                      {receiptErrorMessage}
+                    </p>
+                  ) : null}
+
+                  <div
+                    role='status'
+                    aria-live='polite'
+                    aria-atomic='true'
+                    className={cn(
+                      receiptSuccessMessage
+                        ? 'rounded-md bg-success/10 px-3 py-2 text-sm text-success-foreground'
+                        : 'sr-only'
+                    )}>
                     {receiptSuccessMessage}
-                  </p>
-                ) : null}
-              </div>
-              <Button
-                id='submit-receipt'
-                type='button'
-                size='xl'
-                variant='default'
-                className='w-full bg-slate-900 hover:bg-foreground/80 text-white/80 dark:bg-background'
-                disabled={
-                  isEntryLocked
-                    ? !subscriptionId
-                    : !subscriptionId || isDraftBusy || (!isAdmin && (!hasActivePaymentDestination || !receiptFile))
-                }
-                onClick={() => {
-                  if (isEntryLocked && subscriptionId) {
-                    router.push(`/subscriptions/${subscriptionId}`)
-                  } else {
-                    void submitReceipt()
+                  </div>
+                </div>
+
+                <Button
+                  id='submit-receipt'
+                  type='button'
+                  size='xl'
+                  className='w-full font-poly'
+                  aria-busy={isSubmittingReceipt}
+                  disabled={
+                    isEntryLocked ? !subscriptionId : !subscriptionId || isDraftBusy || receiptActionUnavailable
                   }
-                }}>
-                {isSubmittingReceipt ? <Icon name='spinner-ring' className='size-4' /> : null}
-                <span className='font-poly capitalize'>
-                  {isEntryLocked
-                    ? 'View Entry'
-                    : receiptFile
-                      ? 'Submit Receipt'
-                      : isAdmin
-                        ? 'Admin Override'
-                        : 'Receipt Required'}
-                </span>
-              </Button>
+                  onClick={() => {
+                    if (isEntryLocked && subscriptionId) {
+                      router.push(`/subscriptions/${subscriptionId}`)
+                    } else {
+                      void submitReceipt()
+                    }
+                  }}>
+                  {isSubmittingReceipt ? <Icon name='spinner-ring' className='size-4' /> : null}
+                  <span>
+                    {isEntryLocked
+                      ? 'View entry'
+                      : isAdmin && !receiptFile
+                        ? 'Submit without receipt'
+                        : 'Submit receipt'}
+                  </span>
+                </Button>
+              </section>
             </div>
-          </div>
+          </section>
         </Activity>
 
         {paymentMethod && paymentDownloadQrSvg ? (

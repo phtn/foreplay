@@ -7,6 +7,28 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { useFieldContext } from './ctx'
 
+const getErrorMessage = (error: unknown) => {
+  if (typeof error === 'string') {
+    return error
+  }
+
+  if (error instanceof Error) {
+    return error.message
+  }
+
+  if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
+    return error.message
+  }
+
+  return null
+}
+
+const getErrorMessages = (errors: readonly unknown[]) =>
+  Array.from(new Set(errors.map(getErrorMessage).filter((message): message is string => Boolean(message))))
+
+const getDescribedBy = (descriptionId: string | undefined, errorId: string | undefined) =>
+  [descriptionId, errorId].filter(Boolean).join(' ') || undefined
+
 interface TextFieldProps {
   id: string
   label?: string
@@ -42,6 +64,9 @@ export function TextField({
   const field = useFieldContext<string>()
   const invalidProp = inputProps['aria-invalid']
   const isInvalid = field.state.meta.errors.length > 0 || invalidProp === true || invalidProp === 'true'
+  const errorMessages = getErrorMessages(field.state.meta.errors)
+  const errorId = errorMessages.length ? `${id}-error` : undefined
+  const describedBy = getDescribedBy(inputProps['aria-describedby'], errorId)
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const hasPasswordToggle = showPasswordToggle === true && type === 'password'
   const inputType = hasPasswordToggle && isPasswordVisible ? 'text' : type
@@ -51,8 +76,13 @@ export function TextField({
     <div className={cn('mb-4 space-y-2 w-full', containerClassName)}>
       {label && (
         <div className='flex items-center justify-between'>
-          <Label htmlFor={id} className='capitalize opacity-90 font-okx text-xs'>
+          <Label htmlFor={id} className='font-okx text-xs opacity-90'>
             {label}
+            {required ? (
+              <span aria-hidden='true' className='ms-0.5 text-destructive'>
+                *
+              </span>
+            ) : null}
           </Label>
 
           {children}
@@ -62,7 +92,7 @@ export function TextField({
         {icon && (
           <Icon
             name={icon}
-            className='absolute left-2 top-1/2 size-5 -translate-y-1/2 dark:text-foreground/70 text-foreground/50'
+            className='absolute start-2 top-1/2 size-5 -translate-y-1/2 text-foreground/50 dark:text-foreground/70'
             aria-hidden='true'
           />
         )}
@@ -84,14 +114,15 @@ export function TextField({
             onChange?.(event)
           }}
           className={cn(
-            'h-14 bg-foreground/4 hover:bg-white dark:bg-background/20 border-white/80 dark:border-white/40 dark:focus-visible:bg-background/30 focus-visible:bg-white dark:focus-visible:ring-primary focus-visible:ring-primary/15 focus-visible:border-primary dark:placeholder:text-white/60 shadow-xs md:text-base text-sm',
-            !!icon ? 'pl-12' : 'px-3',
-            hasPasswordToggle ? 'pr-12' : null,
+            'h-14 border-white/80 bg-foreground/4 text-base shadow-xs hover:bg-white focus-visible:border-primary focus-visible:bg-white focus-visible:ring-primary/15 sm:text-sm dark:border-white/40 dark:bg-background/20 dark:placeholder:text-white/60 dark:focus-visible:bg-background/30 dark:focus-visible:ring-primary',
+            !!icon ? 'ps-12' : 'px-3',
+            hasPasswordToggle ? 'pe-12' : null,
             className
           )}
           disabled={isDisabled}
           required={required}
-          aria-invalid={isInvalid}
+          aria-describedby={describedBy}
+          aria-invalid={isInvalid || undefined}
         />
         {hasPasswordToggle ? (
           <button
@@ -99,13 +130,26 @@ export function TextField({
             aria-controls={id}
             aria-label={`${isPasswordVisible ? 'Hide' : 'Show'} ${label?.toLowerCase() ?? 'password'}`}
             aria-pressed={isPasswordVisible}
-            className='absolute right-1.5 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50'
+            className='absolute end-1.5 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50'
             disabled={isDisabled}
             onClick={() => setIsPasswordVisible((current) => !current)}>
             <Icon name={isPasswordVisible ? 'eye-close' : 'eye'} className='size-4.5' aria-hidden='true' />
           </button>
         ) : null}
       </div>
+      {errorMessages.length ? (
+        <div id={errorId} role='alert' className='text-sm leading-normal text-destructive'>
+          {errorMessages.length === 1 ? (
+            errorMessages[0]
+          ) : (
+            <ul className='ms-4 list-disc space-y-1'>
+              {errorMessages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -142,11 +186,19 @@ export function SelectField({
   const field = useFieldContext<string>()
   const invalidProp = selectProps['aria-invalid']
   const isInvalid = field.state.meta.errors.length > 0 || invalidProp === true || invalidProp === 'true'
+  const errorMessages = getErrorMessages(field.state.meta.errors)
+  const errorId = errorMessages.length ? `${id}-error` : undefined
+  const describedBy = getDescribedBy(selectProps['aria-describedby'], errorId)
   return (
     <div className={cn('mb-4 space-y-2 w-full', containerClassName)}>
       <div className='flex items-center justify-between'>
-        <Label htmlFor={id} className='capitalize opacity-80 text-xs'>
+        <Label htmlFor={id} className='text-xs opacity-80'>
           {label}
+          {selectProps.required ? (
+            <span aria-hidden='true' className='ms-0.5 text-destructive'>
+              *
+            </span>
+          ) : null}
         </Label>
         {children}
       </div>
@@ -165,11 +217,12 @@ export function SelectField({
           onChange?.(event)
         }}
         className={cn(
-          'h-9 w-full rounded-lg border border-input bg-input/30 px-3 py-1 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
+          'h-9 w-full rounded-lg border border-input bg-input/30 px-3 py-1 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 sm:text-sm disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40',
           className
         )}
         disabled={field.state.meta.isValidating || disabled}
-        aria-invalid={isInvalid}>
+        aria-describedby={describedBy}
+        aria-invalid={isInvalid || undefined}>
         {placeholder ? (
           <option value='' disabled>
             {placeholder}
@@ -181,6 +234,19 @@ export function SelectField({
           </option>
         ))}
       </select>
+      {errorMessages.length ? (
+        <div id={errorId} role='alert' className='text-sm leading-normal text-destructive'>
+          {errorMessages.length === 1 ? (
+            errorMessages[0]
+          ) : (
+            <ul className='ms-4 list-disc space-y-1'>
+              {errorMessages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ) : null}
     </div>
   )
 }

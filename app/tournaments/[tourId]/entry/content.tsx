@@ -12,14 +12,9 @@ import Link from 'next/link'
 import { parseAsInteger, parseAsString, useQueryStates } from 'nuqs'
 import { useEffect, useMemo, useState } from 'react'
 import { NewEntryForm } from './entry-form'
+import { calculateEntryTotal, type EntryPricingOption } from './entry-logic'
 
 const defaultPlayers = 1
-
-type DivisionOption = {
-  label: string
-  value: string
-  amount: number
-}
 
 type Subscription = Doc<'subscriptions'>
 type EntryStatus = 'pending_payment' | 'payment_review' | 'confirmed' | 'cancelled'
@@ -48,7 +43,7 @@ interface ContentProps {
     gateOpenAt: number | null
     entryFee: number
     entryFeeLabel: string
-    divisionOptions: DivisionOption[]
+    divisionOptions: EntryPricingOption[]
   }
 }
 
@@ -165,9 +160,17 @@ export const Content = ({
       : query.division && validDivisionValues.has(query.division)
         ? query.division
         : savedDivision
-  // const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
-  const price = tournament.entryFee
-  const total = players * price
+  const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
+  const price = selectedDivisionOption?.amount ?? tournament.entryFee
+  const pricingMode = selectedDivisionOption?.pricingMode ?? 'per-player'
+  const calculatedTotal = calculateEntryTotal({ amount: price, players, pricingMode })
+  const total =
+    initialEntryLocked && typeof initialSubscription?.payment_amount === 'number'
+      ? initialSubscription.payment_amount
+      : calculatedTotal
+  const divisionLabel = tournament.divisionOptions.some((option) => option.pricingMode === 'flat')
+    ? 'Sponsorship tier'
+    : 'Division'
   const activeCurrentEntries = getActiveUniqueEntries(currentEntries)
   const currentEntryCount = activeCurrentEntries.reduce((sum, entry) => sum + getEntryCount(entry), 0)
   const currentEntriesStatus = activeCurrentEntries.length ? getSummaryStatus(activeCurrentEntries) : null
@@ -279,19 +282,26 @@ export const Content = ({
                   </h2>
                 </div>
 
-                <div className='grid grid-cols-3 gap-4 sm:grid-cols-3 md:gap-12'>
+                <div className='grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 md:gap-12'>
                   <div className='p-0 space-y-1.5'>
-                    <p className='font-ios md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>
-                      Price
+                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+                      {pricingMode === 'flat' ? 'Package' : 'Per player'}
                     </p>
-                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>
+                    <p className='mt-1 font-okx text-base font-medium tracking-tight tabular-nums'>
                       {price > 0 ? currencyFormatter.format(price) : tournament.entryFeeLabel}
                     </p>
                   </div>
 
                   <div className='p-0 space-y-1.5'>
-                    <p className='md:text-xs text-[10px] uppercase tracking-widest dark:text-slate-300'>Entries</p>
-                    <p className='font-okx font-medium mt-1 text-base tracking-tight'>{players}</p>
+                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Players</p>
+                    <p className='mt-1 font-okx text-base font-medium tracking-tight tabular-nums'>{players}</p>
+                  </div>
+
+                  <div className='col-span-2 space-y-1.5 sm:col-span-1'>
+                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Amount due</p>
+                    <p className='mt-1 font-okx text-base font-medium tracking-tight tabular-nums'>
+                      {currencyFormatter.format(total)}
+                    </p>
                   </div>
                 </div>
                 {/* Countdown */}
@@ -320,6 +330,7 @@ export const Content = ({
                 initialSubscription={initialSubscription}
                 paymentMethod={paymentMethod}
                 divisionOptions={tournament.divisionOptions}
+                divisionLabel={divisionLabel}
                 onPlayersChange={handlePlayersChange}
                 onDivisionChange={handleDivisionChange}
               />

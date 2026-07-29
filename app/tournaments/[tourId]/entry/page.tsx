@@ -94,14 +94,16 @@ const Page = async ({ params, searchParams }: PageProps) => {
     tournament?.sponsorship_tiers?.map((tier) => ({
       label: `${tier.name} - ${tier.investment_label} (${tier.playing_access})`,
       value: tier.name,
-      amount: parsePesoAmount(tier.investment_label)
+      amount: parsePesoAmount(tier.investment_label),
+      pricingMode: 'flat' as const
     })) ?? []
   const divisionOptions = sponsorPricingOptions.length
     ? sponsorPricingOptions
     : (tournament?.divisions ?? ['Pro']).map((division) => ({
         label: division,
         value: division,
-        amount: entryFee
+        amount: entryFee,
+        pricingMode: 'per-player' as const
       }))
   const initialDivision = divisionOptions[0]?.value ?? 'Pro'
   const initialFormId = subscription?.form_id ?? createFormId()

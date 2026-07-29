@@ -39,7 +39,49 @@ const getBarcodeDetector = () => {
   return (window as Window & { BarcodeDetector?: BarcodeDetectorConstructor }).BarcodeDetector
 }
 
-function ResultPanel({ result }: { result: CheckInResult | null }) {
+interface ResultPanelProps {
+  result: CheckInResult | null
+  testing?: boolean
+}
+
+const TestingResult = () => {
+  const bool = true
+  return (
+    <div
+      className={cn(
+        'absolute w-full bottom-0 rounded-xs border p-5 h-28 overflow-hidden',
+        bool
+          ? 'border-orange-400/40 bg-orange-400/10 text-orange-300 dark:text-orange-200'
+          : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-50'
+      )}>
+      <div className='absolute size-96 bg-[url("/som-optimized.svg")] bg-cover opacity-5 invert -top-20 md:top-0 scale-100 md:scale-300' />
+      <div className='flex items-start justify-between gap-4'>
+        <div className='space-y-1.5'>
+          <p className='flex items-center space-x-1 font-ios text-xs uppercase tracking-widest'>
+            <Icon name={bool ? 'clock' : 'chevrons-right'} className={cn('size-4', { 'size-3': bool })} />
+            <span>{bool ? 'TESTING IN PROGRESS' : 'Checked in'}</span>
+          </p>
+          <p className={cn('font-okx text-xl font-semibold', { 'blur-xs': bool })}>Elon Musk</p>
+          <p className={cn('text-sm opacity-80', { 'blur-xs': bool })}>elon@tesla.com</p>
+        </div>
+        <div className='flex flex-col items-center justify-between text-xs h-13 mt-6'>
+          <div className='flex items-center justify-center relative'>
+            <Icon name='verified-solid' className={cn('size-12 absolute', { 'text-slate-400': bool })} />
+            <Icon
+              name={bool ? 'clock' : 'verified'}
+              className={cn('size-10 absolute z-10 text-yellow-500', { 'text-slate-200!': bool })}
+            />
+          </div>
+          <p className='font-okx text-base'>Seoul of Manila</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+function ResultPanel({ result, testing = false }: ResultPanelProps) {
+  if (testing) {
+    return <TestingResult />
+  }
   if (!result) {
     return (
       <div className='hidden _flex min-h-32 items-center justify-center rounded-xl border border-dashed border-border/70 bg-muted/10 p-5 text-center text-sm text-muted-foreground'>
@@ -51,11 +93,12 @@ function ResultPanel({ result }: { result: CheckInResult | null }) {
   return (
     <div
       className={cn(
-        'rounded-xl border p-5',
+        'relative rounded-xs border p-5',
         result.alreadyCheckedIn
-          ? 'border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200'
-          : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200'
+          ? 'border-orange-400/40 bg-orange-400/10 text-orange-600 dark:text-orange-300'
+          : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-50'
       )}>
+      <div className='size-full bg-[url("/som-optimized.svg")] bg-cover opacity-50' />
       <div className='flex items-start justify-between gap-4'>
         <div className='space-y-1'>
           <p className='font-ios text-xs uppercase tracking-widest'>
@@ -259,27 +302,32 @@ export function GateScanner({ operator }: GateScannerProps) {
         </Badge>
       </div>
 
-      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80'>
-        <CardHeader className='relative rounded-none md:rounded-t-xs border-b border-slate-400/50 bg-slate-200 dark:bg-slate-400/40 h-10 pt-2 pb-0 px-2'>
+      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80 dark:ring-background'>
+        <CardHeader className='relative rounded-none md:rounded-t-xs border-b border-slate-400/50 bg-slate-200 dark:bg-slate-400/80 h-11 pt-2 pb-0 px-2'>
           <div className='flex items-center justify-between'>
             <CardTitle className='flex items-center font-okx'>
               <span
-                className={cn('aspect-square rounded-full size-3.5 mx-2 bg-slate-300 shadow-inner', {
-                  'bg-green-500 border-2 border-slate-400': active
-                })}
+                className={cn(
+                  'aspect-square rounded-full size-3.5 ml-2 mr-1 bg-slate-300 dark:bg-slate-500 shadow-inner',
+                  {
+                    'bg-green-500 dark:bg-green-400 border border-slate-400 dark:border-slate-600': active
+                  }
+                )}
               />
 
-              <span className={cn('opacity-40 text-sm', { 'opacity-100': active })}>{active ? 'Ready' : ''}</span>
+              <span className={cn('opacity-40 text-sm tracking-wide', { 'opacity-100': active })}>
+                {active ? 'Ready' : ''}
+              </span>
             </CardTitle>
             <div
-              className={cn('font-okx font-semibold', {
+              className={cn('flex items-center font-ios text-xs', {
                 'text-emerald-600': result?.checkedIn,
                 'text-orange-600': result?.alreadyCheckedIn
               })}>
-              {result?.alreadyCheckedIn ? (
-                'TICKET USED'
+              {!result?.alreadyCheckedIn ? (
+                'TICKET ALREADY USED'
               ) : result?.checkedIn ? (
-                'TICKET OK'
+                'SUCCESSFUL'
               ) : (
                 <Icon name='slumbering' className='size-20 opacity-40 absolute -top-4 -right-2 rotate-20' />
               )}
@@ -287,7 +335,7 @@ export function GateScanner({ operator }: GateScannerProps) {
             <div
               className={cn(
                 'flex items-center space-x-1 h-7 bg-slate-500 px-1.5 rounded-md border-3 border-slate-400 relative z-10',
-                { 'bg-foreground': active }
+                { 'bg-foreground dark:bg-background': active }
               )}>
               <Icon
                 name={active ? 'camera' : 'camera-off-line'}
@@ -303,8 +351,9 @@ export function GateScanner({ operator }: GateScannerProps) {
           </div>
         </CardHeader>
         <CardContent className='space-y-0 p-0'>
-          <div className='overflow-hidden rounded-none bg-black'>
+          <div className='relative overflow-hidden rounded-none bg-black'>
             <video ref={videoRef} playsInline muted className='aspect-3/4 w-full object-cover sm:aspect-video' />
+            <ResultPanel result={result} testing />
           </div>
 
           <div className=' w-full'>
@@ -323,8 +372,6 @@ export function GateScanner({ operator }: GateScannerProps) {
               {errorMessage}
             </div>
           ) : null}
-
-          <ResultPanel result={result} />
 
           <div className='hidden space-y-2'>
             <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Manual fallback</p>
