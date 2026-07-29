@@ -296,13 +296,6 @@ export const Content = ({
                     <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Players</p>
                     <p className='mt-1 font-okx text-base font-medium tracking-tight tabular-nums'>{players}</p>
                   </div>
-
-                  <div className='col-span-2 space-y-1.5 sm:col-span-1'>
-                    <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Amount due</p>
-                    <p className='mt-1 font-okx text-base font-medium tracking-tight tabular-nums'>
-                      {currencyFormatter.format(total)}
-                    </p>
-                  </div>
                 </div>
                 {/* Countdown */}
                 <div className='hidden md:flex items-start h-10 bg-slate-200/40 dark:bg-slate-800'>
