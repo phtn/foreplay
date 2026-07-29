@@ -315,7 +315,7 @@ export function GateScanner({ operator }: GateScannerProps) {
                 )}
               />
 
-              <span className={cn('opacity-40 text-sm tracking-wide', { 'opacity-100': active })}>
+              <span className={cn('opacity-40 text-xs tracking-wide', { 'opacity-100': active })}>
                 {active ? 'Ready' : ''}
               </span>
             </CardTitle>
