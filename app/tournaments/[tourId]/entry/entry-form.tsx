@@ -95,9 +95,7 @@ export const NewEntryForm = ({
   const initiallyLocked = isSubscriptionEntryLocked(initialSubscription)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(() =>
-    initialSubscription && !initiallyLocked
-      ? 'Entry saved. You can make changes until you submit your receipt.'
-      : null
+    initialSubscription && !initiallyLocked ? 'Entry saved. You can make changes until you submit your receipt.' : null
   )
   const [subscriptionId, setSubscriptionId] = useState<Id<'subscriptions'> | null>(initialSubscription?._id ?? null)
   const [didSubmitReceipt, setDidSubmitReceipt] = useState(false)
@@ -397,15 +395,11 @@ export const NewEntryForm = ({
           event.preventDefault()
           void form.handleSubmit()
         }}>
-        <div className='grid lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]'>
+        <div className='relative grid lg:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]'>
+          <div className='absolute top-0 left-0 h-5 w-6.5 flex items-center justify-center font-poly text-white text-base overflow-hidden bg-sky-500'>
+            <span className='-mb-0.5'>1</span>
+          </div>
           <div className='grid gap-8 p-4 sm:grid-cols-2 md:p-8'>
-            <p className='text-xs text-muted-foreground sm:col-span-2'>
-              <span aria-hidden='true' className='text-destructive'>
-                *
-              </span>{' '}
-              Required field
-            </p>
-
             <fieldset className='space-y-4'>
               <legend className='mb-4 font-poly text-base font-medium text-foreground'>Entry details</legend>
               <form.AppField name='fullName'>
@@ -413,11 +407,11 @@ export const NewEntryForm = ({
                   <TextField
                     id='entry-name'
                     type='text'
-                    label='Player or team name'
+                    label='Player Name'
                     icon='user'
-                    placeholder='Juan dela Cruz or Fairway Four'
+                    placeholder='Juan dela Cruz'
                     autoComplete='name'
-                    containerClassName='mb-0'
+                    containerClassName='mb-3'
                     className={entryControlClassName}
                     disabled={isDraftBusy || isEntryLocked}
                     onChange={(event) => {
@@ -440,48 +434,12 @@ export const NewEntryForm = ({
                     required
                     containerClassName='mb-0'
                     className={entryControlClassName}
-                    disabled={isDraftBusy || isEntryLocked}
+                    disabled
                     onChange={(event) => {
                       const nextPlayers = Number(event.currentTarget.value)
                       if (Number.isInteger(nextPlayers) && nextPlayers >= 1 && nextPlayers <= 20) {
                         onPlayersChange(nextPlayers)
                       }
-                    }}
-                  />
-                )}
-              </form.AppField>
-
-              <form.AppField name='division'>
-                {({ SelectField }) => (
-                  <SelectField
-                    id='entry-division'
-                    label={divisionLabel}
-                    options={divisionOptions}
-                    required
-                    containerClassName='mb-0'
-                    className={entryControlClassName}
-                    disabled={isDraftBusy || isEntryLocked}
-                    onChange={(event) => {
-                      onDivisionChange(event.currentTarget.value)
-                    }}
-                  />
-                )}
-              </form.AppField>
-
-              <form.AppField name='handicapIndex'>
-                {({ TextField }) => (
-                  <TextField
-                    id='entry-handicap'
-                    type='text'
-                    inputMode='decimal'
-                    label='Handicap index (optional)'
-                    icon='golf-tee'
-                    placeholder='e.g. 12.4'
-                    containerClassName='mb-0'
-                    className={entryControlClassName}
-                    disabled={isDraftBusy || isEntryLocked}
-                    onChange={(event) => {
-                      void setEntryQuery({ handicapIndex: event.currentTarget.value || null })
                     }}
                   />
                 )}
@@ -501,7 +459,7 @@ export const NewEntryForm = ({
                     autoComplete='email'
                     spellCheck={false}
                     required
-                    containerClassName='mb-0'
+                    containerClassName='mb-3'
                     className={entryControlClassName}
                     disabled={isDraftBusy || isEntryLocked}
                     onChange={(event) => {
@@ -540,7 +498,7 @@ export const NewEntryForm = ({
               <h2 id='entry-submit-title' className='font-poly text-lg font-medium text-foreground'>
                 {isSaved ? 'Review your entry' : 'Submit your entry'}
               </h2>
-              <p id='entry-submit-help' className='text-pretty text-sm leading-normal text-muted-foreground'>
+              <p id='entry-submit-help' className='text-balance text-sm leading-normal text-muted-foreground'>
                 {isSaved
                   ? 'You can edit these details until you submit your receipt.'
                   : `Submit your entry request for ${tourId}. Your spot is confirmed after payment review.`}
@@ -607,13 +565,16 @@ export const NewEntryForm = ({
               </p>
             </header>
 
-            <div className='grid min-h-80 md:grid-cols-3'>
+            <div className='relative grid min-h-80 md:grid-cols-3'>
+              <div className='absolute top-0 left-0 h-5 w-6.5 flex items-center justify-center font-poly text-white text-base overflow-hidden bg-sky-500'>
+                <span className='-mb-0.5'>2</span>
+              </div>
               <section
                 aria-labelledby='payment-details-title'
                 className='flex flex-col justify-between gap-6 border-b border-border/60 p-6 md:border-e md:border-b-0'>
                 <div className='space-y-6'>
                   <div className='flex items-center gap-3'>
-                    <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-success/10 text-success-foreground'>
+                    <div className='flex size-6 shrink-0 items-center justify-center rounded-lg bg-success/5 text-success-foreground'>
                       <Icon name='bank-transfer-in' className='size-5' />
                     </div>
                     <h3 id='payment-details-title' className='font-poly text-base font-medium text-foreground'>
@@ -630,24 +591,26 @@ export const NewEntryForm = ({
 
                   <dl className='space-y-4 text-sm'>
                     <div className='space-y-1'>
-                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Reference</dt>
-                      <dd className='font-medium text-foreground break-all'>{formId}</dd>
+                      <dt className='text-xs font-medium tracking-wide uppercase'>Reference</dt>
+                      <dd className='break-all font-ios text-foreground tracking-widest'>{formId}</dd>
                     </div>
                     <div className='space-y-1'>
-                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
-                        Payment service
-                      </dt>
-                      <dd className='text-foreground'>{paymentMethod?.bankOrEwallet ?? 'Unavailable'}</dd>
+                      <dt className='font-okx font-medium text-xs tracking-wide uppercase'>Payment service</dt>
+                      <dd className='font-ios text-foreground tracking-widest'>
+                        {paymentMethod?.bankOrEwallet ?? 'Unavailable'}
+                      </dd>
                     </div>
                     <div className='space-y-1'>
-                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Account name</dt>
-                      <dd className='text-foreground'>{paymentMethod?.accountName ?? 'Unavailable'}</dd>
+                      <dt className='font-okx font-medium text-xs tracking-wide uppercase'>Account name</dt>
+                      <dd className='font-ios text-foreground tracking-widest'>
+                        {paymentMethod?.accountName ?? 'Unavailable'}
+                      </dd>
                     </div>
                     <div className='space-y-1'>
-                      <dt className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>
-                        Account number
-                      </dt>
-                      <dd className='text-foreground break-all'>{paymentMethod?.accountNumber ?? 'Unavailable'}</dd>
+                      <dt className='font-okx font-medium text-xs tracking-wide uppercase'>Account number</dt>
+                      <dd className='font-ios text-foreground break-all tracking-widest'>
+                        {paymentMethod?.accountNumber ?? 'Unavailable'}
+                      </dd>
                     </div>
                   </dl>
                 </div>
@@ -716,10 +679,15 @@ export const NewEntryForm = ({
                 </div>
               </section>
 
-              <section aria-labelledby='receipt-upload-title' className='flex flex-col justify-between gap-6 p-6'>
+              <section
+                aria-labelledby='receipt-upload-title'
+                className='relative flex flex-col justify-between gap-6 p-6'>
+                <div className='absolute top-0 left-0 h-5 w-6.5 flex items-center justify-center font-poly text-white text-base overflow-hidden bg-sky-500'>
+                  <span className='-mb-0.5'>3</span>
+                </div>
                 <div className='space-y-4'>
                   <div className='flex items-center gap-3'>
-                    <div className='flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary'>
+                    <div className='flex size-7 shrink-0 items-center justify-center rounded-lg bg-success/5 text-success-foreground'>
                       <Icon name='upload' className='size-5' />
                     </div>
                     <h3 id='receipt-upload-title' className='font-poly text-base font-medium text-foreground'>
@@ -835,7 +803,7 @@ export const NewEntryForm = ({
                   id='submit-receipt'
                   type='button'
                   size='xl'
-                  className='w-full font-poly'
+                  className='w-full font-poly bg-foreground'
                   aria-busy={isSubmittingReceipt}
                   disabled={
                     isEntryLocked ? !subscriptionId : !subscriptionId || isDraftBusy || receiptActionUnavailable
@@ -849,11 +817,7 @@ export const NewEntryForm = ({
                   }}>
                   {isSubmittingReceipt ? <Icon name='spinner-ring' className='size-4' /> : null}
                   <span>
-                    {isEntryLocked
-                      ? 'View entry'
-                      : isAdmin && !receiptFile
-                        ? 'Submit without receipt'
-                        : 'Submit receipt'}
+                    {isEntryLocked ? 'View entry' : isAdmin && !receiptFile ? 'Admin Override' : 'Submit receipt'}
                   </span>
                 </Button>
               </section>

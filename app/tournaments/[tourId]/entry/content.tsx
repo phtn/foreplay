@@ -161,7 +161,7 @@ export const Content = ({
         ? query.division
         : savedDivision
   const selectedDivisionOption = tournament.divisionOptions.find((option) => option.value === division)
-  const price = selectedDivisionOption?.amount ?? tournament.entryFee
+  const price = tournament.entryFee
   const pricingMode = selectedDivisionOption?.pricingMode ?? 'per-player'
   const calculatedTotal = calculateEntryTotal({ amount: price, players, pricingMode })
   const total =
