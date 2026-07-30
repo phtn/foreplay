@@ -31,8 +31,9 @@ export const Tabs = ({ tabs, className }: TabsProps) => {
           <Root.Tab
             key={tab.value}
             className={cn(
+              `transition-colors duration-250 ease-in-out group cursor-pointer`,
               `flex h-6 items-center justify-center border-0 px-1.5 md:px-2.5 text-sm font-normal break-keep whitespace-nowrap text-foreground/60 outline-hidden select-none before:inset-x-0 before:inset-y-1 before:rounded-xs before:outline-blue-800 hover:text-foreground hover:data-active:text-orange-100 dark:hover:data-active:text-background focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-2 data-active:text-background ${index === 0 ? 'first:ml-1' : ''}`,
-              { 'text-lg w-6 ': tab.value === 'settings' }
+              { 'text-lg w-6 rounded-full bg-foreground/10': tab.value === 'settings' }
             )}
             value={tab.value}>
             {tab.label}

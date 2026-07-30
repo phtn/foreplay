@@ -28,7 +28,11 @@ export default async function Page() {
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
     { value: 'payments', label: 'Payments', content: <PaymentsContent /> },
-    { value: 'settings', label: <Icon name='music-circle' className='size-5' />, content: <SettingsContent /> }
+    {
+      value: 'settings',
+      label: <Icon name='music-note' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
+      content: <SettingsContent />
+    }
   ]
 
   return (
