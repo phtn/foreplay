@@ -57,19 +57,23 @@ const TestingResult = () => {
       <div className='absolute size-96 bg-[url("/som-optimized.svg")] bg-cover opacity-5 invert -top-20 md:top-0 scale-100 md:scale-300' />
       <div className='flex items-start justify-between gap-4'>
         <div className='space-y-1.5'>
-          <p className='flex items-center space-x-1 font-ios text-xs uppercase tracking-widest'>
-            <Icon name={bool ? 'clock' : 'chevrons-right'} className={cn('size-4', { 'size-3': bool })} />
+          <p className='flex items-center space-x-2 font-ios text-xs uppercase tracking-widest'>
+            <Icon name={bool ? 'code-scanner' : 'chevrons-right'} className={cn('size-4', { 'size-3': bool })} />
             <span>{bool ? 'TESTING IN PROGRESS' : 'Checked in'}</span>
+            <span>&middot;</span>
+            <span>date</span>
+            <span>&middot;</span>
+            <span>10 mins ago</span>
           </p>
           <p className={cn('font-okx text-xl font-semibold', { 'blur-xs': bool })}>Elon Musk</p>
           <p className={cn('text-sm opacity-80', { 'blur-xs': bool })}>elon@tesla.com</p>
         </div>
         <div className='flex flex-col items-center justify-between text-xs h-13 mt-6'>
           <div className='flex items-center justify-center relative'>
-            <Icon name='verified-solid' className={cn('size-12 absolute', { 'text-slate-400': bool })} />
+            <Icon name='verified-solid' className={cn('size-10 absolute', { '_text-slate-400 opacity-0': bool })} />
             <Icon
               name={bool ? 'clock' : 'verified'}
-              className={cn('size-10 absolute z-10 text-yellow-500', { 'text-slate-200!': bool })}
+              className={cn('size-10 absolute z-10 text-yellow-500', { 'text-orange-200/80 size-8!': bool })}
             />
           </div>
           <p className='font-okx text-base'>Seoul of Manila</p>
@@ -93,25 +97,39 @@ function ResultPanel({ result, testing = false }: ResultPanelProps) {
   return (
     <div
       className={cn(
-        'relative rounded-xs border p-5',
+        'absolute w-full bottom-0 rounded-xs border p-5 h-28 overflow-hidden',
         result.alreadyCheckedIn
-          ? 'border-orange-400/40 bg-orange-400/10 text-orange-600 dark:text-orange-300'
+          ? 'border-orange-400/40 bg-orange-400/10 text-orange-300 dark:text-orange-200'
           : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-50'
       )}>
-      <div className='size-full bg-[url("/som-optimized.svg")] bg-cover opacity-50' />
+      <div className='absolute size-96 bg-[url("/som-optimized.svg")] bg-cover opacity-5 invert -top-20 md:top-0 scale-100 md:scale-300' />
       <div className='flex items-start justify-between gap-4'>
-        <div className='space-y-1'>
-          <p className='font-ios text-xs uppercase tracking-widest'>
-            {result.alreadyCheckedIn ? 'Already checked in' : 'Checked in'}
+        <div className='space-y-1.5'>
+          <p className='flex items-center space-x-1 font-ios text-xs uppercase tracking-widest'>
+            <Icon
+              name={result.alreadyCheckedIn ? 'qrcode' : 'chevrons-right'}
+              className={cn('size-4', { 'size-3': result.alreadyCheckedIn })}
+            />
+            <span>{result.alreadyCheckedIn ? 'Already Checked-in' : 'Checked in'}</span>
           </p>
-          <p className='font-okx text-xl font-semibold'>{result.playerName}</p>
-          <p className='text-sm opacity-80'>{result.playerEmail ?? 'No email'}</p>
+          <p className={cn('font-okx text-xl font-semibold', { 'blur-xs': result.alreadyCheckedIn })}>Elon Musk</p>
+          <p className={cn('text-sm opacity-80', { 'blur-xs': result.alreadyCheckedIn })}>elon@tesla.com</p>
         </div>
-        <Icon name={result.alreadyCheckedIn ? 'alert-triangle' : 'check'} className='size-6' />
-      </div>
-      <div className='mt-4 grid gap-2 text-xs opacity-80 sm:grid-cols-2'>
-        <p className='font-mono'>Registration: {result.registrationId}</p>
-        <p className='font-mono'>Tournament: {result.tournamentId}</p>
+        <div className='flex flex-col items-center justify-between text-xs h-13 mt-6'>
+          <div className='flex items-center justify-center relative'>
+            <Icon
+              name='verified-solid'
+              className={cn('size-10 absolute', { '_text-slate-400 opacity-0': result.alreadyCheckedIn })}
+            />
+            <Icon
+              name={result.alreadyCheckedIn ? 'clock' : 'verified'}
+              className={cn('size-10 absolute z-10 text-yellow-500', {
+                'text-orange-200/80 size-8!': result.alreadyCheckedIn
+              })}
+            />
+          </div>
+          <p className='font-okx text-base'>Seoul of Manila</p>
+        </div>
       </div>
     </div>
   )
@@ -302,7 +320,7 @@ export function GateScanner({ operator }: GateScannerProps) {
         </Badge>
       </div>
 
-      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80 dark:ring-background'>
+      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80 dark:ring-background portrait:border-t portrait:border-slate-400/80'>
         <CardHeader className='relative rounded-none md:rounded-t-xs border-b border-slate-400/50 bg-slate-200 dark:bg-slate-400/80 h-11 pt-2 pb-0 px-2'>
           <div className='flex items-center justify-between'>
             <CardTitle className='flex items-center font-okx'>
@@ -320,50 +338,54 @@ export function GateScanner({ operator }: GateScannerProps) {
               </span>
             </CardTitle>
             <div
-              className={cn('flex items-center font-ios text-xs', {
-                'text-emerald-600': result?.checkedIn,
-                'text-orange-600': result?.alreadyCheckedIn
-              })}>
-              {!result?.alreadyCheckedIn ? (
-                'TICKET ALREADY USED'
-              ) : result?.checkedIn ? (
-                'SUCCESSFUL'
-              ) : (
-                <Icon name='slumbering' className='size-20 opacity-40 absolute -top-4 -right-2 rotate-20' />
-              )}
-            </div>
-            <div
               className={cn(
-                'flex items-center space-x-1 h-7 bg-slate-500 px-1.5 rounded-md border-3 border-slate-400 relative z-10',
-                { 'bg-foreground dark:bg-background': active }
+                'relative flex items-center justify-center font-ios text-xs w-full _bg-sky-200 h-7 overflow-hidden mx-1 md:mx-2',
+                {
+                  'text-emerald-600': result?.checkedIn,
+                  'text-orange-600': result?.alreadyCheckedIn
+                }
               )}>
-              <Icon
-                name={active ? 'camera' : 'camera-off-line'}
-                className={cn('size-4.5 text-white/80', { 'text-white': active })}
-              />
-              <span className={cn('font-poly text-white text-sm leading-none mt-0.5', { ' text-green-500': active })}>
-                {active ? 'ON' : 'OFF'}
-              </span>
+              <div className='flex items-center space-x-2 md:space-x-3 absolute md:right-0 -right-2'>
+                <div className='h-10 md:w-3 w-2 rounded-sm bg-slate-500 -skew-20 rotate-18 hidden md:flex'></div>
+                <div className='h-10 md:w-3 w-2 rounded-sm md:bg-slate-500 bg-slate-400/80 -skew-20 rotate-18'></div>
+                <div className='h-10 md:w-3 w-2 rounded-sm bg-slate-500 -skew-20 rotate-18'></div>
+                <div className='h-10 md:w-3 w-2 rounded-sm bg-slate-500 -skew-20 rotate-18'></div>
+                <div className='h-10 md:w-3 w-2 rounded-sm bg-slate-500 -skew-20 rotate-18'></div>
+              </div>
+              {result?.alreadyCheckedIn ? 'TICKET ALREADY SCANNED' : result?.checkedIn ? 'VALID TICKET SCANNED' : null}
             </div>
-            {/*<Badge variant={active ? 'success-light' : 'outline'} size='lg'>
-              {active ? 'Camera ON' : 'Camera OFF'}
-            </Badge>*/}
+            <div className='min-w-16 grow-0 flex items-center justify-center'>
+              <div
+                className={cn(
+                  'flex items-center space-x-1 h-7 bg-slate-500 px-1.5 rounded-sm border-2 border-slate-400 relative z-10',
+                  { 'bg-foreground dark:bg-background': active }
+                )}>
+                <Icon
+                  name={active ? 'camera' : 'camera-off-line'}
+                  className={cn('size-4 text-white/80', { 'text-white size-4.5': active })}
+                />
+                <span className={cn('font-poly text-white text-sm leading-none mt-0.5', { ' text-green-500': active })}>
+                  {active ? 'ON' : 'OFF'}
+                </span>
+              </div>
+            </div>
           </div>
         </CardHeader>
         <CardContent className='space-y-0 p-0'>
           <div className='relative overflow-hidden rounded-none bg-black'>
             <video ref={videoRef} playsInline muted className='aspect-3/4 w-full object-cover sm:aspect-video' />
-            <ResultPanel result={result} testing />
+            <ResultPanel result={result} />
           </div>
 
-          <div className=' w-full'>
+          <div className='flex items-center space-x-4 w-full'>
             <Button
               type='button'
               size='2xl'
               onClick={active ? stopScanner : startScanner}
-              className='bg-pink-500 hover:bg-pink-600/70 font-poly text-white text-base w-full rounded-xs border-none transition-colors duration-300'>
-              <Icon name={active ? 'close' : 'qr-code-scanner'} className='size-4' />
-              {active ? 'Stop Scanner' : 'Start Scanner'}
+              className='bg-pink-500 hover:bg-pink-500/70 active:bg-pink-500/70 font-poly text-white text-base w-full rounded-xs border-none active:border-none transition-colors duration-300'>
+              <Icon name={active ? 'chevron-double-left' : 'chevron-double-right'} className='size-5' />
+              <span>{active ? 'Stop Scanner' : 'Start Scanner'}</span>
+              <Icon name={active ? 'chevron-double-right' : 'chevron-double-left'} className='size-5' />
             </Button>
           </div>
 

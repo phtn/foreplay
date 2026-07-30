@@ -16,12 +16,9 @@ export default function RecordsPage() {
           title='Turn performance into something players want to chase'
           description='The records page should feel like a scoreboard, not a spreadsheet.'
         />
-
         {/*<MetricGrid metrics={recordMetrics} />*/}
-
         <div className='grid gap-6 lg:grid-cols-[1.05fr_0.95fr]'>
           {/*<LeaderboardCard rows={leaderboardRows} />*/}
-
           <div className='space-y-4'>
             <Card className='border-border/70 bg-muted/20'>
               <CardHeader>

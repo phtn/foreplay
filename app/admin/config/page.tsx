@@ -1,3 +1,4 @@
+import { Icon } from '@/lib/icons'
 import { Metadata } from 'next'
 import { CreateEventContent } from './_contents/create-event'
 import { EventsContent } from './_contents/events'
@@ -5,7 +6,7 @@ import { PaymentsContent } from './_contents/payments'
 import { SettingsContent } from './_contents/settings'
 import { StaffContent } from './_contents/staff'
 import { UsersContent } from './_contents/users'
-import { Tabs } from './tabs'
+import { Tab, Tabs } from './tabs'
 
 export const metadata: Metadata = {
   title: 'Admin Settings',
@@ -21,13 +22,13 @@ export const metadata: Metadata = {
 }
 
 export default async function Page() {
-  const tabs = [
+  const tabs: Tab[] = [
     { value: 'create-event', label: 'Create', content: <CreateEventContent /> },
     { value: 'events', label: 'Events', content: <EventsContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
     { value: 'payments', label: 'Payments', content: <PaymentsContent /> },
-    { value: 'settings', label: '⬢', content: <SettingsContent /> }
+    { value: 'settings', label: <Icon name='music-circle' className='size-5' />, content: <SettingsContent /> }
   ]
 
   return (
