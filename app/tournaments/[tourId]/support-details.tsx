@@ -49,7 +49,7 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
   const showTitle = contact.title && contact.title !== heading
 
   return (
-    <article className='flex min-w-0 flex-col rounded-md _border border-border/60 bg-background p-4'>
+    <article className='flex min-w-0 flex-col rounded-xl bg-background p-4'>
       {' '}
       <div className='flex items-start gap-3'>
         <div className='flex items-center justify-center h-15'>
@@ -59,16 +59,18 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
         </div>
         <div className='min-w-0'>
           <p className='font-ios text-[10px] uppercase tracking-[0.2em] text-muted-foreground'>{contact.label}</p>
-          <h3 className='mt-1 wrap-break-word font-poly text-lg leading-tight text-foreground capitalize'>{heading}</h3>
+          <h3 className='mt-1 wrap-break-word font-poly text-base leading-tight text-foreground capitalize'>
+            {heading}
+          </h3>
           {showTitle ? <p className='mt-1 font-ios text-xs text-muted-foreground'>{contact.title}</p> : null}
         </div>
       </div>
       {contact.email || contact.phone ? (
-        <address className='mt-5 grid gap-2 not-italic'>
+        <address className='mt-5 grid not-italic rounded-xl border border-border/50 divide-y divide-border/50 overflow-hidden'>
           {contact.email ? (
             <a
               href={`mailto:${contact.email}`}
-              className='group flex min-h-11 min-w-0 items-center gap-3 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'>
+              className='group flex min-h-11 min-w-0 items-center gap-3 bg-muted/20 px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'>
               <Icon name='mail' className='size-4 shrink-0 text-primary' />
               <span className='min-w-0 flex-1 wrap-break-word font-ios text-sm text-foreground/85'>
                 {contact.email}
@@ -83,7 +85,7 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
           {contact.phone ? (
             <a
               href={getPhoneHref(contact.phone)}
-              className='group flex min-h-11 min-w-0 items-center gap-3 rounded-xl border border-border/50 bg-muted/20 px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'>
+              className='group flex min-h-11 min-w-0 items-center gap-3 bg-muted/20 px-3 py-2.5 transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50'>
               <Icon name='phone-accept' className='size-4 shrink-0 text-primary' />
               <span className='min-w-0 flex-1 wrap-break-word font-ios text-sm tracking-wide text-foreground/85'>
                 {contact.phone}
