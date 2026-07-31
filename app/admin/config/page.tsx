@@ -24,7 +24,11 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   const tabs: Tab[] = [
-    { value: 'create-event', label: 'Create', content: <CreateEventContent /> },
+    {
+      value: 'create-event',
+      label: <Icon name='add' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
+      content: <CreateEventContent />
+    },
     { value: 'events', label: 'Events', content: <EventsContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
     { value: 'users', label: 'Users', content: <UsersContent /> },
