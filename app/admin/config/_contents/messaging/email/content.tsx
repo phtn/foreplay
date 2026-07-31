@@ -5,7 +5,7 @@ import { useConvexSnapshotQuery } from '@/hooks/use-convex-snapshot-query'
 import { Suspense } from 'react'
 
 const EmailContentInner = () => {
-  const { data: templates } = useConvexSnapshotQuery(api.messagingConfigs.q.listMessagingConfigs, {})
+  const {} = useConvexSnapshotQuery(api.messagingConfigs.q.listMessagingConfigs, {})
   return <div></div>
 }
 

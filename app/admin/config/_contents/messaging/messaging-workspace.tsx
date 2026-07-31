@@ -113,7 +113,6 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
       } else {
         next.delete(recipientId)
       }
-
       return next
     })
   }
@@ -253,10 +252,10 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
         </div>
       </div>
 
-      <div className='grid lg:grid-cols-[minmax(20rem,0.85fr)_minmax(0,1.15fr)] divide-x divide-border rounded-md overflow-hidden border'>
-        <Card className='rounded-none gap-0 py-0'>
-          <CardHeader className='border-b border-border/70 py-4'>
-            <div className='flex items-center justify-between gap-3'>
+      <div className='grid lg:grid-cols-[minmax(20rem,0.85fr)_minmax(0,1.15fr)] divide-x-[0.5px] divide-border/50 rounded-md overflow-hidden border'>
+        <Card className='rounded-none ring-0 gap-0 py-0 bg-card/50'>
+          <CardHeader className='border-b border-border/0 py-4 px-0'>
+            <div className='flex items-center justify-between gap-3 px-4'>
               <div>
                 <CardTitle className='font-poly'>Recipients</CardTitle>
                 <CardDescription>
@@ -287,7 +286,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 maxLength={160}
                 value={searchQuery}
                 placeholder='Search name or email'
-                className='h-10 ps-4'
+                className='h-10 ps-4 rounded-none border-none'
                 onChange={(event) => setSearchQuery(event.currentTarget.value)}
               />
               {searchQuery ? (
@@ -303,7 +302,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
               ) : null}
             </div>
 
-            <p className='text-xs text-muted-foreground' role='status' aria-live='polite' aria-atomic='true'>
+            {/*<p className='text-xs text-muted-foreground' role='status' aria-live='polite' aria-atomic='true'>
               {searchQuery.trim()
                 ? `${filteredRecipients.length} ${
                     filteredRecipients.length === 1 ? 'recipient matches' : 'recipients match'
@@ -311,15 +310,14 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 : `${filteredRecipients.length} ${
                     filteredRecipients.length === 1 ? 'recipient is' : 'recipients are'
                   } available.`}
-            </p>
+            </p>*/}
           </CardHeader>
 
-          <CardContent className='max-h-136 overflow-y-auto px-0 py-1'>
+          <CardContent className='max-h-136 overflow-y-auto px-0 py-0'>
             {filteredRecipients.length ? (
               <ul className='divide-y divide-border/60'>
                 {filteredRecipients.map((recipient) => {
                   const selected = selectedRecipientIds.has(recipient.id)
-
                   return (
                     <li key={recipient.id}>
                       <label
@@ -430,8 +428,10 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
             </div>
 
             <div className='space-y-2'>
-              <label htmlFor={messageId} className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
-                Message
+              <label
+                htmlFor={messageId}
+                className='font-ios text-xs uppercase tracking-widest text-muted-foreground space-x-2'>
+                Message Body
               </label>
               <textarea
                 id={messageId}
