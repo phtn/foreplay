@@ -31,15 +31,14 @@ export const Content = ({ events }: ContentProps) => {
   )
 
   return (
-    <main className='md:space-y-8'>
-      <div className='grid xl:gap-4 grid-cols-4 xl:grid-cols-4'>
+    <main className='md:space-y-4'>
+      <div className='grid grid-cols-3 xl:grid-cols-3 border rounded-sm divide-x divide-border'>
         {[
           { label: 'Events', value: counts.total },
           { label: 'Published', value: counts.published },
-          { label: 'Drafts', value: counts.drafts },
-          { label: 'Slots', value: counts.registeredSlots }
+          { label: 'Drafts', value: counts.drafts }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='border-[0.33px] py-1! rounded-xs md:rounded-lg'>
+          <Card key={stat.label} size='sm' className='ring-0 py-1! md:py-2! rounded-none bg-transparent'>
             <CardContent className='space-y-1 ps-4'>
               <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
                 {stat.label}
@@ -50,13 +49,13 @@ export const Content = ({ events }: ContentProps) => {
         ))}
       </div>
 
-      <Card className='p-0 md:py-1 bg-border/0 rounded-xs md:rounded-xl'>
-        <CardContent className='px-0 rounded-xs md:rounded-xl border-0'>
+      <Card className='ring-border p-0 md:py-1 bg-border/0 rounded-xs md:rounded-sm'>
+        <CardContent className='px-0 rounded-xs md:rounded-lg border-0'>
           {tournamentList.length ? (
             <EventsList data={tournamentList} />
           ) : (
             <div className='flex min-h-56 flex-col items-center justify-center gap-3 p-8 text-center'>
-              <Icon name='trophy-line' className='size-10 text-muted-foreground/50' />
+              <Icon name='trophy-line' className='size-10 text-foreground/50' />
               <div className='space-y-1'>
                 <p className='font-okx text-base'>No tournaments yet</p>
                 <p className='text-sm text-muted-foreground'>Seed or create an event to populate the admin queue.</p>

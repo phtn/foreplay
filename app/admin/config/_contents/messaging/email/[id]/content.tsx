@@ -3,11 +3,7 @@
 // import { EmailTemplateForm } from '../send'
 // import { EmailTemplateViewer } from '../send/components/email-settings-view-page'
 
-interface ContentProps {
-  tabId: string
-}
-
-export const Content = ({ tabId }: ContentProps) => {
+export const Content = () => {
   return <div>Templates</div>
 
   // If tabId is not 'new', treat it as an ID for viewing/editing

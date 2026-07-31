@@ -25,9 +25,8 @@ export const Tabs = ({ tabs, className }: TabsProps) => {
     <Root.Root
       className={cn(className, 'rounded-md')}
       value={activeValue}
-      onValueChange={(nextValue) => setValue(typeof nextValue === 'string' ? nextValue : firstValue)}
-    >
-      <Root.List className='relative z-0 flex gap-3 md:gap-4 px-2 bg-slate-100 dark:bg-slate-700/20 md:bg-transparent dark:md:bg-transparent'>
+      onValueChange={(nextValue) => setValue(typeof nextValue === 'string' ? nextValue : firstValue)}>
+      <Root.List className='relative z-0 flex gap-3 md:gap-4 px-2'>
         {tabs.map((tab, index) => (
           <Root.Tab
             key={tab.value}
@@ -39,8 +38,7 @@ export const Tabs = ({ tabs, className }: TabsProps) => {
                   tab.value === 'settings' || tab.value === 'messaging' || tab.value === 'create-event'
               }
             )}
-            value={tab.value}
-          >
+            value={tab.value}>
             {tab.label}
           </Root.Tab>
         ))}

@@ -39,7 +39,7 @@ type DeliveryStatus = {
   message: string
 } | null
 
-const maxRecipientsPerSend = 50
+const maxRecipientsPerSend = 2
 
 const getInitials = (name: string) => {
   const initials = name
@@ -277,11 +277,6 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
               <label htmlFor={searchId} className='sr-only'>
                 Search recipients
               </label>
-              <Icon
-                name='search'
-                aria-hidden='true'
-                className='pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground'
-              />
               <Input
                 ref={searchInputRef}
                 id={searchId}
@@ -292,7 +287,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 maxLength={160}
                 value={searchQuery}
                 placeholder='Search name or email'
-                className='h-10 px-10'
+                className='h-10 ps-4'
                 onChange={(event) => setSearchQuery(event.currentTarget.value)}
               />
               {searchQuery ? (
@@ -381,12 +376,14 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
           ) : null}
         </Card>
 
-        <Card className='gap-0 py-0'>
-          <CardHeader className='border-b border-border/70 py-4'>
-            <CardTitle className='font-poly'>Compose email</CardTitle>
-            <CardDescription>
-              Recipient addresses are sent individually and are never exposed to other users.
-            </CardDescription>
+        <Card className='gap-0 py-0 rounded-none'>
+          <CardHeader className='border-b border-border/70 pt-4 pb-0 gap-0'>
+            <div className=''>
+              <CardTitle className='font-poly'>Compose email</CardTitle>
+              <CardDescription className=''>
+                Recipient addresses are sent individually and are never exposed to other users.
+              </CardDescription>
+            </div>
           </CardHeader>
 
           <CardContent className='space-y-5 py-5 rounded-none'>

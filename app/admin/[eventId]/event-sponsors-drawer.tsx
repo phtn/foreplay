@@ -144,12 +144,13 @@ export function EventSponsorsDrawer({ eventTitle, sponsorList, tournamentId }: E
           delay={150}
           render={
             <DrawerTrigger
+              className='w-full'
               render={
                 <Button
                   type='button'
                   variant='ghost'
-                  size='icon-sm'
-                  className='relative rounded-full text-sky-600 hover:text-sky-500 flex items-center justify-center w-full'
+                  size='icon'
+                  className='relative rounded-full text-sky-600 hover:text-sky-500 flex items-center justify-center md:dark:hover:bg-white'
                   aria-label={`${configured ? 'Edit' : 'Add'} sponsors for ${eventTitle}`}>
                   <Icon name='heart-hand' className='size-5' />
                   {/*{configured ? (

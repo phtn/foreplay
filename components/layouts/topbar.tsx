@@ -58,10 +58,16 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
 
   const adminMenuItems: MenuItemProps[] = [
     {
-      routeHandler: () => router.push('/admin'),
+      routeHandler: () => router.push('/admin/config'),
       label: 'admin',
       icon: 're-up.ph',
       className: 'size-4 ml-0.5 mr-4'
+    },
+    {
+      routeHandler: () => router.push('/profile'),
+      label: 'account',
+      icon: 'user-fill',
+      className: 'size-5 mr-3.5'
     }
   ]
 
@@ -211,13 +217,13 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
   )
 }
 
-interface MenuItemProps {
+export interface MenuItemProps {
   routeHandler: () => void
   label: string
   icon: IconName
   className?: ClassName
 }
-const MenuItem = ({ routeHandler, label, icon, className }: MenuItemProps) => {
+export const MenuItem = ({ routeHandler, label, icon, className }: MenuItemProps) => {
   return (
     <Button
       onClick={routeHandler}

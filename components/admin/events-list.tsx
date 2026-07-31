@@ -149,7 +149,7 @@ const EventRow = (row: EventRow) => {
   return (
     <div className='px-1 py-2'>
       {row.monthLabel ? (
-        <p className='my-2 px-3 text-xs font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
+        <p className='my-2 px-3 text-xs md:text-base font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
           {row.monthLabel}
         </p>
       ) : null}
@@ -160,13 +160,13 @@ const EventRow = (row: EventRow) => {
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
               <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-11 aspect-square text-white '>
-                <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-white/70'>{row.day}</p>
+                <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-foreground/70'>{row.day}</p>
                 <p className='mt-1 font-poly text-lg leading-none'>{row.date}</p>
               </div>
 
               <div className='min-w-0'>
                 <p className='font-poly font-medium text-base text-[#1d2824] dark:text-white'>{row.title}</p>
-                <p className='mt-0.5 text-sm text-[#1d2824]/65 dark:text-white/80'>{row.place}</p>
+                <p className='mt-0.5 text-sm text-[#1d2824]/65 dark:text-foreground/80'>{row.place}</p>
               </div>
             </div>
           </div>
@@ -209,22 +209,24 @@ const EventRow = (row: EventRow) => {
           </div>
         </div>
 
-        <div className='min-w-0 space-y-2 w-full'>
+        <div className='min-w-0 space-y-1 w-full font-okx'>
           <div className='flex items-center gap-3'>
-            <p className='truncate font-poly text-base text-[#1d2824]'>{row.title}</p>
+            <p className='truncate font-poly text-base md:text-lg text-[#1d2824]'>{row.title}</p>
           </div>
 
-          <div className='flex items-center gap-1 text-sm text-[#1d2824]/70'>
-            <Icon name='map-pin' className='size-3.5 opacity-80' />
-            <span className='truncate'>{row.place}</span>
+          <div className='flex items-center gap-1 text-sm md:text-base text-foreground/70'>
+            <Icon name='map-pin' className='size-4 opacity-70 dark:text-zinc-500' />
+            <span className='truncate dark:text-zinc-600'>{row.place}</span>
           </div>
         </div>
 
         <div className='px-4 space-y-2 w-32'>
-          <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Entry fee</p>
-          <p className='mt-1 font-medium text-[#1d2824]'>{row.feeLabel}</p>
+          <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest text-foreground/70 dark:text-zinc-600'>
+            Entry fee
+          </p>
+          <p className='mt-1 font-medium text-foreground/70 dark:text-zinc-600'>{row.feeLabel}</p>
         </div>
-        <div className='flex items-center space-x-6 w-48'>
+        <div className='flex items-center md:space-x-8 md:w-48'>
           <EventToolbar event={row.event} />
         </div>
         <div className='flex items-center justify-end min-w-36'>

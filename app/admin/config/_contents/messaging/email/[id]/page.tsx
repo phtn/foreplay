@@ -1,15 +1,7 @@
-import {Content} from './content'
+import { Content } from './content'
 
-interface Props {
-  params: Promise<{
-    id: string
-  }>
-}
-
-const Page = async ({params}: Props) => {
-  const {id} = await params
-
-  return <Content tabId={id} />
+const Page = async () => {
+  return <Content />
 }
 
 export default Page
