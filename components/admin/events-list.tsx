@@ -206,11 +206,10 @@ const EventRow = (row: EventRow) => {
           <div className='text-center space-y-1'>
             <p className='font-okx text-sm text-hermes'>{row.day}</p>
             <p className='font-poly text-2xl leading-none text-[#1d2824]'>{row.date}</p>
-            {/*<p className='mt-2 text-xs text-[#1d2824]/55'>{row.time}</p>*/}
           </div>
         </div>
 
-        <div className='min-w-0 space-y-2'>
+        <div className='min-w-0 space-y-2 w-full'>
           <div className='flex items-center gap-3'>
             <p className='truncate font-poly text-base text-[#1d2824]'>{row.title}</p>
           </div>
@@ -220,15 +219,14 @@ const EventRow = (row: EventRow) => {
             <span className='truncate'>{row.place}</span>
           </div>
         </div>
-        <div className='px-4 space-y-2'>
+
+        <div className='px-4 space-y-2 w-32'>
           <p className='font-ios text-[10px] uppercase tracking-widest text-slate-800'>Entry fee</p>
           <p className='mt-1 font-medium text-[#1d2824]'>{row.feeLabel}</p>
         </div>
-
-        <div className='flex items-center justify-end'>
+        <div className='flex items-center space-x-6 w-48'>
           <EventToolbar event={row.event} />
         </div>
-
         <div className='flex items-center justify-end min-w-36'>
           {row.href ? (
             <Link

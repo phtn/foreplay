@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import { signOutUser } from '@/lib/firebase/auth'
 import { clearFirebaseSession } from '@/lib/firebase/session'
-import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -41,11 +40,10 @@ export function SignOutButton({ label, withLabel = false }: SignOutButtonProps) 
         className={cn(
           'flex items-center justify-center rounded-none p-0 bg-transparent text-foreground/80 dark:bg-transparent hover:bg-transparent!',
           {
-            'w-full space-x-2 justify-start hover:bg-background': withLabel
+            'w-full hover:bg-background': withLabel
           }
         )}>
-        <Icon name='logout' className='size-4' />
-        {withLabel && <p className='capitalize'>{label ?? 'Sign out'}</p>}
+        {withLabel && <p className='font-okx font-medium text-base'>{label ?? 'sign out'}</p>}
       </Button>
       {signOutError ? (
         <p className='max-w-sm font-mono text-[10px] uppercase tracking-[0.24em] text-[#ff7d33]'>{signOutError}</p>

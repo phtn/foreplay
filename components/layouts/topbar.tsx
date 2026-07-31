@@ -4,14 +4,21 @@ import { Brand } from '@/components/layouts/brand'
 import { NAV_ITEMS, Navbar, isNavItemActive, type NavItem } from '@/components/layouts/navbar'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import { SignOutButton } from '@/components/ui/signout'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { useToggle } from '@/hooks/use-toggle'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import type { FirebaseSessionUser } from '@/lib/firebase/auth-state'
-import { Icon } from '@/lib/icons'
+import { Icon, type IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import type { ClassName } from '@/types'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -42,11 +49,30 @@ export function Topbar() {
 }
 
 function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) {
+  const router = useRouter()
   const pathname = usePathname()
   const { on: mobileOpen, toggle: toggleMobileOpen, setOn: setMobileOpen } = useToggle(false)
   const avatarFallback = getUserAvatarFallback(user)
   const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
   const navItems = NAV_ITEMS
+
+  const adminMenuItems: MenuItemProps[] = [
+    {
+      routeHandler: () => router.push('/admin'),
+      label: 'admin',
+      icon: 're-up.ph',
+      className: 'size-4 ml-0.5 mr-4'
+    }
+  ]
+
+  const userMenuItems: MenuItemProps[] = [
+    {
+      routeHandler: () => router.push('/profile'),
+      label: 'account',
+      icon: 'user-fill',
+      className: 'size-5 mr-3.5'
+    }
+  ]
 
   return (
     <header
@@ -92,15 +118,19 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
                   }
                 />
                 <DropdownMenuContent align='end' className=''>
-                  <DropdownMenuItem render={<Link href='/profile' />} className='rounded-xl'>
-                    <Icon name='user' className='size-4' />
-                    <span>Profile</span>
-                  </DropdownMenuItem>
-                  {hasAdminClaim ? (
-                    <DropdownMenuItem className='rounded-xl'>
-                      <AdminButton />
+                  {userMenuItems.map((item) => (
+                    <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                      <MenuItem {...item} />
                     </DropdownMenuItem>
-                  ) : null}
+                  ))}
+                  {hasAdminClaim &&
+                    adminMenuItems.map((item) => (
+                      <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                        <MenuItem {...item} />
+                      </DropdownMenuItem>
+                    ))}
+
+                  <DropdownMenuSeparator className='my-0.75' />
                   <DropdownMenuItem className='rounded-sm rounded-b-xl'>
                     <SignOutButton withLabel />
                   </DropdownMenuItem>
@@ -181,15 +211,20 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
   )
 }
 
-const AdminButton = () => {
-  const router = useRouter()
+interface MenuItemProps {
+  routeHandler: () => void
+  label: string
+  icon: IconName
+  className?: ClassName
+}
+const MenuItem = ({ routeHandler, label, icon, className }: MenuItemProps) => {
   return (
     <Button
-      onClick={() => router.push('/admin/config')}
+      onClick={routeHandler}
       variant='ghost'
       className='w-full justify-start space-x-3 px-0.5 hover:bg-transparent'>
-      <Icon name='re-up.ph' className='size-3.5' />
-      <span>Admin</span>
+      <Icon name={icon} className={cn('size-4', className)} />
+      <span className='font-okx font-medium text-base text-foreground/70'>{label}</span>
     </Button>
   )
 }
