@@ -9,6 +9,7 @@ import { orderSchema } from './orders/d'
 import { paymentMethodSchema } from './paymentMethods/d'
 import { podiumAwardSchema } from './podiumAwards/d'
 import { registrationSchema } from './registrations/d'
+import { resendWebhookEventSchema } from './resendWebhooks/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema, subscriptionStatusChangeSchema } from './subscriptions/d'
 import { tournamentSchema } from './tournaments/d'
@@ -40,6 +41,11 @@ export default defineSchema({
     .index('by_tournamentId', ['tournament_id'])
     .index('by_subscriptionId', ['subscription_id'])
     .index('by_ticketToken', ['ticket_token']),
+  resendWebhookEvents: defineTable(resendWebhookEventSchema)
+    .index('by_webhookId', ['webhookId'])
+    .index('by_receivedAt', ['receivedAt'])
+    .index('by_category_and_receivedAt', ['category', 'receivedAt'])
+    .index('by_eventType_and_receivedAt', ['eventType', 'receivedAt']),
   sponsorLeads: defineTable(sponsorLeadSchema).index('by_tournamentId', ['tournament_id']),
   subscriptions: defineTable(subscriptionSchema)
     .index('by_user_id', ['user_id'])

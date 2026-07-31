@@ -22,10 +22,7 @@ import type { ClassName } from '@/types'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
-const GUEST_NAV_ITEMS: NavItem[] = [
-  { value: '/tournaments/som-2026', label: 'Tournaments', icon: 'trophy-line' }
-  // { value: '/', label: 'Home', icon: 'home-line' },
-]
+const GUEST_NAV_ITEMS: NavItem[] = [{ value: '/tournaments/som-2026', label: 'Tournaments', icon: 'trophy-line' }]
 
 interface AuthenticatedTopbarProps {
   user: FirebaseSessionUser
@@ -55,16 +52,17 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
   const avatarFallback = getUserAvatarFallback(user)
   const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
   const navItems = NAV_ITEMS
+  const navigate = (path: string) => () => router.push(path)
 
   const adminMenuItems: MenuItemProps[] = [
     {
-      routeHandler: () => router.push('/admin/config'),
+      routeHandler: navigate('/admin/config'),
       label: 'admin',
       icon: 're-up.ph',
       className: 'size-4 ml-0.5 mr-4'
     },
     {
-      routeHandler: () => router.push('/profile'),
+      routeHandler: navigate('/profile'),
       label: 'account',
       icon: 'user-fill',
       className: 'size-5 mr-3.5'
@@ -73,7 +71,7 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
 
   const userMenuItems: MenuItemProps[] = [
     {
-      routeHandler: () => router.push('/profile'),
+      routeHandler: navigate('/profile'),
       label: 'account',
       icon: 'user-fill',
       className: 'size-5 mr-3.5'

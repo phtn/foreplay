@@ -95,6 +95,7 @@
   --color-success: var(--success);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-hermes: oklch(0.64 0.207 34.88);
+  --color-webhooks: oklch(0.451 0.259 269.98);
 }
 
 :root {
@@ -139,6 +140,7 @@
   --warning-foreground: var(--color-yellow-900);
   --invert: var(--color-zinc-900);
   --invert-foreground: var(--color-zinc-50);
+  --webhooks: var(--color-webhooks);
 }
 
 .dark {
@@ -182,6 +184,7 @@
   --warning-foreground: var(--color-yellow-600);
   --invert: var(--color-zinc-700);
   --invert-foreground: var(--color-zinc-50);
+  --webhooks: var(--color-webhooks);
 }
 
 @layer base {

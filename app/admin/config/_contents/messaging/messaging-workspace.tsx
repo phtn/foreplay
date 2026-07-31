@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
 import { useDeferredValue, useId, useMemo, useRef, useState } from 'react'
 
 export type MessagingRecipient = {
@@ -68,6 +69,8 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
   const [templateHtml, setTemplateHtml] = useState('')
   const [deliveryStatus, setDeliveryStatus] = useState<DeliveryStatus>(null)
   const [isSending, setIsSending] = useState(false)
+  const router = useRouter()
+  const navigate = (path: string) => () => router.push(path)
 
   const filteredRecipients = useMemo(() => {
     const query = deferredSearchQuery.trim().toLocaleLowerCase()
@@ -237,16 +240,21 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
   }
 
   return (
-    <section aria-labelledby='messaging-heading' className='space-y-5 px-2'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between'>
+    <section aria-labelledby='messaging-heading' className='space-y-5 px-2 md:px-0'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-3'>
         <div className='space-y-1'>
           <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Communications</p>
-          <h2 id='messaging-heading' className='font-poly text-xl font-medium'>
-            Messaging
+          <h2 id='messaging-heading' className='flex items-center font-poly font-medium text-xl space-x-4'>
+            <span>Messaging</span>
+            <Icon
+              name='webhook'
+              className='size-5 text-webhooks dark:text-white'
+              onClick={navigate('/admin/config/email/webhooks')}
+            />
           </h2>
         </div>
 
-        <div className='flex flex-wrap items-center gap-2 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+        <div className='hidden _flex flex-wrap items-center gap-2 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
           <span className='rounded-full border border-border/70 px-2.5 py-1'>{recipients.length} verified</span>
           <span className='rounded-full border border-border/70 px-2.5 py-1'>{templates.length} templates</span>
         </div>
@@ -267,6 +275,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 size='sm'
                 variant='outline'
                 disabled={!filteredRecipients.length}
+                className='hidden'
                 onClick={toggleFilteredRecipients}>
                 {allFilteredSelected ? 'Clear visible' : 'Select visible'}
               </Button>

@@ -31,26 +31,24 @@ export default async function Page() {
     },
     { value: 'events', label: 'Events', content: <EventsContent /> },
     { value: 'staff', label: 'Staff', content: <StaffContent /> },
-    { value: 'users', label: 'Users', content: <UsersContent /> },
-    { value: 'payments', label: 'Payments', content: <PaymentsContent /> },
+    {
+      value: 'users',
+      label: <Icon name='user-fill' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
+      content: <UsersContent />
+    },
+    {
+      value: 'payments',
+      label: <Icon name='card-pay' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
+      content: <PaymentsContent />
+    },
     {
       value: 'settings',
       label: <Icon name='music-note' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
       content: <SettingsContent />
     },
-
     {
       value: 'messaging',
-      label: (
-        <>
-          <Icon
-            name='send'
-            aria-hidden='true'
-            className='md:size-5 transition-transform duration-250 group-active:scale-98'
-          />
-          <span className='sr-only'>Messaging</span>
-        </>
-      ),
+      label: <Icon name='send' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
       content: <MessagingContent />
     }
   ]
