@@ -1,0 +1,837 @@
+// 'use client'
+
+// import {Input} from '@/components/ui/input'
+// import {Select} from '@/components/ui/select'
+// import {api} from '@/convex/_generated/api'
+// import {type Doc, Id} from '@/convex/_generated/dataModel'
+// import {onSuccess} from '@/ctx/toast'
+// import {Icon} from '@/lib/icons'
+// import {TEMPLATE_OPTIONS} from '@/lib/resend/templates/defaults'
+// import {useMutation, useQuery} from 'convex/react'
+// import {motion} from 'motion/react'
+// import {useRouter} from 'next/navigation'
+// import {startTransition, useCallback, useMemo, useRef, useState} from 'react'
+// import {toast} from 'react-hot-toast'
+// import type {EmailSettingsConvexArgs} from '../email-settings-form-schema'
+// import {toFormValues, withViewTransition} from '../utils'
+// import {EmailTemplateEditor} from './email-template-editor'
+
+// interface EmailTemplateViewerProps {
+//   id: string
+// }
+// export type RecipientRow = {name: string; email: string}
+// type MailingListDoc = Doc<'mailingLists'>
+// type EmailBlastDoc = Doc<'emailBlasts'>
+
+// /** Parse pasted text into name/email rows. Separators: =, :, or , (one per line). */
+// function parsePastedRecipients(text: string): RecipientRow[] {
+//   const lines = text
+//     .split(/\r?\n/)
+//     .map((s) => s.trim())
+//     .filter(Boolean)
+//   return lines.map((line) => {
+//     const sepMatch = line.match(/[=,:]/)
+//     const idx = sepMatch ? line.indexOf(sepMatch[0]!) : -1
+//     if (idx === -1) {
+//       if (line.includes('@')) return {name: '', email: line}
+//       return {name: line, email: ''}
+//     }
+//     const left = line.slice(0, idx).trim()
+//     const right = line.slice(idx + 1).trim()
+//     const hasAtLeft = left.includes('@')
+//     const hasAtRight = right.includes('@')
+//     if (hasAtRight && !hasAtLeft) return {name: left, email: right}
+//     if (hasAtLeft && !hasAtRight) return {name: right, email: left}
+//     return {name: left, email: right}
+//   })
+// }
+
+// function normalizeCsvHeader(value: string) {
+//   return value
+//     .trim()
+//     .toLowerCase()
+//     .replace(/[^a-z0-9]/g, '')
+// }
+
+// function parseCsvRow(line: string): string[] {
+//   const cells: string[] = []
+//   let current = ''
+//   let inQuotes = false
+
+//   for (let i = 0; i < line.length; i++) {
+//     const char = line[i]
+//     const next = line[i + 1]
+
+//     if (char === '"') {
+//       if (inQuotes && next === '"') {
+//         current += '"'
+//         i++
+//       } else {
+//         inQuotes = !inQuotes
+//       }
+//       continue
+//     }
+
+//     if (char === ',' && !inQuotes) {
+//       cells.push(current.trim())
+//       current = ''
+//       continue
+//     }
+
+//     current += char
+//   }
+
+//   cells.push(current.trim())
+//   return cells
+// }
+
+// function parseCsvRecipients(text: string): RecipientRow[] {
+//   const lines = text
+//     .split(/\r?\n/)
+//     .map((line) => line.trim())
+//     .filter(Boolean)
+
+//   if (lines.length < 2) return []
+
+//   const headers = parseCsvRow(lines[0] ?? '').map(normalizeCsvHeader)
+//   const emailIndex = headers.findIndex((header) => header === 'email')
+//   const nameIndex = headers.findIndex((header) =>
+//     ['name', 'fullname'].includes(header),
+//   )
+//   const firstNameIndex = headers.findIndex((header) =>
+//     ['firstname', 'first'].includes(header),
+//   )
+//   const lastNameIndex = headers.findIndex((header) =>
+//     ['lastname', 'last'].includes(header),
+//   )
+
+//   if (emailIndex === -1) return []
+
+//   return lines.slice(1).reduce<RecipientRow[]>((rows, line) => {
+//     const cells = parseCsvRow(line)
+//     const email = cells[emailIndex]?.trim() ?? ''
+//     if (!email) return rows
+
+//     const explicitName = nameIndex >= 0 ? (cells[nameIndex]?.trim() ?? '') : ''
+//     const firstName =
+//       firstNameIndex >= 0 ? (cells[firstNameIndex]?.trim() ?? '') : ''
+//     const lastName =
+//       lastNameIndex >= 0 ? (cells[lastNameIndex]?.trim() ?? '') : ''
+//     const name = explicitName || [firstName, lastName].filter(Boolean).join(' ')
+
+//     rows.push({name, email})
+//     return rows
+//   }, [])
+// }
+
+// // const getSingleSelectedKey = (keys: Set<string>) => {
+// //   if (keys === 'all') {
+// //     return ''
+// //   }
+
+// //   const key = Array.from(keys)[0]
+// //   return key == null ? '' : String(key)
+// // }
+
+// async function startEmailBlastRequest({
+//   emailSettingId,
+//   mailingListId,
+//   idToken,
+// }: {
+//   emailSettingId: string
+//   mailingListId: string
+//   idToken: string
+// }) {
+//   const response = await fetch('/api/admin/email-blasts', {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Bearer ${idToken}`,
+//     },
+//     body: JSON.stringify({
+//       emailSettingId,
+//       mailingListId,
+//     }),
+//   })
+
+//   const payload = (await response.json().catch(() => null)) as {
+//     blastId?: string
+//     error?: string
+//   } | null
+
+//   if (!response.ok) {
+//     throw new Error(payload?.error || 'Failed to start email blast.')
+//   }
+
+//   return payload?.blastId ?? null
+// }
+
+// export const EmailTemplateViewer = ({id}: EmailTemplateViewerProps) => {
+//   const {user} = useAuthCtx()
+//   const router = useRouter()
+//   const [isEditing, setIsEditing] = useState(false)
+//   const [showMailingList, setShowMailingList] = useState(false)
+//   const [showEmailBlast, setShowEmailBlast] = useState(false)
+//   const [mailingListName, setMailingListName] = useState('')
+//   const [recipients, setRecipients] = useState<RecipientRow[]>([])
+//   const [selectedListId, setSelectedListId] = useState<string>('')
+//   const [isStartingBlast, setIsStartingBlast] = useState(false)
+//   const csvInputRef = useRef<HTMLInputElement | null>(null)
+
+//   const emailSetting = useQuery(
+//     api.emailSettings.q.getEmailSetting,
+//     id ? {id: id as Id<'emailSettings'>} : 'skip',
+//   )
+//   const updateEmailSetting = useMutation(api.emailSettings.m.update)
+//   const deleteEmailSetting = useMutation(api.emailSettings.m.remove)
+//   const createMailingList = useMutation(api.mailingLists.m.create)
+//   const mailingLists = useQuery(api.mailingLists.q.list)
+//   const recentBlasts = useQuery(
+//     api.emailBlasts.q.listRecent,
+//     id ? {emailSettingId: id as Id<'emailSettings'>, limit: 6} : 'skip',
+//   )
+
+//   const activeBlast = useMemo<EmailBlastDoc | null>(
+//     () =>
+//       (recentBlasts ?? []).find(
+//         (blast) => blast.status === 'queued' || blast.status === 'sending',
+//       ) ?? null,
+//     [recentBlasts],
+//   )
+//   const displayBlast = activeBlast ?? recentBlasts?.[0] ?? null
+
+//   const navigateBackToList = useCallback(() => {
+//     withViewTransition(() => {
+//       startTransition(() => {
+//         router.push('/admin/messaging/email')
+//       })
+//     })
+//   }, [router])
+
+//   const handleSubmitEdit = useCallback(
+//     async (values: EmailSettingsConvexArgs) => {
+//       await updateEmailSetting({id: id as Id<'emailSettings'>, ...values})
+//       toast.success('Email setting updated')
+//       setIsEditing(false)
+//     },
+//     [id, updateEmailSetting],
+//   )
+
+//   const handleDelete = useCallback(async () => {
+//     if (!confirm('Are you sure you want to delete this email setting?')) return
+
+//     startTransition(() => {
+//       ;(async () => {
+//         try {
+//           await deleteEmailSetting({id: id as Id<'emailSettings'>})
+//           onSuccess('Email setting deleted')
+//           navigateBackToList()
+//         } catch (error) {
+//           console.error(error)
+//           toast.error('Failed to delete email setting')
+//         }
+//       })()
+//     })
+//   }, [id, deleteEmailSetting, navigateBackToList])
+
+//   const toggleMailingList = useCallback(() => {
+//     setShowMailingList((prev) => {
+//       if (!prev) {
+//         setRecipients([])
+//         setMailingListName('')
+//       }
+//       return !prev
+//     })
+//   }, [])
+
+//   const setRecipient = useCallback(
+//     (index: number, field: 'name' | 'email', value: string) => {
+//       setRecipients((prev) =>
+//         prev.map((r, i) => (i === index ? {...r, [field]: value} : r)),
+//       )
+//     },
+//     [],
+//   )
+
+//   const addRecipientRow = useCallback(() => {
+//     setRecipients((prev) => [...prev, {name: '', email: ''}])
+//   }, [])
+
+//   const removeRecipientRow = useCallback((index: number) => {
+//     setRecipients((prev) => prev.filter((_, i) => i !== index))
+//   }, [])
+
+//   const handlePasteRecipients = useCallback((e: React.ClipboardEvent) => {
+//     const text = e.clipboardData.getData('text')
+//     if (!text.trim()) return
+//     e.preventDefault()
+//     const parsed = parsePastedRecipients(text)
+//     if (parsed.length > 0) {
+//       setRecipients((prev) => [...prev, ...parsed])
+//     }
+//   }, [])
+
+//   const handleCreateMailingList = useCallback(async () => {
+//     const valid = recipients.filter((r) => r.email.trim())
+//     if (valid.length === 0) {
+//       toast.error('Add at least one recipient with an email.')
+//       return
+//     }
+//     try {
+//       await createMailingList({
+//         name: mailingListName || 'Untitled',
+//         recipients: valid,
+//       })
+//       toast.success(
+//         `Mailing list "${mailingListName || 'Untitled'}" saved with ${valid.length} recipients`,
+//       )
+//       setShowMailingList(false)
+//       setRecipients([])
+//       setMailingListName('')
+//     } catch (err) {
+//       toast.error(err instanceof Error ? err.message : 'Failed to save list')
+//     }
+//   }, [recipients, mailingListName, createMailingList])
+
+//   const handleCsvImport = useCallback(
+//     async (e: React.ChangeEvent<HTMLInputElement>) => {
+//       const file = e.target.files?.[0]
+//       if (!file) return
+
+//       try {
+//         const text = await file.text()
+//         const parsed = parseCsvRecipients(text)
+//         if (parsed.length === 0) {
+//           toast.error(
+//             'No valid recipients found. CSV must include email and name, or email with first and last name columns.',
+//           )
+//           return
+//         }
+//         setRecipients((prev) => [...prev, ...parsed])
+//         toast.success(`Imported ${parsed.length} recipients from CSV`)
+//       } catch (error) {
+//         console.error(error)
+//         toast.error('Failed to import CSV')
+//       } finally {
+//         e.target.value = ''
+//       }
+//     },
+//     [],
+//   )
+
+//   const toggleEmailBlast = useCallback(() => {
+//     setShowEmailBlast((prev) => !prev)
+//   }, [])
+
+//   const handleEmailBlastSend = useCallback(async () => {
+//     const list = mailingLists?.find(
+//       (l: MailingListDoc) => l._id === selectedListId,
+//     )
+//     if (!list || list.recipients.length === 0) {
+//       toast.error('Select a mailing list with recipients.')
+//       return
+//     }
+//     if (!emailSetting) return
+//     const valid = list.recipients.filter((r) => r.email.trim())
+//     if (valid.length === 0) {
+//       toast.error('The selected list has no valid email addresses.')
+//       return
+//     }
+//     if (!user) {
+//       toast.error('You must be signed in to start an email blast.')
+//       return
+//     }
+
+//     setIsStartingBlast(true)
+
+//     try {
+//       const idToken = await user.getIdToken()
+//       await startEmailBlastRequest({
+//         emailSettingId: id,
+//         mailingListId: selectedListId,
+//         idToken,
+//       })
+//       toast.success(
+//         `Background blast started for ${valid.length} recipients. You can leave this page.`,
+//       )
+//     } catch (error) {
+//       toast.error(
+//         error instanceof Error ? error.message : 'Failed to start blast',
+//       )
+//     } finally {
+//       setIsStartingBlast(false)
+//     }
+//   }, [emailSetting, id, mailingLists, selectedListId, user])
+
+//   const cantSendBlast = useMemo(() => {
+//     return (
+//       !selectedListId ||
+//       isStartingBlast ||
+//       !!activeBlast ||
+//       !mailingLists?.some((l: MailingListDoc) => l._id === selectedListId)
+//     )
+//   }, [selectedListId, isStartingBlast, activeBlast, mailingLists])
+
+//   if (emailSetting === undefined) {
+//     return (
+//       <div className='flex items-center justify-center h-screen'>
+//         <motion.div
+//           initial={{opacity: 0}}
+//           animate={{opacity: 1}}
+//           className='flex items-center gap-3 opacity-50'>
+//           <Icon name='spinners-ring' className='size-5' />
+//           Loading email template...
+//         </motion.div>
+//       </div>
+//     )
+//   }
+
+//   if (emailSetting === null) {
+//     return (
+//       <div className='flex items-center justify-center h-screen'>
+//         <Card className='w-96'>
+//           <SectionHeader
+//             title='Email Setting Not Found'
+//             description='Please contact your administrator.'
+//           />
+//         </Card>
+//       </div>
+//     )
+//   }
+
+//   if (isEditing) {
+//     return (
+//       <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+//         <div className='hidden dark:fixed inset-0 overflow-hidden pointer-events-none'>
+//           <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
+//           <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-brand/10 rounded-full blur-3xl' />
+//         </div>
+//         <main className='relative flex min-h-0 flex-1 flex-col overflow-hidden'>
+//           <div className='flex min-h-0 flex-1 overflow-hidden'>
+//             <EmailTemplateEditor
+//               initialValues={toFormValues(emailSetting)}
+//               submitLabel='Update Template'
+//               onCancel={() => setIsEditing(false)}
+//               onSubmit={handleSubmitEdit}
+//             />
+//           </div>
+//         </main>
+//       </div>
+//     )
+//   }
+
+//   return (
+//     <div className='min-h-screen overflow-y-auto'>
+//       <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+//         <div className='absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl' />
+//         <div className='absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl' />
+//       </div>
+
+//       <main className='relative overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 border-t-[0.33px] bg-linear-to-b from-zinc-200/20 dark:from-zinc-300/10 to-5% to-zinc-200/10 dark:to-zinc-300/10 zinc-200 rounded-sm'>
+//         <div className='mb-4 flex items-center justify-between'>
+//           <Button
+//             type='button'
+//             variant='tertiary'
+//             onPress={navigateBackToList}
+//             className='gap-2 dark:bg-transparent'>
+//             <Icon name='chevron-left' className='size-4' />
+//             <span className='hidden md:flex'>Back to Templates</span>
+//           </Button>
+//           <div className='flex items-center gap-3 md:gap-5 px-1'>
+//             <Button
+//               type='button'
+//               variant='ghost'
+//               onPress={toggleEmailBlast}
+//               className='gap-1 rounded-md'>
+//               <span className='hidden md:flex'>Send Email </span>Blast
+//             </Button>
+//             <Button
+//               type='button'
+//               variant='tertiary'
+//               onPress={() => setIsEditing(true)}
+//               className='gap-1 rounded-md'>
+//               <span className='hidden md:flex'>Edit</span>
+//               <Icon name='pen' className='size-4 md:hidden' />
+//             </Button>
+//             <Button
+//               type='button'
+//               variant='danger'
+//               onPress={handleDelete}
+//               className='text-mac-red hover:text-mac-red w-4 md:w-fit rounded-md'>
+//               <span className='hidden md:flex'>Delete</span>
+//               <Icon name='trash-fill' className='size-4 md:hidden' />
+//             </Button>
+//           </div>
+//         </div>
+
+//         <div className='h-[calc(84lvh)] overflow-scroll'>
+//           <motion.div
+//             initial={{opacity: 0, y: 20}}
+//             animate={{opacity: 1, y: 0}}
+//             className=''>
+//             <Card className='bg-sidebar dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-t-md rounded-b-none shadow-none font-figtree h-28'>
+//               <CardHeader>
+//                 <div className='flex items-center gap-3'>
+//                   <SectionHeader
+//                     title={emailSetting.title || 'Untitled Template'}
+//                   />
+//                   <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
+//                     {emailSetting.intent || 'general'}
+//                   </span>
+//                   <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-brand/10 dark:bg-brand/10 text-brand dark:text-brand border border-brand/30 dark:border-brand/30'>
+//                     {emailSetting.type || 'default'}
+//                   </span>
+//                   {emailSetting.visible ? (
+//                     <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-emerald-100/50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 dark:border-emerald-500/30'>
+//                       Active
+//                     </span>
+//                   ) : (
+//                     <span className='inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20'>
+//                       Inactive
+//                     </span>
+//                   )}
+//                 </div>
+//               </CardHeader>
+//               <CardContent>
+//                 <div className='text-base pt-2 font-clash'>
+//                   <span className='text-xs uppercase opacity-70 mr-2'>
+//                     subject:
+//                   </span>
+//                   <span className='font-medium'>
+//                     {emailSetting.subject || 'No subject defined'}
+//                   </span>
+//                 </div>
+//               </CardContent>
+//             </Card>
+
+//             <div className='grid grid-cols-1 md:grid-cols-3 font-figtree'>
+//               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none md:rounded-bl-md shadow-none'>
+//                 <CardContent>
+//                   <SectionHeader title='Recipients' />
+//                   <div className='pt-6 space-y-3'>
+//                     <div>
+//                       <p className='text-xs uppercase opacity-60 mb-1'>from</p>
+//                       <p className='text-sm'>
+//                         {emailSetting.from?.join(', ') || 'Not set'}
+//                       </p>
+//                     </div>
+//                     <div>
+//                       <p className='text-xs uppercase opacity-60 mb-1'>to</p>
+//                       <p className='text-sm'>
+//                         {emailSetting.to?.join(', ') || 'dynamic'}
+//                       </p>
+//                     </div>
+//                     {emailSetting.cc && emailSetting.cc.length > 0 && (
+//                       <div>
+//                         <p className='text-xs text-zinc-400 mb-1'>CC</p>
+//                         <p className='text-sm'>{emailSetting.cc.join(', ')}</p>
+//                       </div>
+//                     )}
+//                     {emailSetting.bcc && emailSetting.bcc.length > 0 && (
+//                       <div>
+//                         <p className='text-xs uppercase opacity-60 mb-1'>bcc</p>
+//                         <p className='text-sm'>{emailSetting.bcc.join(', ')}</p>
+//                       </div>
+//                     )}
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 border-greyed/15 rounded-none shadow-none'>
+//                 <CardContent>
+//                   <SectionHeader title='Template' />
+//                   <div className='pt-6 space-y-3'>
+//                     <div>
+//                       <p className='text-xs uppercase opacity-60 mb-1'>name</p>
+//                       <p className='text-sm'>
+//                         {emailSetting.template
+//                           ? (EMAIL_TEMPLATE_OPTIONS.find(
+//                               (o) => o.id === emailSetting.template,
+//                             )?.label ?? emailSetting.template)
+//                           : 'No template'}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-t-0 md:border-l-0 border-background rounded-none rounded-b-md md:rounded-bl-md shadow-none'>
+//                 <CardContent>
+//                   <SectionHeader title='Metadata' />
+//                   <div className='pt-6 space-y-3'>
+//                     {emailSetting.group && (
+//                       <div>
+//                         <p className='text-xs uppercase opacity-60 mb-1'>
+//                           Group
+//                         </p>
+//                         <p className='text-sm'>{emailSetting.group}</p>
+//                       </div>
+//                     )}
+//                     {emailSetting.intent && (
+//                       <div>
+//                         <p className='text-xs uppercase opacity-60 mb-1'>
+//                           Intent
+//                         </p>
+//                         <p className='text-sm'>{emailSetting.intent}</p>
+//                       </div>
+//                     )}
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </div>
+
+//             <div className='mt-2 flex items-center space-x-4'>
+//               {emailSetting.text && (
+//                 <Card className='dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+//                   <SectionHeader title='Plain Text' />
+//                   <div className='p-2'>
+//                     <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+//                       {emailSetting.text}
+//                     </pre>
+//                   </div>
+//                 </Card>
+//               )}
+
+//               {emailSetting.body && (
+//                 <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-800/50 p-4'>
+//                   <SectionHeader title='Body Template' />
+//                   <div className='p-2 max-h-10'>
+//                     <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg'>
+//                       {emailSetting.body}
+//                     </pre>
+//                   </div>
+//                 </Card>
+//               )}
+
+//               {emailSetting.html && (
+//                 <Card className='hidden dark:bg-background bg-sidebar backdrop-blur-sm border border-zinc-700/50 p-4 mt-2'>
+//                   <SectionHeader title='HTML Template' />
+//                   <div className='p-2 max-h-12 hidden'>
+//                     <pre className='text-sm whitespace-pre-wrap font-mono bg-sidebar p-4 rounded-lg overflow-x-auto'>
+//                       {emailSetting.html}
+//                     </pre>
+//                   </div>
+//                 </Card>
+//               )}
+//             </div>
+//           </motion.div>
+
+//           {showEmailBlast && (
+//             <motion.div
+//               initial={{opacity: 0, height: 0}}
+//               animate={{opacity: 1, height: 'auto'}}
+//               className='mt-4'>
+//               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-md overflow-hidden font-figtree'>
+//                 <CardHeader>
+//                   <SectionHeader
+//                     title='Send Email Blast'
+//                     description='Start a background mailing list blast for this template. It keeps running even if you leave this page.'
+//                   />
+//                 </CardHeader>
+//                 <CardContent className='space-y-4'>
+//                   <Select
+//                     label='Mailing list'
+//                     placeholder='Select a list'
+//                     value={selectedListId || null}
+//                     onChange={(value) => setSelectedListId(value ?? '')}
+//                     isDisabled={!mailingLists?.length}
+//                     options={mailingLists?.map((list: MailingListDoc) => ({
+//                       value: list._id,
+//                       label: `${list.name} (${list.recipients.length})`,
+//                     }))}
+//                   />
+//                   {displayBlast && (
+//                     <div className='space-y-2'>
+//                       <ProgressBar
+//                         aria-label='Email blast progress'
+//                         value={
+//                           displayBlast.totalRecipients > 0
+//                             ? (displayBlast.processedRecipients /
+//                                 displayBlast.totalRecipients) *
+//                               100
+//                             : 0
+//                         }
+//                         color={
+//                           displayBlast.status === 'failed'
+//                             ? 'danger'
+//                             : 'success'
+//                         }
+//                         valueLabel={`${displayBlast.processedRecipients} / ${displayBlast.totalRecipients}`}
+//                         className='max-w-full'>
+//                         <ProgressBar.Output className='text-sm text-foreground/60' />
+//                         <ProgressBar.Track>
+//                           <ProgressBar.Fill />
+//                         </ProgressBar.Track>
+//                       </ProgressBar>
+//                       <div className='flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/60'>
+//                         <span className='font-medium uppercase tracking-[0.12em]'>
+//                           {displayBlast.status}
+//                         </span>
+//                         <span>
+//                           Sent {displayBlast.sentRecipients} of{' '}
+//                           {displayBlast.totalRecipients}
+//                         </span>
+//                         {displayBlast.currentRecipientEmail ? (
+//                           <span>
+//                             Sending to {displayBlast.currentRecipientEmail}
+//                           </span>
+//                         ) : null}
+//                       </div>
+//                       {displayBlast.lastError && (
+//                         <p className='text-sm text-danger'>
+//                           {displayBlast.lastError}
+//                         </p>
+//                       )}
+//                     </div>
+//                   )}
+//                   <div className='flex justify-end gap-2 font-clash'>
+//                     <Button variant='ghost' onPress={toggleEmailBlast}>
+//                       Cancel
+//                     </Button>
+//                     <Button
+//                       variant='primary'
+//                       onPress={handleEmailBlastSend}
+//                       isDisabled={cantSendBlast}
+//                       className='rounded-md bg-dark-gray dark:bg-white dark:text-dark-table flex items-center gap-2'>
+//                       <span>
+//                         {isStartingBlast ? 'Starting...' : 'Send Blast'}
+//                       </span>
+//                       {!cantSendBlast && (
+//                         <Icon
+//                           name={isStartingBlast ? 'spinners-ring' : 'send'}
+//                           className='size-4'
+//                         />
+//                       )}
+//                     </Button>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </motion.div>
+//           )}
+
+//           {showMailingList && (
+//             <motion.div
+//               initial={{opacity: 0, height: 0}}
+//               animate={{opacity: 1, height: 'auto'}}
+//               exit={{opacity: 0, height: 0}}
+//               className='mt-6'>
+//               <Card className='bg-sidebar/50 dark:bg-background backdrop-blur-xl border border-greyed/15 rounded-2xl overflow-hidden font-figtree'>
+//                 <CardHeader className='flex items-center justify-between'>
+//                   <SectionHeader
+//                     title='Create Mailing List'
+//                     description='Paste names and emails below (one per line). Use name=email, name:email, or name,email.'
+//                   />
+//                   <Input
+//                     label='List name (optional)'
+//                     placeholder='My mailing list'
+//                     value={mailingListName}
+//                     onChange={(e) => setMailingListName(e.target.value)}
+//                   />
+//                 </CardHeader>
+//                 <CardContent className='space-y-4'>
+//                   <input
+//                     ref={csvInputRef}
+//                     type='file'
+//                     accept='.csv,text/csv'
+//                     className='hidden'
+//                     onChange={handleCsvImport}
+//                   />
+//                   <div className='flex items-start space-x-3'>
+//                     <TextArea
+//                       placeholder='PASTE Name and Email on any of these formats: Alice=alice@example.com | Bob: bob@example.com | Carol, carol@example.com'
+//                       rows={1}
+//                       onPaste={handlePasteRecipients}
+//                     />
+//                     <div className='flex items-center gap-3'>
+//                       {recipients.length > 0 && (
+//                         <span className='text-sm text-default-500'>
+//                           {recipients.length} recipient
+//                           {recipients.length !== 1 ? 's' : ''}
+//                         </span>
+//                       )}
+//                       <Button
+//                         type='button'
+//                         variant='tertiary'
+//                         onPress={addRecipientRow}
+//                         className='gap-1 rounded-lg'>
+//                         <Icon name='plus' className='size-4' />
+//                         Add row
+//                       </Button>
+//                       <Button
+//                         type='button'
+//                         variant='primary'
+//                         onPress={() => csvInputRef.current?.click()}
+//                         className='gap-1 rounded-lg bg-dark-table text-white dark:bg-white dark:text-dark-table'>
+//                         <Icon name='arrow-up' className='size-4' />
+//                         Import CSV
+//                       </Button>
+//                     </div>
+//                   </div>
+
+//                   <div
+//                     className='rounded-lg border border-greyed/15 bg-default-50 dark:bg-default-100/5 h-64 overflow-y-scroll'
+//                     style={{contentVisibility: 'auto'}}>
+//                     <div className='divide-y divide-greyed/10 min-w-0'>
+//                       {recipients.length === 0 ? (
+//                         <div className='px-4 py-2 text-center text-sm text-default-400'>
+//                           Paste or add recipients above
+//                         </div>
+//                       ) : (
+//                         recipients.map((row, index) => (
+//                           <div
+//                             key={index}
+//                             className='flex items-center gap-2 px-3 py-1.5 min-h-0 hover:bg-default-100/50 dark:hover:bg-default-50/30 transition-colors'>
+//                             <input
+//                               type='text'
+//                               placeholder='Name'
+//                               value={row.name}
+//                               onChange={(e) =>
+//                                 setRecipient(index, 'name', e.target.value)
+//                               }
+//                               className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+//                               aria-label={`Recipient ${index + 1} name`}
+//                             />
+//                             <span className='text-default-400 shrink-0'>|</span>
+//                             <input
+//                               type='email'
+//                               placeholder='email@example.com'
+//                               value={row.email}
+//                               onChange={(e) =>
+//                                 setRecipient(index, 'email', e.target.value)
+//                               }
+//                               className='flex-1 min-w-0 text-sm font-mono bg-transparent border-none outline-none py-1 placeholder:text-default-400'
+//                               aria-label={`Recipient ${index + 1} email`}
+//                             />
+//                             <Button
+//                               type='button'
+//                               size='sm'
+//                               variant='danger'
+//                               isIconOnly
+//                               onPress={() => removeRecipientRow(index)}
+//                               aria-label={`Remove recipient ${index + 1}`}
+//                               className='shrink-0'>
+//                               <Icon name='trash' className='size-4' />
+//                             </Button>
+//                           </div>
+//                         ))
+//                       )}
+//                     </div>
+//                   </div>
+//                   <div className='flex justify-end gap-2'>
+//                     <Button variant='tertiary' onPress={toggleMailingList}>
+//                       Cancel
+//                     </Button>
+//                     <Button
+//                       variant='primary'
+//                       onPress={handleCreateMailingList}
+//                       className='rounded-lg bg-dark-gray dark:bg-white dark:text-dark-table'>
+//                       Create Mailing List
+//                     </Button>
+//                   </div>
+//                 </CardContent>
+//               </Card>
+//             </motion.div>
+//           )}
+//         </div>
+//       </main>
+//     </div>
+//   )
+// }

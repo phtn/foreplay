@@ -71,7 +71,11 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
               <DropdownMenu>
                 <DropdownMenuTrigger
                   render={
-                    <Button variant='ghost' size='icon-sm' className='w-auto shrink-0 aspect-square rounded-full'>
+                    <Button
+                      variant='ghost'
+                      size='icon-sm'
+                      aria-label='Open account menu'
+                      className='w-auto shrink-0 aspect-square rounded-full'>
                       <div className='flex size-5 items-center justify-center rounded-full bg-primary'>
                         <Avatar className='size-8 md:size-10'>
                           {user.photoURL ? (
@@ -88,8 +92,12 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
                   }
                 />
                 <DropdownMenuContent align='end' className=''>
+                  <DropdownMenuItem render={<Link href='/profile' />} className='rounded-xl'>
+                    <Icon name='user' className='size-4' />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
                   {hasAdminClaim ? (
-                    <DropdownMenuItem className='rounded-sm rounded-t-xl'>
+                    <DropdownMenuItem className='rounded-xl'>
                       <AdminButton />
                     </DropdownMenuItem>
                   ) : null}

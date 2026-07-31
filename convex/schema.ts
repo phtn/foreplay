@@ -4,15 +4,13 @@ import { adminSchema } from './admin/d'
 import { eventSchema } from './events/d'
 import { historySchema } from './history/d'
 import { leagueSchema } from './leagues/d'
+import { messagingConfigsSchema } from './messagingConfigs/d'
 import { orderSchema } from './orders/d'
 import { paymentMethodSchema } from './paymentMethods/d'
 import { podiumAwardSchema } from './podiumAwards/d'
 import { registrationSchema } from './registrations/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
-import {
-  subscriptionSchema,
-  subscriptionStatusChangeSchema
-} from './subscriptions/d'
+import { subscriptionSchema, subscriptionStatusChangeSchema } from './subscriptions/d'
 import { tournamentSchema } from './tournaments/d'
 import { txnSchema } from './txns/d'
 import { userSchema } from './users/d'
@@ -26,7 +24,9 @@ export default defineSchema({
   accounts: defineTable(accountSchema).index('by_sub', ['sub']),
   leagues: defineTable(leagueSchema).index('by_userId', ['userId']).index('by_accountId', ['accountId']),
   orders: defineTable(orderSchema).index('by_refNumber', ['refNumber']),
-  paymentMethods: defineTable(paymentMethodSchema).index('by_kind', ['kind']).index('by_kind_active', ['kind', 'isActive']),
+  paymentMethods: defineTable(paymentMethodSchema)
+    .index('by_kind', ['kind'])
+    .index('by_kind_active', ['kind', 'isActive']),
   podiumAwards: defineTable(podiumAwardSchema)
     .index('by_tournamentId', ['tournament_id'])
     .index('by_tournamentId_awardKey_position', ['tournament_id', 'award_key', 'position']),
@@ -46,9 +46,13 @@ export default defineSchema({
     .index('by_tournamentId', ['tournament_id'])
     .index('by_userId_tournamentId', ['user_id', 'tournament_id'])
     .index('by_tournamentId_formId', ['tournament_id', 'form_id']),
-  subscriptionStatusChanges: defineTable(
-    subscriptionStatusChangeSchema
-  ).index('by_subscription_id', ['subscription_id']),
+  subscriptionStatusChanges: defineTable(subscriptionStatusChangeSchema).index('by_subscription_id', [
+    'subscription_id'
+  ]),
   tournaments: defineTable(tournamentSchema).index('by_tournament_id', ['id']),
-  events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id'])
+  events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id']),
+  messagingConfigs: defineTable(messagingConfigsSchema)
+    .index('by_title', ['title'])
+    .index('by_intent', ['intent'])
+    .index('by_group', ['group'])
 })

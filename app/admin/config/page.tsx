@@ -2,6 +2,7 @@ import { Icon } from '@/lib/icons'
 import { Metadata } from 'next'
 import { CreateEventContent } from './_contents/create-event'
 import { EventsContent } from './_contents/events'
+import { MessagingContent } from './_contents/messaging'
 import { PaymentsContent } from './_contents/payments'
 import { SettingsContent } from './_contents/settings'
 import { StaffContent } from './_contents/staff'
@@ -32,6 +33,21 @@ export default async function Page() {
       value: 'settings',
       label: <Icon name='music-note' className='md:size-5 transition-transform duration-250 group-active:scale-98' />,
       content: <SettingsContent />
+    },
+
+    {
+      value: 'messaging',
+      label: (
+        <>
+          <Icon
+            name='send'
+            aria-hidden='true'
+            className='md:size-5 transition-transform duration-250 group-active:scale-98'
+          />
+          <span className='sr-only'>Messaging</span>
+        </>
+      ),
+      content: <MessagingContent />
     }
   ]
 
