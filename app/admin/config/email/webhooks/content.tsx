@@ -229,24 +229,31 @@ export const Content = () => {
                 Admin
               </Link>
               <div className='space-y-2'>
-                <div className='flex items-center gap-2 font-ios text-[11px] uppercase tracking-[0.2em] text-sky-300'>
-                  <span className='size-2 rounded-full bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.12)]' />
-                  Resend event stream
+                <div className='flex items-center space-x-4'>
+                  <h2 className='font-poly text-xl font-medium tracking-tight sm:text-2xl'>Resend Webhook Activity</h2>
+                  <Button
+                    type='button'
+                    size='icon-xs'
+                    variant='secondary'
+                    disabled={isLoading || isAuthLoading}
+                    onClick={refresh}
+                    className='group rounded-full w-6 border-white hover:border-white/50 hover:border-dashed bg-white text-zinc-500 hover:text-white hover:bg-white/14'>
+                    <div className=' -scale-x-100'>
+                      <Icon
+                        name='refresh'
+                        className={cn('size-5 -rotate-60 group-hover:-rotate-50 transition-transform duration-300', {
+                          'animate-spin': isLoading
+                        })}
+                      />
+                    </div>
+                  </Button>
                 </div>
-                <h1 className='font-poly text-2xl font-medium tracking-tight sm:text-3xl'>Webhook activity</h1>
               </div>
             </div>
-
-            <Button
-              type='button'
-              size='sm'
-              variant='outline'
-              disabled={isLoading || isAuthLoading}
-              onClick={refresh}
-              className='w-fit border-white/15 bg-white/8 text-white hover:bg-white/14 hover:text-white'>
-              <Icon name='refresh' className={cn('size-4', { 'animate-spin': isLoading })} />
-              Refresh
-            </Button>
+            <div className='flex items-center gap-2 font-ios text-[11px] uppercase tracking-[0.2em] text-sky-300'>
+              <span>Email Service</span>
+              <Icon name='email-sending' className='size-3.5' />
+            </div>
           </div>
 
           <div className='grid gap-2 sm:grid-cols-3'>
@@ -371,21 +378,20 @@ function Metric({ label, value, valueClassName }: { label: string; value: string
 function WebhookEventRow({ event }: { event: WebhookEvent }) {
   return (
     <details className='group border-t border-border/60 first:border-t'>
-      <summary className='grid cursor-pointer list-none gap-3 px-4 py-4 transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)_auto] sm:items-center sm:px-6 [&::-webkit-details-marker]:hidden'>
+      <summary className='grid cursor-pointer list-none gap-3 px-4 py-4 transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:grid-cols-[minmax(0,0.5fr)_minmax(0,1fr)_auto_auto] sm:items-center sm:px-6 [&::-webkit-details-marker]:hidden'>
+        <div className='flex flex-wrap items-center gap-2'>
+          <Badge variant={getEventVariant(event.eventType)} size='lg' radius='full' className='flex items-center gap-1'>
+            <span className='text-sm'>{formatEventType(event.eventType)}</span>
+          </Badge>
+        </div>
         <div className='min-w-0 space-y-2'>
-          <div className='flex flex-wrap items-center gap-2'>
-            <Badge variant={getEventVariant(event.eventType)} size='lg' radius='full'>
-              {formatEventType(event.eventType)}
-            </Badge>
-          </div>
-          <p className='truncate font-poly text-sm font-medium text-foreground sm:text-base'>
+          <p className='truncate font-poly font-medium text-foreground text-sm'>
             {event.subject ?? event.target ?? event.resourceId}
           </p>
         </div>
 
         <div className='min-w-0 text-sm'>
           <p className='truncate text-foreground/75'>{event.target ?? 'No recipient recorded'}</p>
-          <p className='mt-1 truncate font-mono text-[11px] text-muted-foreground'>{event.resourceId}</p>
         </div>
 
         <div className='flex items-center justify-between gap-4 sm:justify-end'>
@@ -401,7 +407,7 @@ function WebhookEventRow({ event }: { event: WebhookEvent }) {
       </summary>
 
       <div className='bg-muted/25 px-4 pb-5 pt-1 sm:px-6 sm:pb-6'>
-        <dl className='grid gap-x-8 gap-y-4 rounded-2xl bg-background/75 p-4 ring-1 ring-foreground/8 sm:grid-cols-2 lg:grid-cols-3'>
+        <dl className='grid gap-x-8 gap-y-4 rounded-lg bg-background/75 p-4 ring-1 ring-foreground/8 sm:grid-cols-2 lg:grid-cols-3'>
           <EventDetail label='Webhook ID' value={event.webhookId} mono />
           <EventDetail label='Resource ID' value={event.resourceId} mono />
           <EventDetail label='Event time' value={formatDate(event.eventCreatedAt)} />
