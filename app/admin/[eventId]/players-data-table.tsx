@@ -358,7 +358,7 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
   const [open, setOpen] = useState(false)
 
   if (row.tickets.length === 0) {
-    return <Icon name='ticket' className='opacity-50 tracking-widest flex justify-center' />
+    return <Icon name='goldticket' className='opacity-50 -rotate-2 flex justify-center' />
   }
 
   return (
@@ -367,10 +367,10 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
         type='button'
         variant='ghost'
         size='icon'
-        className='gap-1 text-pink-600 hover:text-pink-500 dark:text-pink-400/80'
+        className='gap-1 text-pink-500 hover:text-pink-500/80 dark:text-pink-400/80'
         aria-label={`View tickets for ${row.reference}`}
         onClick={() => setOpen(true)}>
-        <Icon name='ticket' className='size-5' />
+        <Icon name='goldticket' className='size-4.5 -rotate-2' />
         <span className='hidden'>View{row.tickets.length > 1 ? ` (${row.tickets.length})` : ''}</span>
       </Button>
       {open ? (

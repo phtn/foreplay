@@ -80,7 +80,7 @@ export default async function EventPage({ params }: EventPageProps) {
           <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
         </div>
 
-        <LinkTitle title={undefined} eyebrow='pairings' icon='document' href={`/admin/${eventId}/pairings`} />
+        <LinkTitle title={undefined} eyebrow='Pairings' icon='document' href={`/admin/${eventId}/pairings`} />
       </div>
       <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />
     </main>
