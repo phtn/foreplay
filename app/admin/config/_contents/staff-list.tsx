@@ -115,7 +115,7 @@ export const StaffList = ({ data }: StaffListProps) => {
           data={listData}
           keyId='id'
           max={listData.length}
-          container='mb-auto w-full'
+          container='mb-auto w-full space-y-1'
           component={StaffListItem}
         />
       ) : (
@@ -152,20 +152,20 @@ const StaffListItem = ({ user, claims }: StaffListEntry) => {
   return (
     <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none'>
       <AccordionItem value={user._id} className='bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
-        <AccordionTrigger className='items-center px-1 py-4 hover:no-underline'>
+        <AccordionTrigger className='items-center px-2 pb-2 pt-3 hover:no-underline'>
           <div className='flex items-center gap-2 md:gap-4'>
-            <Avatar className='size-8 border'>
-              <AvatarImage src={user.pictureUrl ?? undefined} alt='' />
+            <Avatar className='size-8 border border-foreground'>
+              <AvatarImage src={user.pictureUrl ?? undefined} alt='user avatar' />
               <AvatarFallback className='text-xs'>{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className='inline-flex items-center gap-3'>
               <span className='font-okx font-medium text-foreground/80 text-lg'>{displayName}</span>
-              <div className='flex shrink-0 items-center gap-2 uppercase'>
-                <Badge variant={claims.admin === true ? 'info-light' : 'outline'} size='lg'>
+              <div className='font-okx font-medium flex shrink-0 items-center gap-2 uppercase'>
+                <Badge variant={claims.admin === true ? 'top-g-outline' : 'focus-outline'} size='default' radius='md'>
                   {claims.admin === true ? 'Admin' : 'User'}
                 </Badge>
                 {claims.staff === true ? (
-                  <Badge variant='info-light' size='lg'>
+                  <Badge variant='default-outline' size='lg'>
                     Staff
                   </Badge>
                 ) : null}
@@ -173,7 +173,7 @@ const StaffListItem = ({ user, claims }: StaffListEntry) => {
             </div>
           </div>
         </AccordionTrigger>
-        <AccordionContent className='rounded-none bg-transparent md:pb-4 md:pl-11 md:pr-4'>
+        <AccordionContent className='py-0 ring-none rounded-none bg-transparent md:mt-1'>
           <UserClaimCard claims={claims} user={user} />
         </AccordionContent>
       </AccordionItem>
@@ -186,10 +186,10 @@ function UserClaimCard({ claims, user }: UserWithClaims) {
   const hasStaffClaim = claims.staff === true
 
   return (
-    <Card className='rounded-none md:rounded-lg py-1'>
-      <CardContent className='space-y-5 px-2 md:px-4'>
+    <Card className='ring-0 border-t dark:border-zinc-700 border-dashed rounded-none mb-1 py-1'>
+      <CardContent className='space-y-5 pt-4 mt-1 px-2 md:px-4'>
         <div className='space-y-2'>
-          <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Custom claims</p>
+          {/*<p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Custom claims</p>*/}
           <ClaimBadges claims={claims} />
         </div>
 
@@ -257,13 +257,17 @@ function ClaimBadges({ claims }: { claims: Record<string, unknown> }) {
   const entries = Object.entries(claims)
 
   if (!entries.length) {
-    return <span className='text-sm text-muted-foreground'>No custom claims</span>
+    return <span className='text-sm text-muted-foreground'>Zero Claims</span>
   }
 
   return (
     <div className='flex flex-wrap gap-1.5'>
       {entries.map(([key, value]) => (
-        <Badge key={key} variant={key === 'admin' && value === true ? 'success-light' : 'outline'} size='lg'>
+        <Badge
+          key={key}
+          variant={key === 'admin' && value === true ? 'success' : 'outline'}
+          size='lg'
+          className='uppercase'>
           {key}: {JSON.stringify(value)}
         </Badge>
       ))}

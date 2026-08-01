@@ -639,9 +639,9 @@ export const icons = {
   },
   'qr-code-scanner': {
     symbol:
-      '<path fill="currentColor" d="M3 7.039V3h4.039v1H4v3.039zM3 21v-4.038h1V20h3.039v1zm13.962 0v-1H20v-3.038h1V21zM20 7.039V4h-3.038V3H21v4.039zm-3.058 9.903h1.212v1.212h-1.212zm0-2.423h1.212v1.212h-1.212zm-1.211 1.212h1.211v1.211h-1.211zm-1.212 1.211h1.212v1.212h-1.212zm-1.211-1.211h1.211v1.211h-1.211zm2.423-2.423h1.211v1.211h-1.211zm-1.212 1.211h1.212v1.212h-1.212zm-1.211-1.211h1.211v1.211h-1.211zm4.846-7.462v4.846h-4.846V5.846zm-7.462 7.462v4.846H5.846v-4.846zm0-7.462v4.846H5.846V5.846zM9.808 17.27v-3.077H6.73v3.077zm0-7.461V6.73H6.73v3.077zm7.461 0V6.73h-3.077v3.077z"/>',
+      '<path fill="currentColor" d="M4 4h6v6H4zm16 0v6h-6V4zm-6 11h2v-2h-2v-2h2v2h2v-2h2v2h-2v2h2v3h-2v2h-2v-2h-3v2h-2v-4h3zm2 0v3h2v-3zM4 20v-6h6v6zM6 6v2h2V6zm10 0v2h2V6zM6 16v2h2v-2zm-2-5h2v2H4zm5 0h4v4h-2v-2H9zm2-5h2v4h-2zM2 2v4H0V2a2 2 0 0 1 2-2h4v2zm20-2a2 2 0 0 1 2 2v4h-2V2h-4V0zM2 18v4h4v2H2a2 2 0 0 1-2-2v-4zm20 4v-4h2v4a2 2 0 0 1-2 2h-4v-2z"/>',
     viewBox: '0 0 24 24',
-    set: 'material-symbols-light'
+    set: 'mdi'
   },
   slumbering: {
     symbol:

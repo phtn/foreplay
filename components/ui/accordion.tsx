@@ -34,17 +34,13 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
         )}
         {...props}>
         {children}
-        <Icon
-          name='chevron-down'
-          data-slot='accordion-trigger-icon'
-          className='pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden mr-2'
-        />
-        <Icon
-          name='chevron-down'
-          strokeWidth={2}
-          data-slot='accordion-trigger-icon'
-          className='pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline rotate-90 mr-2'
-        />
+        <div className='size-10 flex items-center justify-center'>
+          <Icon
+            name='chevron-down'
+            data-slot='accordion-trigger-icon'
+            className='pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:rotate-90 transition-transform'
+          />
+        </div>
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
