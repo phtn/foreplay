@@ -36,9 +36,9 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
         {children}
         <div className='size-10 flex items-center justify-center'>
           <Icon
-            name='chevron-down'
+            name='chevron-right'
             data-slot='accordion-trigger-icon'
-            className='pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:rotate-90 transition-transform'
+            className='pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:rotate-45 transition-all duration-200 ease-in-out opacity-80 group-hover/accordion-trigger:opacity-100'
           />
         </div>
       </AccordionPrimitive.Trigger>

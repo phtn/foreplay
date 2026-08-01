@@ -43,7 +43,7 @@ export const StaffList = ({ data }: StaffListProps) => {
   const isSearching = deferredQuery.trim().length > 0
   const resultLabel = isSearching
     ? `${listData.length} ${listData.length === 1 ? 'user' : 'users'} found`
-    : `${listData.length} ${listData.length === 1 ? 'account has' : 'accounts have'} staff or admin access`
+    : `${listData.length} ${listData.length === 1 ? 'account' : 'accounts'} found`
 
   const clearSearch = () => {
     setQuery('')
@@ -51,27 +51,24 @@ export const StaffList = ({ data }: StaffListProps) => {
   }
 
   return (
-    <section aria-labelledby={`${searchId}-heading`} className='space-y-4'>
-      <div className='grid gap-3 px-2 md:grid-cols-[minmax(0,1fr)_minmax(20rem,0.8fr)] md:items-end'>
-        <div className='space-y-1'>
-          <h2 id={`${searchId}-heading`} className='font-poly text-lg font-medium'>
-            Staff
-          </h2>
-          {/*<p id={searchDescriptionId} className='text-sm text-muted-foreground'>
-            Search any account to grant or revoke claims.
-          </p>*/}
-        </div>
-
-        <div className='space-y-1.5'>
-          <label htmlFor={searchId} className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
+    <section aria-labelledby={`${searchId}-heading`} className='relative border dark:border-zinc-700'>
+      <h2 id={`${searchId}-heading`} className='sr-only opacity-0 absolute font-bold'>
+        Staff
+      </h2>
+      <div className='relative'>
+        <div className=''>
+          <label
+            htmlFor={searchId}
+            className='sr-only font-ios text-xs uppercase tracking-widest text-muted-foreground'>
             Search users
           </label>
           <div className='relative'>
-            <Icon
-              name='search'
-              aria-hidden='true'
-              className='pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground'
-            />
+            {query.trim().length === 0 && (
+              <Icon
+                name='search'
+                className='pointer-events-none absolute inset-y-0 right-3 my-auto size-5 text-foreground/50'
+              />
+            )}
             <Input
               ref={searchInputRef}
               id={searchId}
@@ -82,8 +79,8 @@ export const StaffList = ({ data }: StaffListProps) => {
               maxLength={160}
               value={query}
               aria-describedby={searchDescriptionId}
-              placeholder='Name, email, phone, or user ID'
-              className='h-11 px-10'
+              placeholder='Search for name, email, phone, or id'
+              className='h-12 px-5 rounded-none border-b border-x-0 border-t-0 border-foreground/40 dark:border-zinc-700 md:text-lg focus-within:outline-none focus-visible:ring-none focus-within:ring-0 focus-within:ring-sky-400/40 placeholder:text-foreground/40'
               onChange={(event) => setQuery(event.currentTarget.value)}
             />
             {query ? (
@@ -92,56 +89,56 @@ export const StaffList = ({ data }: StaffListProps) => {
                 size='icon-lg'
                 variant='ghost'
                 aria-label='Clear user search'
-                className='absolute inset-y-0 right-0 my-auto'
+                className='absolute inset-y-0 right-3 my-auto hidden'
                 onClick={clearSearch}>
-                <Icon name='close' aria-hidden='true' className='size-4' />
+                <Icon name='close' className='size-5' />
               </Button>
             ) : null}
           </div>
         </div>
+        <p
+          className='px-2 font-ios text-xs uppercase tracking-widest absolute top-4 right-14 pointer-events-none'
+          role='status'
+          aria-live='polite'
+          aria-atomic='true'>
+          {resultLabel}
+        </p>
       </div>
 
-      <p
-        className='px-2 font-ios text-xs uppercase tracking-widest text-muted-foreground'
-        role='status'
-        aria-live='polite'
-        aria-atomic='true'>
-        {resultLabel}
-      </p>
+      <div className='p-2'>
+        {listData.length ? (
+          <HyperList
+            key={listVersion}
+            data={listData}
+            keyId='id'
+            max={listData.length}
+            container='mb-auto w-full space-y-1'
+            component={StaffListItem}
+          />
+        ) : (
+          <Card className='ring-0 rounded-lg border-border/70 py-0'>
+            <CardContent className='flex min-h-48 flex-col items-center justify-center px-6 text-center'>
+              <Icon name={isSearching ? 'user-circle' : 'person-multiple'} className='size-10 text-foreground/20' />
+              <div className='space-y-2 py-4'>
+                <p className='font-poly text-foreground/70 text-base'>
+                  {isSearching ? 'No users found' : 'No staff or admins yet'}
+                </p>
+                <p className='font-okx text-sm text-foreground/50'>
+                  {isSearching
+                    ? 'Try a name, email, phone number, or user ID.'
+                    : 'Search for a user to grant staff or admin access.'}
+                </p>
+              </div>
 
-      {listData.length ? (
-        <HyperList
-          key={listVersion}
-          data={listData}
-          keyId='id'
-          max={listData.length}
-          container='mb-auto w-full space-y-1'
-          component={StaffListItem}
-        />
-      ) : (
-        <Card className='rounded-lg border-border/70'>
-          <CardContent className='flex min-h-48 flex-col items-center justify-center gap-3 px-6 text-center'>
-            <Icon
-              name={isSearching ? 'search' : 'person-multiple'}
-              aria-hidden='true'
-              className='size-8 text-muted-foreground'
-            />
-            <div className='space-y-1'>
-              <p className='font-okx text-base'>{isSearching ? 'No users found' : 'No staff or admins yet'}</p>
-              <p className='text-sm text-muted-foreground'>
-                {isSearching
-                  ? 'Try a name, email, phone number, or user ID.'
-                  : 'Search for a user to grant staff or admin access.'}
-              </p>
-            </div>
-            {isSearching ? (
-              <Button type='button' size='sm' variant='outline' onClick={clearSearch}>
-                Clear search
-              </Button>
-            ) : null}
-          </CardContent>
-        </Card>
-      )}
+              {isSearching ? (
+                <Button type='button' size='sm' variant='secondary' onClick={clearSearch} className='font-okx px-4'>
+                  Clear search
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </section>
   )
 }
