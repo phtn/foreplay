@@ -1,3 +1,11 @@
+import {
+  get_tournament_registration_action,
+  registration_action_exists,
+  registration_action_update_href,
+  registration_action_update_label,
+  TournamentRegistration$TournamentRegistration
+} from 'gts/registration_action.mjs'
+
 type TournamentRegistration = {
   _id: string
   form_id?: string
@@ -11,97 +19,30 @@ export type TournamentRegistrationAction = {
   updateHref: string
 }
 
-type TournamentRegistrationState = 'pending_payment' | 'payment_review' | 'confirmed' | 'inactive'
-
-const normalizeStateValue = (value: string | undefined) => {
-  return value?.trim().toLowerCase().replace(/[\s-]+/g, '_') ?? ''
-}
-
-const confirmedStates = new Set(['confirm_payment', 'confirmed', 'payment_confirmed'])
-const paymentReviewStates = new Set([
-  'awaiting_payment_confirmation',
-  'payment_review',
-  'pending_verification'
-])
-const pendingPaymentStates = new Set(['failed', 'pending', 'pending_payment', 'pending_upload', 'rejected'])
-const inactiveStates = new Set(['cancelled', 'refunded'])
-
-const getRegistrationState = (registration: TournamentRegistration): TournamentRegistrationState => {
-  const status = normalizeStateValue(registration.status)
-  const paymentStatus = normalizeStateValue(registration.payment_status)
-
-  if (inactiveStates.has(status) || inactiveStates.has(paymentStatus)) {
-    return 'inactive'
-  }
-
-  if (confirmedStates.has(status) || confirmedStates.has(paymentStatus) || paymentStatus === 'paid') {
-    return 'confirmed'
-  }
-
-  if (
-    paymentReviewStates.has(status) ||
-    paymentReviewStates.has(paymentStatus) ||
-    Boolean(registration.receipt_image_url)
-  ) {
-    return 'payment_review'
-  }
-
-  if (!status || pendingPaymentStates.has(status) || pendingPaymentStates.has(paymentStatus)) {
-    return 'pending_payment'
-  }
-
-  return 'inactive'
-}
-
-const getSubscriptionHref = (registrationId: string) => {
-  return `/subscriptions/${encodeURIComponent(registrationId)}`
-}
+const toGleamRegistration = (registration: TournamentRegistration) =>
+  TournamentRegistration$TournamentRegistration(
+    registration._id,
+    registration.form_id ?? '',
+    registration.payment_status,
+    Boolean(registration.receipt_image_url),
+    registration.status ?? ''
+  )
 
 export function getTournamentRegistrationAction(
   tournamentId: string,
   registrations: readonly TournamentRegistration[]
 ): TournamentRegistrationAction | null {
-  const registrationsByState = registrations.map((registration) => ({
-    registration,
-    state: getRegistrationState(registration)
-  }))
-  const pendingRegistration = registrationsByState.find(({ state }) => state === 'pending_payment')?.registration
+  const action = get_tournament_registration_action(
+    tournamentId,
+    registrations.map(toGleamRegistration)
+  )
 
-  if (pendingRegistration) {
-    const formId = pendingRegistration.form_id?.trim()
-
-    if (formId) {
-      const entrySearchParams = new URLSearchParams({ formId })
-
-      return {
-        updateLabel: 'Update and Resume',
-        updateHref: `/tournaments/${encodeURIComponent(tournamentId)}/entry?${entrySearchParams}`
-      }
-    }
-
-    return {
-      updateLabel: 'View Payment Status',
-      updateHref: getSubscriptionHref(pendingRegistration._id)
-    }
+  if (!registration_action_exists(action)) {
+    return null
   }
 
-  const paymentReviewRegistration = registrationsByState.find(({ state }) => state === 'payment_review')?.registration
-
-  if (paymentReviewRegistration) {
-    return {
-      updateLabel: 'View Payment Status',
-      updateHref: getSubscriptionHref(paymentReviewRegistration._id)
-    }
+  return {
+    updateLabel: registration_action_update_label(action),
+    updateHref: registration_action_update_href(action)
   }
-
-  const confirmedRegistration = registrationsByState.find(({ state }) => state === 'confirmed')?.registration
-
-  if (confirmedRegistration) {
-    return {
-      updateLabel: 'Payment Confirmed',
-      updateHref: getSubscriptionHref(confirmedRegistration._id)
-    }
-  }
-
-  return null
 }

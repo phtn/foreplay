@@ -1,44 +1,35 @@
 import type { Doc } from '@/convex/_generated/dataModel'
+import {
+  filter_staff_users,
+  has_staff_or_admin_claim,
+  SearchableStaffUser$SearchableStaffUser
+} from 'gts/staff_list_filter.mjs'
 
 export type UserWithClaims = {
   claims: Record<string, unknown>
   user: Doc<'users'>
 }
 
-const normalizeSearchValue = (value: string) => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('en-US')
+const searchValue = (value: unknown) => (typeof value === 'string' ? value : '')
 
-const getUserSearchText = (user: Doc<'users'>) =>
-  normalizeSearchValue(
-    [
-      user.email,
-      user.name,
-      user.nickname,
-      user.phone,
-      user.preferredUsername,
-      user.subject,
-      user.tokenIdentifier
-    ]
-      .filter((value): value is string => typeof value === 'string' && value.length > 0)
-      .join(' ')
+const toSearchableStaffUser = (entry: UserWithClaims) =>
+  SearchableStaffUser$SearchableStaffUser(
+    entry,
+    entry.claims.admin === true,
+    entry.claims.staff === true,
+    searchValue(entry.user.email),
+    searchValue(entry.user.name),
+    searchValue(entry.user.nickname),
+    searchValue(entry.user.phone),
+    searchValue(entry.user.preferredUsername),
+    entry.user.subject,
+    entry.user.tokenIdentifier,
+    entry.user.updatedAt
   )
 
 export const hasStaffOrAdminClaim = ({ claims }: UserWithClaims) =>
-  claims.admin === true || claims.staff === true
+  has_staff_or_admin_claim(claims.admin === true, claims.staff === true)
 
 export function filterStaffUsers(data: readonly UserWithClaims[] | undefined, query: string) {
-  const searchTerms = normalizeSearchValue(query).split(' ').filter(Boolean)
-
-  return (data ?? [])
-    .filter((entry) => {
-      if (searchTerms.length === 0) {
-        return hasStaffOrAdminClaim(entry)
-      }
-
-      const searchText = getUserSearchText(entry.user)
-      return searchTerms.every((term) => searchText.includes(term))
-    })
-    .toSorted((left, right) => {
-      const updatedAtDifference = right.user.updatedAt - left.user.updatedAt
-      return updatedAtDifference || left.user.subject.localeCompare(right.user.subject)
-    })
+  return filter_staff_users((data ?? []).map(toSearchableStaffUser), query) as UserWithClaims[]
 }
