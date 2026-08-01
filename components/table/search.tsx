@@ -44,7 +44,7 @@ const SearchComponent = ({ col, value, onChange, onClear, ref }: Props<unknown>)
         id={id}
         ref={inputRef}
         className={cn(
-          'peer h-8 min-w-0 rounded-xs border-none bg-muted dark:bg-muted/30 ps-3 font-brk text-sm outline-0 placeholder:font-ios placeholder:text-foreground/60 w-48 md:w-64 md:min-w-64',
+          'peer h-8 min-w-0 rounded-xs border-none bg-muted dark:bg-muted/30 ps-3 focus:opacity-100 opacity-0  font-brk text-sm outline-0 placeholder:font-ios placeholder:text-foreground/60 w-48 md:w-64 md:min-w-64',
           hasValue && 'pe-10'
         )}
         value={value}
@@ -56,7 +56,7 @@ const SearchComponent = ({ col, value, onChange, onClear, ref }: Props<unknown>)
         aria-label='Search'
       />
       <div className='pointer-events-none absolute inset-y-0 inset-e-0 flex items-center justify-center pe-2 text-foreground/80 peer-disabled:opacity-50'>
-        <Icon name='slash' aria-hidden='true' className='size-5' />
+        <Icon name='slash' aria-hidden='true' className='size-5 opacity-80' />
       </div>
       {hasValue ? (
         <button

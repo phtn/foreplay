@@ -41,3 +41,15 @@ export const getmessagingConfigsByIntent = query({
       .collect()
   }
 })
+
+export const getMessagingConfigByIntent = query({
+  args: {
+    intent: v.string()
+  },
+  handler: async (ctx, { intent }) => {
+    return await ctx.db
+      .query('messagingConfigs')
+      .withIndex('by_intent', (q) => q.eq('intent', intent))
+      .first()
+  }
+})

@@ -95,10 +95,6 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
               <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Reference</p>
               <p className='font-mono text-sm font-medium'>{reference}</p>
             </div>
-            <div className='text-right'>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Players</p>
-              <p className='font-poly text-lg'>{players.length}</p>
-            </div>
           </CardContent>
         </Card>
       </div>

@@ -29,6 +29,7 @@ import {
 import { createPlayersCsv, createPlayersExportFileName, createPlayersPdf } from './players-export'
 import { ReceiptDrawer } from './receipt-drawer'
 import type { EditableSubscriptionStatus } from './subscription-status-actions'
+import type { TicketEmailDeliveryResult } from './ticket-email-sender'
 
 export interface EventSubscriptionTableRow {
   subscriptionId: string
@@ -75,6 +76,10 @@ const paymentStatusStyles: Record<EventSubscriptionTableRow['paymentStatus'], st
 const paymentFilterOptions: EventSubscriptionTableRow['paymentStatus'][] = ['pending', 'paid', 'failed', 'refunded']
 
 const TicketViewerDrawer = dynamic(() => import('./ticket-viewer-drawer').then((module) => module.TicketViewerDrawer), {
+  ssr: false
+})
+
+const TicketEmailSender = dynamic(() => import('./ticket-email-sender').then((module) => module.TicketEmailSender), {
   ssr: false
 })
 
@@ -209,21 +214,12 @@ function SubscriptionStatusCell({ row }: { row: EventSubscriptionTableRow }) {
   )
 }
 
-function FormSubmitButton({
-  label,
-  pendingLabel,
-  className
-}: {
-  label: string
-  pendingLabel: string
-  className?: string
-}) {
+function FormSubmitButton({ className }: { label: string; pendingLabel: string; className?: string }) {
   const { pending } = useFormStatus()
 
   return (
     <Button type='submit' variant='ghost' size='xs' disabled={pending} aria-live='polite' className={className}>
-      {pending ? <Icon name='spinner-ring' className='size-3.5' /> : null}
-      {pending ? pendingLabel : label}
+      <Icon name={pending ? 'spinner-ring' : 'save'} className='size-4' />
     </Button>
   )
 }
@@ -296,7 +292,7 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
             disabled={isPending}
             aria-label={`Update status for ${row.reference}`}
             className='mx-auto gap-1 text-sky-600 hover:text-sky-500 dark:text-sky-400'>
-            <Icon name={isPending ? 'spinner-ring' : 'document'} className='size-3.5' />
+            <Icon name={isPending ? 'spinner-ring' : 'align-right'} className='size-3.5' />
             <span>Update</span>
             {!isPending ? <Icon name='chevron-down' className='size-3' /> : null}
           </Button>
@@ -362,7 +358,7 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
   const [open, setOpen] = useState(false)
 
   if (row.tickets.length === 0) {
-    return <span className='font-ios text-xs text-muted-foreground tracking-widest flex justify-center'>N/A</span>
+    return <Icon name='ticket' className='opacity-50 tracking-widest flex justify-center' />
   }
 
   return (
@@ -390,6 +386,140 @@ function TicketCell({ row }: { row: EventSubscriptionTableRow }) {
   )
 }
 
+type TicketMessagingStatus = {
+  kind: 'error' | 'success'
+  message: string
+} | null
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+function TicketMessagingCell({ eventId, row }: { eventId: string; row: EventSubscriptionTableRow }) {
+  const [sending, setSending] = useState(false)
+  const [status, setStatus] = useState<TicketMessagingStatus>(null)
+  const sendLockRef = useRef(false)
+  const active = row.paymentStatus === 'paid' && row.subscriptionStatus === 'confirmed'
+  const fallbackEmail = row.contactEmail?.trim().toLowerCase() ?? ''
+  const deliverableTickets = useMemo(
+    () =>
+      row.tickets.filter((ticket) => {
+        const recipient = ticket.email.trim().toLowerCase()
+        return emailPattern.test(recipient) || emailPattern.test(fallbackEmail)
+      }),
+    [fallbackEmail, row.tickets]
+  )
+  const ticketsAvailable = row.tickets.length > 0
+  const canSend = ticketsAvailable && active && deliverableTickets.length > 0
+
+  const handleComplete = useCallback((result: TicketEmailDeliveryResult) => {
+    sendLockRef.current = false
+    setSending(false)
+
+    if (result.failedCount === 0) {
+      setStatus({
+        kind: 'success',
+        message: `${result.sentCount} ${result.sentCount === 1 ? 'ticket email' : 'ticket emails'} sent.`
+      })
+      return
+    }
+
+    setStatus({
+      kind: 'error',
+      message:
+        result.sentCount > 0
+          ? `${result.sentCount} sent; ${result.failedCount} failed. ${result.errorMessage ?? ''}`.trim()
+          : (result.errorMessage ?? 'The ticket email could not be sent.')
+    })
+  }, [])
+
+  const handleSend = () => {
+    if (!canSend || sendLockRef.current) return
+
+    const confirmed = window.confirm(
+      `Email ${deliverableTickets.length} ${deliverableTickets.length === 1 ? 'ticket' : 'tickets'} for ${row.reference}?`
+    )
+    if (!confirmed) return
+
+    sendLockRef.current = true
+    setStatus(null)
+    setSending(true)
+  }
+
+  const unavailableReason = !ticketsAvailable
+    ? 'Tickets are not available yet.'
+    : !active
+      ? 'Only active, paid tickets can be emailed.'
+      : deliverableTickets.length === 0
+        ? 'No valid recipient email is available.'
+        : null
+  const label = unavailableReason
+    ? ticketsAvailable && !active
+      ? 'Locked'
+      : ''
+    : sending
+      ? 'Sending'
+      : status?.kind === 'success'
+        ? 'Sent'
+        : status?.kind === 'error'
+          ? 'Retry'
+          : 'Send'
+
+  return (
+    <div
+      className='flex justify-center'
+      title={unavailableReason ?? status?.message ?? `Email ${deliverableTickets.length} ticket images`}>
+      <Button
+        type='button'
+        variant='ghost'
+        size='xs'
+        disabled={!canSend || sending}
+        aria-label={
+          unavailableReason
+            ? `${unavailableReason} ${row.reference}`
+            : `${label} ticket email${deliverableTickets.length === 1 ? '' : 's'} for ${row.reference}`
+        }
+        className={cn(
+          'min-w-20 gap-1.5 active:scale-[0.96]',
+          status?.kind === 'success'
+            ? 'text-emerald-600 dark:text-emerald-400'
+            : status?.kind === 'error'
+              ? 'text-destructive'
+              : !ticketsAvailable
+                ? 'text-gray-600 hover:gray-sky-500 dark:text-gray-400'
+                : 'text-sky-600 hover:text-sky-500 dark:text-sky-400'
+        )}
+        onClick={handleSend}>
+        <Icon
+          name={
+            unavailableReason
+              ? ticketsAvailable && !active
+                ? 'lock'
+                : 'mail'
+              : sending
+                ? 'spinner-ring'
+                : status?.kind === 'success'
+                  ? 'circle-check-line'
+                  : 'email-sending'
+          }
+          aria-hidden='true'
+          className='size-4'
+        />
+        <span>{label}</span>
+      </Button>
+      <span className='sr-only' role='status' aria-live='polite' aria-atomic='true'>
+        {status?.message ?? (sending ? `Preparing and sending ${deliverableTickets.length} ticket emails.` : '')}
+      </span>
+      {sending ? (
+        <TicketEmailSender
+          eventId={eventId}
+          subscriptionId={row.subscriptionId}
+          tickets={deliverableTickets}
+          onComplete={handleComplete}
+        />
+      ) : null}
+    </div>
+  )
+}
+
 function RemarksCell({ eventId, row }: { eventId: string; row: EventSubscriptionTableRow }) {
   return (
     <form action={updateSubscriptionRemarks} className='flex min-w-64 items-center gap-1'>
@@ -402,10 +532,10 @@ function RemarksCell({ eventId, row }: { eventId: string; row: EventSubscription
         maxLength={1_000}
         rows={2}
         aria-label={`Admin remarks for ${row.reference}`}
-        placeholder='Add admin notes'
+        placeholder='Internal notes'
         className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs whitespace-normal outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 dark:bg-transparent'
       />
-      <FormSubmitButton label='Save' pendingLabel='Saving' className='text-sky-600 hover:text-sky-500' />
+      <FormSubmitButton label='Save' pendingLabel='Saving' className='text-gray-600 hover:text-gray-500' />
     </form>
   )
 }
@@ -610,6 +740,17 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         enableGlobalFiltering: false,
         enableSorting: false,
         cell: ({ row }) => <TicketCell row={row.original} />
+      },
+      {
+        id: 'messaging',
+        accessorKey: 'subscriptionId',
+        header: <div className='flex w-full items-center justify-center'>Messaging</div>,
+        size: 130,
+        enableFiltering: false,
+        enableGlobalFiltering: false,
+        enableHiding: true,
+        enableSorting: false,
+        cell: ({ row }) => <TicketMessagingCell eventId={eventId} row={row.original} />
       },
       {
         id: 'confirmation',

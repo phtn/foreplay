@@ -12,15 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { SignOutButton } from '@/components/ui/signout'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { useToggle } from '@/hooks/use-toggle'
 import { useFirebaseUser } from '@/lib/firebase/auth'
-import { Icon } from '@/lib/icons'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export const AdminHeader = () => {
   const { user } = useFirebaseUser()
-  const { on: mobileOpen, toggle: toggleMobileOpen } = useToggle(false)
   const avatarFallback = user?.displayName?.[0] ?? user?.email?.[0] ?? 'U'
   const avatarLabel = user?.displayName ?? user?.email ?? 'User avatar'
   const router = useRouter()
@@ -80,14 +77,6 @@ export const AdminHeader = () => {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
-          <Button
-            variant='ghost'
-            size='icon-sm'
-            className='shrink-0 md:hidden hover:bg-slate-300/50'
-            onClick={toggleMobileOpen}>
-            <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4 text-slate-500 dark:text-slate-400' />
-          </Button>
         </div>
       </div>
     </header>

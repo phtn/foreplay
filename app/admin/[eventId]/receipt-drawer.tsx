@@ -66,9 +66,10 @@ export function ReceiptDrawer({
     <>
       <button
         type='button'
-        className='font-okx text-xs text-sky-700 transition-colors hover:text-sky-600 dark:text-sky-300 dark:hover:text-sky-200'
+        className='font-okx text-xs md:text-xs text-sky-700 gap-1 transition-colors hover:text-sky-600 dark:text-sky-300 dark:hover:text-sky-200 flex items-center'
         onClick={() => setOpen(true)}>
-        View
+        <span>View</span>
+        <Icon name='receipt' className='size-4' />
       </button>
 
       {open ? (

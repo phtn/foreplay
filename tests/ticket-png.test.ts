@@ -25,6 +25,7 @@ test('recognizes browser color functions that html2canvas cannot parse reliably'
 
 test('uses a high-resolution scale within browser dimension and area limits', () => {
   assert.equal(getTicketExportScale(800, 600), 4)
+  assert.equal(getTicketExportScale(800, 600, 2), 2)
 
   const scale = getTicketExportScale(2_000, 40_000)
   assert.ok(scale > 0)

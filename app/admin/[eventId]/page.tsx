@@ -1,11 +1,9 @@
-import { SectionTitle } from '@/components/layouts/title'
+import { LinkTitle, SectionTitle } from '@/components/layouts/title'
 import { api } from '@/convex/_generated/api'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
-import { Icon } from '@/lib/icons'
 import { toRegistrationTicketData, type RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { formatEventDate } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PlayersDataTable, type EventSubscriptionTableRow } from './players-data-table'
 
@@ -74,30 +72,15 @@ export default async function EventPage({ params }: EventPageProps) {
   }))
 
   return (
-    <main className='space-y-0 md:space-y-4'>
-      <div className='flex gap-4 items-center justify-between px-2 md:px-2 pb-2 md:pb-0'>
+    <main className='space-y-0 md:space-y-0'>
+      <div className='flex items-center justify-between px-2 md:px-2 pb-0'>
         <SectionTitle eyebrow='Events' href='/admin' />
-        <div className='w-full flex items-center justify-center h-16 overflow-hidden'>
-          <div className='space-y-0.5 flex flex-col items-center'>
-            <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
-          </div>
+
+        <div className='w-full h-10 flex items-start justify-center overflow-hidden'>
+          <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
         </div>
-        <div>
-          <Link
-            href={`/admin/${eventId}/pairings`}
-            className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dotted dark:hover:decoration-sky-400 md:tracking-wider hover:text-sky-700 dark:hover:text-foreground'>
-            <Icon
-              name='document'
-              className='size-3.5 md:size-4 opacity-80 dark:group-hover:opacity-100 dark:group-hover:text-foreground'
-            />
-            <span className=''>Pairings</span>
-            <Icon
-              name='chevron-right'
-              className='size-4 -mb-0.5 text-sky-500 group-hover:text-sky-700 dark:group-hover:text-sky-300'
-            />
-          </Link>
-          <p className='opacity-0 font-poly font-medium text-base sm:text-xl md:text-xl'>X</p>
-        </div>
+
+        <LinkTitle title={undefined} eyebrow='pairings' icon='document' href={`/admin/${eventId}/pairings`} />
       </div>
       <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />
     </main>

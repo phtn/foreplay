@@ -95,14 +95,10 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
 
       <fieldset disabled={isPending} className='space-y-5'>
         <Card size='sm' className='gap-0 rounded-xl py-0'>
-          <CardHeader className='border-b border-border/60 py-4 sm:py-5'>
-            <CardTitle className='font-okx text-base'>Entry contact</CardTitle>
-            <CardDescription>Update the team and primary contact information submitted with this entry.</CardDescription>
-          </CardHeader>
           <CardContent className='grid gap-4 py-5 md:grid-cols-2'>
             <EditorField
               id='registration-team-name'
-              label='Team or player name'
+              label='Player name'
               name='teamName'
               defaultValue={entry.teamName}
               maxLength={120}
@@ -134,14 +130,14 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
               defaultValue={entry.handicapIndex}
               maxLength={64}
             />
-            <EditorField
+            {/*<EditorField
               id='registration-division'
               label='Division'
               name='division'
               defaultValue={entry.division}
               maxLength={120}
               list='admin-registration-divisions'
-            />
+            />*/}
           </CardContent>
         </Card>
 
@@ -149,11 +145,9 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
           <div className='flex items-end justify-between gap-4 px-1'>
             <div>
               <h2 id='registered-players-title' className='font-okx text-base font-semibold'>
-                Registered players
+                Registered Player Info
               </h2>
-              <p className='text-sm text-muted-foreground'>
-                Player changes are reflected on their active ticket.
-              </p>
+              <p className='text-sm text-muted-foreground'>Player changes are reflected on their active ticket.</p>
             </div>
             <span className='shrink-0 font-ios text-xs uppercase tracking-widest text-muted-foreground'>
               {players.length} {players.length === 1 ? 'player' : 'players'}
@@ -238,12 +232,14 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
             <div className='rounded-xl border border-dashed border-border bg-muted/10 px-5 py-10 text-center'>
               <Icon name='person-multiple' className='mx-auto mb-3 size-8 text-muted-foreground/50' />
               <p className='font-okx text-sm'>No individual players registered yet.</p>
-              <p className='mt-1 text-xs text-muted-foreground'>You can still correct the entry contact details above.</p>
+              <p className='mt-1 text-xs text-muted-foreground'>
+                You can still correct the entry contact details above.
+              </p>
             </div>
           )}
         </section>
 
-        <div className='sticky bottom-3 z-10 rounded-xl border border-border/70 bg-background/90 p-3 shadow-xl backdrop-blur-xl'>
+        <div className='sticky bottom-3 z-10 rounded-xl border border-border/70 bg-background/90 p-3 backdrop-blur-xl'>
           {state.status !== 'idle' ? (
             <p
               role={state.status === 'error' ? 'alert' : 'status'}

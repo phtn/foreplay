@@ -140,6 +140,19 @@ type CreateTournamentEventInput = {
   published: boolean
 }
 
+export type SaveMessagingTemplateInput = {
+  body: string
+  group: string
+  id?: string | null
+  intent: string
+  subject: string
+  template: string
+  templateProps: string
+  title: string
+  type: string
+  visible: boolean
+}
+
 const slugPattern = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
 function formatEventDate(date: string, time: string) {
@@ -206,6 +219,73 @@ export async function saveScanTicketTonesConfig(
   revalidatePath('/admin/config')
 
   return { updatedAt }
+}
+
+export async function saveMessagingTemplate(input: SaveMessagingTemplateInput) {
+  await requireAdminSession()
+
+  const title = input.title.trim()
+  const intent = input.intent.trim()
+  const type = input.type.trim()
+  const subject = input.subject.trim()
+  const body = input.body.trim()
+  const group = input.group.trim()
+  const template = input.template.trim()
+  const templateProps = input.templateProps.trim()
+
+  if (!title || title.length > 120) {
+    throw new Error('Template name is required and must be 120 characters or fewer.')
+  }
+
+  if (!intent || intent.length > 80 || !type || type.length > 80) {
+    throw new Error('Template intent and type are required.')
+  }
+
+  if (!subject || subject.length > 200) {
+    throw new Error('Template subject is required and must be 200 characters or fewer.')
+  }
+
+  if (!body || body.length > 20_000 || templateProps.length > 20_000) {
+    throw new Error('Template body is required and must be 20,000 characters or fewer.')
+  }
+
+  let templateId: Id<'messagingConfigs'>
+
+  if (input.id) {
+    if (input.id.length > 512) {
+      throw new Error('Template ID is invalid.')
+    }
+
+    templateId = input.id as Id<'messagingConfigs'>
+    await fetchMutation(api.messagingConfigs.m.update, {
+      id: templateId,
+      body,
+      group: group || undefined,
+      intent,
+      subject,
+      template: template || undefined,
+      templateProps: templateProps || undefined,
+      title,
+      type,
+      visible: input.visible
+    })
+  } else {
+    templateId = await fetchMutation(api.messagingConfigs.m.create, {
+      body,
+      group: group || undefined,
+      intent,
+      subject,
+      template: template || undefined,
+      templateProps: templateProps || undefined,
+      title,
+      type,
+      visible: input.visible
+    })
+  }
+
+  revalidatePath('/admin/config')
+
+  return { templateId }
 }
 
 export async function createTournamentEvent(input: CreateTournamentEventInput) {

@@ -27,7 +27,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
     <div className='space-y-4 md:space-y-8'>
       <TournamentHero
         darkButton
-        eyebrow={getPublicationLabel(tournament.published)}
+        eyebrow={getPublicationLabel(tournament.published) === 'Published' ? 'OPEN ENTRY' : ''}
         title={tournament.title}
         description={tournament.description ?? ''}
         venueLabel={tournament.venue}

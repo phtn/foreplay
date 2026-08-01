@@ -2,6 +2,11 @@ import { createClient } from '@/lib/resend'
 import { getVerifiedAdminSession } from '@/lib/firebase/server-auth'
 import { queueResendSend } from '@/lib/resend/rate-limit'
 import { sendEmail } from '@/lib/resend/send-invite'
+import {
+  parseTicketDeliveryTemplateProps,
+  renderTicketDeliveryEmail,
+  TICKET_DELIVERY_TEMPLATE
+} from '@/lib/resend/templates/ticket-delivery'
 import { uuidv7 } from 'uuidv7'
 
 export const runtime = 'nodejs'
@@ -127,6 +132,7 @@ export async function POST(req: Request) {
   const { to, recipients, subject, html, body, cc, bcc, template, templateProps } = parsed
   const from = process.env.RESEND_FROM?.trim() || DEFAULT_FROM
   const useInvitationComponent = template === 'invitation' && recipients && recipients.length > 0
+  const useTicketDeliveryComponent = template === TICKET_DELIVERY_TEMPLATE
   const fallbackHtml = html?.trim() || (body ? renderPlainTextEmail(body) : '<p></p>')
 
   const rawRecipientList: { email: string; name: string }[] =
@@ -210,6 +216,31 @@ export async function POST(req: Request) {
       }
     }
 
+    let recipientSubject = subject
+    let recipientHtml = fallbackHtml
+
+    if (useTicketDeliveryComponent) {
+      try {
+        const sampleProps = parseTicketDeliveryTemplateProps(templateProps, recipient.name)
+        const rendered = await renderTicketDeliveryEmail({
+          ...sampleProps,
+          bodyTemplate: body,
+          subjectTemplate: subject
+        })
+        recipientSubject = rendered.subject
+        recipientHtml = rendered.html
+      } catch (err) {
+        console.error('[resend/send-job] renderTicketDeliveryEmail', err)
+        return jsonResponse(
+          {
+            ok: false,
+            error: `Ticket template rendering failed for ${recipient.email}.`
+          },
+          500
+        )
+      }
+    }
+
     if (!resend) {
       try {
         resend = createClient()
@@ -236,8 +267,8 @@ export async function POST(req: Request) {
     } = {
       from: formatSender(from),
       to: recipient.email,
-      subject,
-      html: fallbackHtml,
+      subject: recipientSubject,
+      html: recipientHtml,
       headers
     }
     if (cc && cc.length > 0) payload.cc = cc

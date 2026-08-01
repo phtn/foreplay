@@ -8,6 +8,7 @@ import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useDeferredValue, useId, useMemo, useRef, useState } from 'react'
+import { saveMessagingTemplate } from '../../actions'
 
 export type MessagingRecipient = {
   id: string
@@ -19,10 +20,14 @@ export type MessagingRecipient = {
 
 export type MessagingTemplate = {
   id: string
+  persistedId: string | null
   body: string
+  group: string
   html: string
   intent: string
   subject: string
+  template: string
+  templateProps: string
   title: string
   type: string
   updatedLabel: string
@@ -68,7 +73,9 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
   const [message, setMessage] = useState('')
   const [templateHtml, setTemplateHtml] = useState('')
   const [deliveryStatus, setDeliveryStatus] = useState<DeliveryStatus>(null)
+  const [templateStatus, setTemplateStatus] = useState<DeliveryStatus>(null)
   const [isSending, setIsSending] = useState(false)
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false)
   const router = useRouter()
   const navigate = (path: string) => () => router.push(path)
 
@@ -91,6 +98,13 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
   )
   const excludedUserCount = Math.max(0, totalUserCount - recipients.length)
   const selectedCount = selectedRecipients.length
+  const ticketTemplateSelected = selectedTemplate?.template === 'ticket_delivery'
+  const templateDirty = Boolean(
+    selectedTemplate && (subject !== selectedTemplate.subject || message !== selectedTemplate.body)
+  )
+  const canSaveTemplate = Boolean(
+    ticketTemplateSelected && selectedTemplate && (selectedTemplate.persistedId === null || templateDirty)
+  )
   const hasMessageContent = Boolean(message.trim() || templateHtml.trim())
   const canSend =
     selectedCount > 0 && selectedCount <= maxRecipientsPerSend && Boolean(subject.trim()) && hasMessageContent
@@ -163,6 +177,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
   const applyTemplate = (templateIdValue: string) => {
     setSelectedTemplateId(templateIdValue)
     setDeliveryStatus(null)
+    setTemplateStatus(null)
 
     const template = templates.find((entry) => entry.id === templateIdValue)
 
@@ -181,6 +196,42 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
     setMessage('')
     setTemplateHtml('')
     setDeliveryStatus(null)
+    setTemplateStatus(null)
+  }
+
+  const handleSaveTemplate = async () => {
+    if (!selectedTemplate || !ticketTemplateSelected || !canSaveTemplate || isSavingTemplate) {
+      return
+    }
+
+    setIsSavingTemplate(true)
+    setTemplateStatus(null)
+
+    try {
+      const result = await saveMessagingTemplate({
+        body: message,
+        group: selectedTemplate.group,
+        id: selectedTemplate.persistedId,
+        intent: selectedTemplate.intent,
+        subject,
+        template: selectedTemplate.template,
+        templateProps: selectedTemplate.templateProps,
+        title: selectedTemplate.title,
+        type: selectedTemplate.type,
+        visible: selectedTemplate.visible
+      })
+
+      setSelectedTemplateId(result.templateId)
+      setTemplateStatus({ kind: 'success', message: 'Ticket delivery template saved.' })
+      router.refresh()
+    } catch (error) {
+      setTemplateStatus({
+        kind: 'error',
+        message: error instanceof Error ? error.message : 'Unable to save the ticket delivery template.'
+      })
+    } finally {
+      setIsSavingTemplate(false)
+    }
   }
 
   const handleSend = async () => {
@@ -210,7 +261,9 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
           recipients: selectedRecipients.map(({ email, name }) => ({ email, name })),
           subject: subject.trim(),
           body: message.trim() || undefined,
-          html: templateHtml || undefined
+          html: templateHtml || undefined,
+          template: selectedTemplate?.template || undefined,
+          templateProps: selectedTemplate?.templateProps || undefined
         })
       })
       const result = (await response.json().catch(() => null)) as {
@@ -243,7 +296,6 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
     <section aria-labelledby='messaging-heading' className='space-y-5 px-2 md:px-0'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between px-3'>
         <div className='space-y-1'>
-          <p className='font-ios text-xs uppercase tracking-widest text-sky-500'>Communications</p>
           <h2 id='messaging-heading' className='flex items-center font-poly font-medium text-xl space-x-4'>
             <span>Messaging</span>
             <Icon
@@ -261,10 +313,10 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
       </div>
 
       <div className='grid lg:grid-cols-[minmax(20rem,0.85fr)_minmax(0,1.15fr)] divide-x-[0.5px] divide-border/50 rounded-md overflow-hidden border'>
-        <Card className='rounded-none ring-0 gap-0 py-0 bg-card/50'>
-          <CardHeader className='border-b border-border/0 py-4 px-0'>
-            <div className='flex items-center justify-between gap-3 px-4'>
-              <div>
+        <Card className='rounded-none ring-0 gap-y-0 py-0 divide-x divide-border'>
+          <CardHeader className='p-0 gap-0 ring-0 rounded-none'>
+            {/*<div className='hidden _flex items-center justify-between px-4'>
+              <div className=''>
                 <CardTitle className='font-poly'>Recipients</CardTitle>
                 <CardDescription>
                   {selectedCount} selected · maximum {maxRecipientsPerSend} per send
@@ -280,8 +332,8 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 {allFilteredSelected ? 'Clear visible' : 'Select visible'}
               </Button>
             </div>
-
-            <div className='relative mt-2'>
+*/}
+            <div className='relative'>
               <label htmlFor={searchId} className='sr-only'>
                 Search recipients
               </label>
@@ -295,7 +347,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 maxLength={160}
                 value={searchQuery}
                 placeholder='Search name or email'
-                className='h-10 ps-4 rounded-none border-none'
+                className='h-12 ps-4 rounded-none border-none placeholder:text-lg focus-visible:outline-none focus-within:outline-none ring-0'
                 onChange={(event) => setSearchQuery(event.currentTarget.value)}
               />
               {searchQuery ? (
@@ -322,7 +374,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
             </p>*/}
           </CardHeader>
 
-          <CardContent className='max-h-136 overflow-y-auto px-0 py-0'>
+          <CardContent className='max-h-136 overflow-y-auto p-0 border-t'>
             {filteredRecipients.length ? (
               <ul className='divide-y divide-border/60'>
                 {filteredRecipients.map((recipient) => {
@@ -337,7 +389,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                         <input
                           type='checkbox'
                           checked={selected}
-                          className='size-4 shrink-0 accent-primary'
+                          className='size-4 shrink-0 accent-primary sr-only'
                           onChange={(event) => setRecipientSelected(recipient.id, event.currentTarget.checked)}
                         />
                         <Avatar className='size-9 border border-border/70'>
@@ -398,24 +450,55 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
               <label htmlFor={templateId} className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>
                 Template
               </label>
-              <select
-                id={templateId}
-                value={selectedTemplateId}
-                className='h-10 w-full rounded-lg border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50'
-                onChange={(event) => applyTemplate(event.currentTarget.value)}>
-                <option value=''>Start with a blank message</option>
-                {templates.map((template) => (
-                  <option key={template.id} value={template.id}>
-                    {template.title}
-                    {template.visible ? '' : ' — hidden'}
-                  </option>
-                ))}
-              </select>
+              <div className='flex flex-col gap-2 sm:flex-row'>
+                <select
+                  id={templateId}
+                  value={selectedTemplateId}
+                  className='h-10 min-w-0 flex-1 rounded-lg border border-input bg-input/30 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50'
+                  onChange={(event) => applyTemplate(event.currentTarget.value)}>
+                  <option value=''>Start with a blank message</option>
+                  {templates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.title}
+                      {template.visible ? '' : ' — hidden'}
+                    </option>
+                  ))}
+                </select>
+                {ticketTemplateSelected ? (
+                  <Button
+                    type='button'
+                    variant='outline'
+                    disabled={!canSaveTemplate || isSavingTemplate}
+                    className='active:scale-[0.96]'
+                    onClick={() => void handleSaveTemplate()}>
+                    <Icon name={isSavingTemplate ? 'spinner-ring' : 'document'} aria-hidden='true' className='size-4' />
+                    {isSavingTemplate ? 'Saving' : selectedTemplate?.persistedId ? 'Save changes' : 'Save template'}
+                  </Button>
+                ) : null}
+              </div>
               {selectedTemplate ? (
                 <p className='text-xs text-muted-foreground'>
                   {selectedTemplate.intent} · {selectedTemplate.type} · updated {selectedTemplate.updatedLabel}
                 </p>
               ) : null}
+              {ticketTemplateSelected ? (
+                <p className='text-xs text-muted-foreground'>
+                  Supported placeholders: {'{{playerName}}'}, {'{{eventTitle}}'}, {'{{reference}}'}, and{' '}
+                  {'{{ticketCount}}'}. Use the recipient list below to send a test with sample ticket details.
+                </p>
+              ) : null}
+              <div aria-live='polite' aria-atomic='true'>
+                {templateStatus?.kind === 'success' ? (
+                  <p role='status' className='text-sm text-emerald-600 dark:text-emerald-400'>
+                    {templateStatus.message}
+                  </p>
+                ) : null}
+                {templateStatus?.kind === 'error' ? (
+                  <p role='alert' className='text-sm text-destructive'>
+                    {templateStatus.message}
+                  </p>
+                ) : null}
+              </div>
             </div>
 
             <div className='space-y-2'>
@@ -431,6 +514,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                 onChange={(event) => {
                   setSubject(event.currentTarget.value)
                   setDeliveryStatus(null)
+                  setTemplateStatus(null)
                 }}
               />
               <p className='text-right text-xs text-muted-foreground'>{subject.length}/200</p>
@@ -453,6 +537,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
                   setMessage(event.currentTarget.value)
                   setTemplateHtml('')
                   setDeliveryStatus(null)
+                  setTemplateStatus(null)
                 }}
               />
               <div className='flex items-start justify-between gap-3 text-xs text-muted-foreground'>

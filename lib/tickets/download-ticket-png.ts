@@ -146,13 +146,13 @@ export function createPngFilename(label: string, fallback = 'ticket') {
   return `${normalized || normalizedFallback || 'ticket'}.png`
 }
 
-export async function downloadElementAsPng(element: HTMLElement, filename: string) {
+export async function renderElementAsPngBlob(element: HTMLElement, requestedScale = MAX_TICKET_EXPORT_SCALE) {
   await waitForExportSurface(element)
 
   const { default: html2canvas } = await import('html2canvas')
   const exportWidth = Math.max(element.scrollWidth, 1)
   const exportHeight = Math.max(element.scrollHeight, 1)
-  const exportScale = getTicketExportScale(exportWidth, exportHeight)
+  const exportScale = getTicketExportScale(exportWidth, exportHeight, requestedScale)
   const canvas = await html2canvas(element, {
     allowTaint: false,
     backgroundColor: '#ffffff',
@@ -189,7 +189,11 @@ export async function downloadElementAsPng(element: HTMLElement, filename: strin
     scale: exportScale,
     useCORS: true
   })
-  const blob = await canvasToBlob(canvas)
+  return await canvasToBlob(canvas)
+}
+
+export async function downloadElementAsPng(element: HTMLElement, filename: string) {
+  const blob = await renderElementAsPngBlob(element)
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
 

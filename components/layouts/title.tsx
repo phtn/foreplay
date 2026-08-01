@@ -11,8 +11,8 @@ interface SectionTitleProps {
 
 export const SectionTitle = ({ title, eyebrow, href }: SectionTitleProps) => {
   return (
-    <div className='flex items-start justify-between'>
-      <div className={href ? '_-space-y-2' : ''}>
+    <div className='h-10 min-w-24'>
+      <div className={cn('')}>
         {href ? (
           <Link
             href={href}
@@ -22,16 +22,14 @@ export const SectionTitle = ({ title, eyebrow, href }: SectionTitleProps) => {
               name='chevron-right'
               className='size-4 -mb-0.5 rotate-90 text-sky-500 group-hover:text-sky-600 dark:group-hover:text-sky-400'
             />
-            <span>{eyebrow}</span>
+            <span className='capitalize'>{eyebrow}</span>
           </Link>
         ) : (
           <p className='font-ios text-xs uppercase tracking-wider text-sky-600 dark:text-sky-500'>{eyebrow}</p>
         )}
         {title ? (
           <h2 className={cn('font-poly font-semibold text-base', { 'text-sm opacity-80': href })}>{title}</h2>
-        ) : (
-          <p className='opacity-0 font-poly font-medium text-base sm:text-lg md:text-xl'>X</p>
-        )}
+        ) : null}
       </div>
     </div>
   )
@@ -39,8 +37,8 @@ export const SectionTitle = ({ title, eyebrow, href }: SectionTitleProps) => {
 
 export const LinkTitle = ({ title, eyebrow, icon, href }: SectionTitleProps) => {
   return (
-    <div>
-      <div className='flex gap-2 md:gap-4 items-start justify-between'>
+    <div className='h-10 min-w-24 flex justify-end'>
+      <div className={cn('')}>
         <Link
           href={href ?? ''}
           className='font-okx group inline-flex items-center gap-0.5 md:gap-2 text-sm text-foreground hover:underline underline-offset-4 decoration-0.5 decoration-dotted dark:hover:decoration-sky-400 md:tracking-wider hover:text-sky-700 dark:hover:text-foreground'>
@@ -61,9 +59,7 @@ export const LinkTitle = ({ title, eyebrow, icon, href }: SectionTitleProps) => 
       </div>
       {title ? (
         <h2 className={cn('font-poly font-semibold text-base', { 'text-sm opacity-80': href })}>{title}</h2>
-      ) : (
-        <p className='opacity-0 font-poly font-medium text-base sm:text-xl md:text-xl'>X</p>
-      )}
+      ) : null}
     </div>
   )
 }

@@ -1,6 +1,12 @@
 import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
+import {
+  TICKET_DELIVERY_DEFAULTS,
+  TICKET_DELIVERY_INTENT,
+  TICKET_DELIVERY_SAMPLE_PROPS,
+  TICKET_DELIVERY_TEMPLATE
+} from '@/lib/resend/templates/ticket-delivery'
 import { fetchQuery } from 'convex/nextjs'
 import {
   MessagingWorkspace,
@@ -44,20 +50,57 @@ export const MessagingContent = async () => {
       ]
     })
     .toSorted((left, right) => left.name.localeCompare(right.name))
-  const messagingTemplates = templates
-    .map(
-      (template): MessagingTemplate => ({
+  const hasTicketDeliveryTemplate = templates.some((template) => template.intent === TICKET_DELIVERY_INTENT)
+  const messagingTemplates = [
+    ...templates.map((template): MessagingTemplate => {
+      const intent = template.intent ?? 'general'
+      const ticketDeliveryTemplate = intent === TICKET_DELIVERY_INTENT
+      const body = template.body ?? template.text ?? ''
+      const subject = template.subject ?? ''
+      const templateKey = template.template ?? ''
+      const templateProps = template.templateProps ?? ''
+
+      return {
         id: template._id,
-        body: template.body ?? template.text ?? '',
+        persistedId: template._id,
+        body: ticketDeliveryTemplate && !body.trim() ? TICKET_DELIVERY_DEFAULTS.body : body,
+        group: template.group ?? '',
         html: template.html ?? '',
-        intent: template.intent ?? 'general',
-        subject: template.subject ?? '',
+        intent,
+        subject:
+          ticketDeliveryTemplate && !subject.trim() ? TICKET_DELIVERY_DEFAULTS.subject : subject,
+        template:
+          ticketDeliveryTemplate && !templateKey.trim() ? TICKET_DELIVERY_TEMPLATE : templateKey,
+        templateProps:
+          ticketDeliveryTemplate && !templateProps.trim()
+            ? JSON.stringify(TICKET_DELIVERY_SAMPLE_PROPS)
+            : templateProps,
         title: template.title ?? 'Untitled template',
         type: template.type ?? 'email',
         updatedLabel: dateFormatter.format(template.updatedAt ?? template._creationTime),
         visible: template.visible !== false
-      })
-    )
+      }
+    }),
+    ...(hasTicketDeliveryTemplate
+      ? []
+      : [
+          {
+            id: `builtin:${TICKET_DELIVERY_INTENT}`,
+            persistedId: null,
+            body: TICKET_DELIVERY_DEFAULTS.body,
+            group: TICKET_DELIVERY_DEFAULTS.group,
+            html: '',
+            intent: TICKET_DELIVERY_DEFAULTS.intent,
+            subject: TICKET_DELIVERY_DEFAULTS.subject,
+            template: TICKET_DELIVERY_DEFAULTS.template,
+            templateProps: JSON.stringify(TICKET_DELIVERY_SAMPLE_PROPS),
+            title: TICKET_DELIVERY_DEFAULTS.title,
+            type: TICKET_DELIVERY_DEFAULTS.type,
+            updatedLabel: 'built in',
+            visible: TICKET_DELIVERY_DEFAULTS.visible
+          } satisfies MessagingTemplate
+        ])
+  ]
     .toSorted((left, right) => left.title.localeCompare(right.title))
 
   return (
