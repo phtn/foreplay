@@ -177,7 +177,7 @@ export function RegistrationSection({
             <Activity mode={registrationCards.length ? 'visible' : 'hidden'}>
               <Button
                 type='button'
-                variant='outline'
+                variant='ghost'
                 size='sm'
                 className='size-8 px-0 sm:w-auto sm:px-3'
                 disabled={isExportingAll}
@@ -190,9 +190,6 @@ export function RegistrationSection({
                 <span className='hidden sm:inline'>download</span>
               </Button>
             </Activity>
-            <span className='inline-flex rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-foreground whitespace-nowrap'>
-              {registrations.length}/{registrationLimit} saved
-            </span>
             <Activity mode={remainingSlots > 0 ? 'visible' : 'hidden'}>
               <span className='inline-flex rounded-md bg-sky-500/5 dark:bg-sky-100/10 px-3 py-1.5 font-ios text-xs uppercase md:tracking-widest text-sky-600 dark:text-sky-200 whitespace-nowrap'>
                 {remainingSlots} open

@@ -174,7 +174,7 @@ export function RegistrationTicketCard({
                   )}
                 </span>
               </div>
-              <p className='mt-3 wrap-break-word font-poly text-[1.65rem] font-medium leading-[1.05] tracking-[-0.035em] text-slate-950 sm:text-[2rem]'>
+              <p className='mt-3 wrap-break-word font-poly text-[1.25rem] font-medium leading-[1.05] tracking-[-0.035em] text-slate-950 sm:text-[1.5rem]'>
                 {registration.name}
               </p>
               {checkedIn ? (

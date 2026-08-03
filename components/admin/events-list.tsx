@@ -156,7 +156,7 @@ const EventRow = (row: EventRow) => {
 
       {/* Mobile */}
       <article className='overflow-hidden rounded-xs md:hidden'>
-        <div className='space-y-8 px-2 pt-5 sm:p-5 border rounded-xs'>
+        <div className='space-y-8 px-2 pt-5 sm:p-5'>
           <div className='flex items-start justify-between gap-4'>
             <div className='flex items-start gap-4'>
               <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-11 aspect-square text-white '>
@@ -175,7 +175,7 @@ const EventRow = (row: EventRow) => {
             <EventToolbar event={row.event} />
           </div>
 
-          <div className='grid grid-cols-3 gap-3 md:rounded-2xl border-b-2 border-[#1d2824]/10 bg-white/60 dark:bg-slate-400/4 p-3 border'>
+          <div className='grid grid-cols-3 gap-3 md:rounded-2xl bg-white/60 dark:bg-slate-400/4 p-3'>
             <div className='flex flex-col items-center justify-center'>
               <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
                 Start

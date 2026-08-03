@@ -169,7 +169,7 @@ const Page = async ({ params }: PageProps) => {
         </div>
         <div className='flex items-center gap-2 sm:justify-end whitespace-nowrap'>
           <span className='inline-flex w-fit rounded-md bg-muted px-3 py-1.5 font-ios text-xs uppercase tracking-wider text-foreground'>
-            {subscription.total_players} Entries
+            {subscription.total_players} Ticket
           </span>
           <span
             className={`inline-flex w-fit rounded-md px-3 py-1.5 font-ios text-xs uppercase tracking-widest ${statusStyles[status] ?? statusStyles.pending_payment}`}>
