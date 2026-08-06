@@ -32,7 +32,7 @@ export const Content = ({ events }: ContentProps) => {
 
   return (
     <main className='md:space-y-4'>
-      <div className='grid grid-cols-3 xl:grid-cols-3 border rounded-sm divide-x divide-border'>
+      <div className='grid grid-cols-3 xl:grid-cols-3 border rounded-none md:rounded-sm divide-x divide-border'>
         {[
           { label: 'Events', value: counts.total },
           { label: 'Published', value: counts.published },

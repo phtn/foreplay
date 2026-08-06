@@ -283,7 +283,7 @@ export function PaymentsForm({ paymentMethods }: PaymentsFormProps) {
   return (
     <div className='space-y-5 px-2'>
       <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between px-2'>
-        <SectionTitle title='Destination' eyebrow='Manual Payments' />
+        <SectionTitle title='Destination' eyebrow='Payments' />
       </div>
 
       <div className='space-y-4'>
@@ -531,8 +531,10 @@ function PaymentDestinationCard({
             <Icon name={lmap[paymentMethod.bankOrEwallet.toLowerCase()]} className='size-16' />
             <span
               className={cn(
-                'rounded-full px-2.5 py-1 font-ios text-[10px] uppercase tracking-widest',
-                paymentMethod.isActive ? 'bg-zinc-900 text-primary' : 'bg-white/12 text-white/70'
+                'rounded-full px-2.5 py-1 font-ios text-[10px] uppercase tracking-widest border',
+                paymentMethod.isActive
+                  ? 'bg-zinc-900 text-emerald-400 border-emerald-400/60'
+                  : 'bg-white/12 text-white/70'
               )}>
               {paymentMethod.isActive ? 'Active' : 'Inactive'}
             </span>

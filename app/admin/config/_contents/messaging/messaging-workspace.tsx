@@ -313,7 +313,7 @@ export function MessagingWorkspace({ recipients, templates, totalUserCount }: Me
       </div>
 
       <div className='grid lg:grid-cols-[minmax(20rem,0.85fr)_minmax(0,1.15fr)] divide-x-[0.5px] divide-border/50 rounded-md overflow-hidden border'>
-        <Card className='rounded-none ring-0 gap-y-0 py-0 divide-x divide-border'>
+        <Card className='rounded-none ring-0 gap-y-0 py-0 md:divide-x divide-border'>
           <CardHeader className='p-0 gap-0 ring-0 rounded-none'>
             {/*<div className='hidden _flex items-center justify-between px-4'>
               <div className=''>

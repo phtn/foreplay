@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import { Content } from './content'
+import { Workspace } from './workspace'
 
 export const metadata: Metadata = {
   title: 'Messaging',
-  description: 'Manage email templates and chat settings.',
+  description: 'Manage email templates and message settings.',
   icons: [
     {
       rel: 'icon',
@@ -13,5 +13,5 @@ export const metadata: Metadata = {
 }
 
 export default function MessagingPage() {
-  return <Content />
+  return <Workspace />
 }

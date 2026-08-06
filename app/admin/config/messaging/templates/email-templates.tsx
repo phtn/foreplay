@@ -1,0 +1,117 @@
+'use client'
+
+import { SectionTitle } from '@/components/layouts/title'
+import { Doc } from '@/convex/_generated/dataModel'
+import { Icon } from '@/lib/icons'
+import { AnimatePresence, motion } from 'motion/react'
+import Link from 'next/link'
+
+interface EmailTemplateListProps {
+  templates: Array<Doc<'messagingConfigs'>> | undefined
+}
+
+export const EmailTemplateList = ({ templates }: EmailTemplateListProps) => {
+  // const router = useRouter()
+  // const navigateToNew = useCallback(() => {
+  //   withViewTransition(() => {
+  //     startTransition(() => {
+  //       router.push('/admin/config/messaging/email?tabId=new')
+  //     })
+  //   })
+  // }, [router])
+
+  if (templates === undefined) {
+    return (
+      <div className='flex items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2'>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='flex items-center gap-3 opacity-50'>
+          <Icon name='spinner-ring' className='size-5' />
+          Loading Email Templates...
+        </motion.div>
+      </div>
+    )
+  }
+
+  return (
+    <div className='min-h-screen'>
+      <div className='fixed inset-0 overflow-hidden pointer-events-none'>
+        <div className='absolute top-8 left-1/4 w-80 h-80 bg-primary/5 rounded-full blur-3xl' />
+      </div>
+
+      <main className='relative px-2 sm:px-3 lg:px-4 space-y-4'>
+        <AnimatePresence mode='wait'>
+          {templates.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className='rounded-sm h-auto bg-slate-100 dark:bg-zinc-800 border border-foreground/20 sm:p-4 p-4'>
+              <div className='flex items-center gap-4'>
+                <Icon name='e-mail' className='size-8 md:size-9 opacity-60' />
+                <SectionTitle title='Email Templates' eyebrow='Messaging' />
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className='grid md:grid-cols-2'>
+              {templates.map((template, index) => (
+                <Link key={template._id} href={`/admin/messaging/email/${template._id}`} prefetch>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className='group relative cursor-pointer'>
+                    <div className='absolute inset-0 bg-linear-to-r from-cyan-500/5 to-purple-500/5 rounded-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300' />
+                    <div className='relative dark:bg-background bg-greyed/10 backdrop-blur-xl border border-greyed/15 p-5 hover:border-zinc-700/50 transition-all duration-300'>
+                      <div className='flex items-start justify-between gap-4'>
+                        <div className='flex min-w-0 flex-1 items-start gap-4'>
+                          <div className='w-8 h-8 rounded-xl bg-linear-to-br from-cyan-600/10 to-purple-200/10 border border-foreground/20 flex items-center justify-center shrink-0'>
+                            <Icon name='send' className='size-5 rotate-45' />
+                          </div>
+                          <div className='flex-1 min-w-0'>
+                            <div className='mb-1 flex flex-wrap items-center gap-2 md:gap-3'>
+                              <h3 className='text-base font-clash font-semibold truncate'>
+                                {template.title || 'Untitled Template'}
+                              </h3>
+                              <span className='inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider bg-cyan-100/50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-600/50 dark:border-cyan-500/30'>
+                                {template.intent || 'general'}
+                              </span>
+                              <span className='inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide bg-purple-500/10 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30 dark:border-purple-500/30'>
+                                {template.type || 'default'}
+                              </span>
+                            </div>
+                            <p className='text-sm truncate my-3 font-clash font-normal'>
+                              <span className='text-xs font-ios mr-1.5'>Subject:</span>
+                              {template.subject || 'No subject defined'}
+                            </p>
+                            <p className='text-sm truncate my-3 font-clash'>
+                              <span className='text-xs font-ios mr-1.5'>Template:</span>
+                              <span className={template.template ? 'text-blue-500 capitalize' : 'opacity-50'}>
+                                {template.template?.split('-').join(' ') || 'N/A'}
+                              </span>
+                            </p>
+                            <div className='flex items-center gap-4 text-xs opacity-80 font-figtree'>
+                              <span className='flex items-center gap-1.5'>
+                                <Icon name='user' className='size-3' />
+                                {(template.to?.length ?? 0) +
+                                  (template.cc?.length ?? 0) +
+                                  (template.bcc?.length ?? 0)}{' '}
+                                recipients
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  )
+}

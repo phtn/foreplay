@@ -1,5 +1,5 @@
-import {Metadata} from 'next'
-import {EmailContent} from './content'
+import { Metadata } from 'next'
+import { EmailTemplateContent } from './content'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = {
   title: 'Email Templates',
@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   icons: [
     {
       rel: 'icon',
-      url: '/svg/rf-icon-latest.svg',
-    },
-  ],
+      url: '/svg/rf-icon-latest.svg'
+    }
+  ]
 }
-const Page = () => <EmailContent />
+const Page = () => <EmailTemplateContent />
 export default Page

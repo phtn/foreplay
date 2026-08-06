@@ -170,7 +170,7 @@ function EntriesCell({ row }: { row: EventSubscriptionTableRow }) {
   return (
     <Link href={`/admin/config/users/${row.userId}`} className='group/player space-y-1'>
       <p className='text-foreground/85'>
-        <span className='font-okx group-hover/player:text-blue-500 group-hover/player:underline underline-offset-4 decoration-dotted'>
+        <span className='font-okx group-hover/player:text-blue-500 dark:group-hover/player:text-blue-400 group-hover/player:underline underline-offset-4 decoration-dotted'>
           {row.teamName}
         </span>
       </p>

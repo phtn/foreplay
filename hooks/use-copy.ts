@@ -6,11 +6,11 @@ interface UseCopyOptions {
 
 interface UseCopyReturn {
   copy: (label: string, text: string) => void
-  copied: boolean
+  copiedLabel: string | null
 }
 
 export function useCopy({ timeout = 2000 }: UseCopyOptions = {}): UseCopyReturn {
-  const [copied, setCopied] = useState(false)
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const copy = useCallback(
@@ -24,11 +24,11 @@ export function useCopy({ timeout = 2000 }: UseCopyOptions = {}): UseCopyReturn 
           timeoutRef.current = null
         }
 
-        setCopied(true)
+        setCopiedLabel(label)
 
         // Set timeout to reset copied state
         timeoutRef.current = setTimeout(() => {
-          setCopied(false)
+          setCopiedLabel(null)
           timeoutRef.current = null
         }, timeout)
       } catch (error) {
@@ -47,5 +47,5 @@ export function useCopy({ timeout = 2000 }: UseCopyOptions = {}): UseCopyReturn 
     }
   }, [])
 
-  return { copy, copied }
+  return { copy, copiedLabel }
 }

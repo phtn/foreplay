@@ -3,7 +3,8 @@
 import { cn } from '@/lib/utils'
 import { type ClassName } from '@/types'
 import { Tabs as Root } from '@base-ui/react/tabs'
-import { type ReactNode, useState } from 'react'
+import { useQueryState } from 'nuqs'
+import { type ReactNode } from 'react'
 
 interface TabsProps {
   tabs: Tab[]
@@ -17,16 +18,24 @@ export interface Tab {
 }
 
 export const Tabs = ({ tabs, className }: TabsProps) => {
-  const firstValue = tabs[1]?.value ?? null
-  const [value, setValue] = useState<string | null>(firstValue)
-  const activeValue = value !== null && tabs.some((tab) => tab.value === value) ? value : firstValue
+  const defaultValue = tabs[1]?.value ?? tabs[0]?.value ?? null
+  const [value, setValue] = useQueryState('tab', {
+    history: 'push',
+    scroll: false,
+    shallow: true
+  })
+  const activeValue = value !== null && tabs.some((tab) => tab.value === value) ? value : defaultValue
 
   return (
     <Root.Root
       className={cn(className, 'rounded-none')}
       value={activeValue}
-      onValueChange={(nextValue) => setValue(typeof nextValue === 'string' ? nextValue : firstValue)}>
-      <Root.List className='relative z-0 flex gap-6 px-4'>
+      onValueChange={(nextValue) => {
+        const validValue =
+          typeof nextValue === 'string' && tabs.some((tab) => tab.value === nextValue) ? nextValue : defaultValue
+        void setValue(validValue)
+      }}>
+      <Root.List className='relative z-0 flex gap-4 md:gap-6 px-4'>
         {tabs.map((tab, index) => (
           <Root.Tab
             key={tab.value}

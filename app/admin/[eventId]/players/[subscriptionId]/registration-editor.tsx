@@ -252,15 +252,15 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
             </p>
           ) : null}
           <div className='flex flex-col-reverse gap-2 sm:flex-row sm:justify-end'>
-            <Button type='reset' variant='ghost' disabled={isPending} className='sm:min-w-28'>
+            <Button type='reset' variant='ghost' disabled={isPending} className='sm:min-w-28 font-poly'>
               Reset
             </Button>
             <Button
               type='submit'
               disabled={isPending || isAuthLoading || !user}
-              className='gap-2 text-white sm:min-w-40'>
-              <Icon name={isPending ? 'spinner-ring' : 'check'} className='size-4' />
-              {isPending ? 'Saving changes' : 'Save changes'}
+              className='font-poly text-white bg-foreground dark:text-background hover:bg-foreground/90 gap-2 sm:min-w-40'>
+              {isPending && <Icon name='spinner-ring' className='size-4' />}
+              {isPending ? 'Saving ...' : 'Save Changes'}
             </Button>
           </div>
         </div>

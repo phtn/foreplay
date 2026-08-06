@@ -5,6 +5,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
+import { useCopy } from '@/hooks/use-copy'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import { trackedResendWebhookEventTypes, type TrackedResendWebhookEventType } from '@/lib/resend/webhooks/events'
@@ -12,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { ConvexHttpClient } from 'convex/browser'
 import type { User } from 'firebase/auth'
 import Link from 'next/link'
-import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 
 type WebhookEvent = Doc<'resendWebhookEvents'>
 type EventTypeFilter = 'all' | TrackedResendWebhookEventType
@@ -55,7 +56,7 @@ function formatEventType(value: string) {
   return value
     .split('.')
     .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1).replaceAll('_', ' ')}`)
-    .join(' · ')
+    .pop()
 }
 
 function getEventVariant(eventType: string): BadgeProps['variant'] {
@@ -211,7 +212,7 @@ export const Content = () => {
   }
 
   return (
-    <main className='mx-auto w-full max-w-6xl space-y-5 px-3 py-5 sm:px-5 sm:py-8 lg:px-6'>
+    <main className='mx-auto w-full max-w-6xl space-y-5 px-3 py-0 sm:px-5 sm:py-0 lg:px-6'>
       <section className='relative overflow-hidden rounded-md dark:bg-zinc-500/5 bg-zinc-600 px-5 py-6 text-white shadow-[0_24px_70px_rgba(18,32,27,0.18)] sm:px-7 sm:py-8'>
         <div className='pointer-events-none absolute -right-20 -top-28 size-72 rounded-full bg-zinc-400/15 blur-3xl' />
         <div className='pointer-events-none absolute -bottom-36 left-1/3 size-72 rounded-full bg-neutral-300/10 blur-3xl' />
@@ -220,17 +221,17 @@ export const Content = () => {
           <div className='flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between'>
             <div className='space-y-3'>
               <Link
-                href='/admin/config'
+                href='/admin/config?tab=messaging'
                 className={cn(
                   buttonVariants({ size: 'sm', variant: 'ghost' }),
                   '-ms-2 w-fit text-white/65 hover:bg-white/10 hover:text-white'
                 )}>
-                <Icon name='arrow-left' className='size-4' />
-                Admin
+                <Icon name='chevron-right' className='size-4 -rotate-90' />
+                Messaging
               </Link>
               <div className='space-y-2'>
                 <div className='flex items-center space-x-4'>
-                  <h2 className='font-poly text-xl font-medium tracking-tight sm:text-2xl'>Resend Webhook Activity</h2>
+                  <h2 className='font-poly text-xl font-medium tracking-tight sm:text-2xl'>Resend Activity</h2>
                   <Button
                     type='button'
                     size='icon-xs'
@@ -240,10 +241,8 @@ export const Content = () => {
                     className='group rounded-full w-6 border-white hover:border-white/50 hover:border-dashed bg-white text-zinc-500 hover:text-white hover:bg-white/14'>
                     <div className=' -scale-x-100'>
                       <Icon
-                        name='refresh'
-                        className={cn('size-5 -rotate-60 group-hover:-rotate-50 transition-transform duration-300', {
-                          'animate-spin': isLoading
-                        })}
+                        name={isLoading ? 'spinner-ring' : 'refresh'}
+                        className={cn('size-5 -rotate-60 group-hover:-rotate-50 transition-transform duration-300', {})}
                       />
                     </div>
                   </Button>
@@ -251,16 +250,16 @@ export const Content = () => {
               </div>
             </div>
             <div className='flex items-center gap-2 font-ios text-[11px] uppercase tracking-[0.2em] text-sky-300'>
-              <span>Email Service</span>
+              <span>Email Delivery Service</span>
               <Icon name='email-sending' className='size-3.5' />
             </div>
           </div>
 
-          <div className='grid gap-2 sm:grid-cols-3'>
-            <Metric label='Loaded in this view' value={isLoading ? '—' : String(visibleEvents.length)} />
+          <div className='grid grid-cols-3 gap-2'>
+            <Metric label='Loaded' value={isLoading ? '—' : String(visibleEvents.length)} />
             <Metric label='Delivered' value={isLoading ? '—' : String(deliveredCount)} />
             <Metric
-              label='Needs attention'
+              label='Alert'
               value={isLoading ? '—' : String(attentionCount)}
               valueClassName={attentionCount > 0 ? 'text-orange-300' : undefined}
             />
@@ -273,28 +272,24 @@ export const Content = () => {
         className='overflow-hidden rounded-md bg-card ring-1 ring-foreground/30'>
         <div className='space-y-5 px-4 py-5 sm:px-6 sm:py-6'>
           <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
-            <div className='space-y-1'>
-              <p className='font-ios text-[11px] uppercase tracking-[0.18em] text-sky-500'>Event inbox</p>
-              <h2 id='webhook-inbox-heading' className='font-poly text-xl font-medium'>
-                Recent deliveries
+            <div className='flex items-center justify-between space-x-4'>
+              <h2 id='webhook-inbox-heading' className='flex items-center gap-1 font-poly text-lg font-medium'>
+                <Icon name='webhook' className='' />
+                <span>Recents</span>
               </h2>
-              <p className='text-sm text-muted-foreground'>
-                {latestReceivedAt ? `Latest received ${formatDate(latestReceivedAt)}` : 'Waiting for the first event'}
+              <p className='font-ios text-xs text-muted-foreground'>
+                {latestReceivedAt ? `Latest ${formatDate(latestReceivedAt)}` : 'Waiting for the first event'}
               </p>
             </div>
 
             <div className='relative w-full lg:max-w-sm'>
-              <Icon
-                name='search'
-                className='pointer-events-none absolute inset-s-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground'
-              />
               <Input
                 type='search'
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder='Search loaded events'
-                aria-label='Search loaded webhook events'
-                className='h-10 rounded-xl ps-9'
+                placeholder='Search events'
+                aria-label='Search webhook events'
+                className='h-10 rounded-xl ps-4'
               />
             </div>
           </div>
@@ -312,7 +307,7 @@ export const Content = () => {
                     disabled={isLoading}
                     onClick={() => selectEventType(filter.value)}
                     className={cn(
-                      'h-9 rounded-full px-3.5 text-sm font-medium transition-[color,background-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50',
+                      'h-9 rounded-full px-3.5 font-okx text-sm transition-[color,background-color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.96] disabled:pointer-events-none disabled:opacity-50',
                       active
                         ? 'bg-foreground text-background shadow-sm'
                         : 'bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -368,7 +363,7 @@ export const Content = () => {
 
 function Metric({ label, value, valueClassName }: { label: string; value: string; valueClassName?: string }) {
   return (
-    <div className='rounded-2xl bg-white/7 px-4 py-3 ring-1 ring-white/8 backdrop-blur-sm'>
+    <div className='rounded-xs bg-white/7 px-4 py-3 ring-1 ring-white/8 backdrop-blur-sm'>
       <p className='font-ios text-[10px] uppercase tracking-[0.16em] text-white/45'>{label}</p>
       <p className={cn('mt-2 font-poly text-xl tabular-nums text-white', valueClassName)}>{value}</p>
     </div>
@@ -376,43 +371,75 @@ function Metric({ label, value, valueClassName }: { label: string; value: string
 }
 
 function WebhookEventRow({ event }: { event: WebhookEvent }) {
+  const { copy, copiedLabel } = useCopy({ timeout: 2000 })
+  const handleCopy = useCallback((label: string, text: string) => () => copy(label, text), [copy])
   return (
     <details className='group border-t border-border/60 first:border-t'>
-      <summary className='grid cursor-pointer list-none gap-3 px-4 py-4 transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:grid-cols-[minmax(0,0.5fr)_minmax(0,1fr)_auto_auto] sm:items-center sm:px-6 [&::-webkit-details-marker]:hidden'>
-        <div className='flex flex-wrap items-center gap-2'>
-          <Badge variant={getEventVariant(event.eventType)} size='lg' radius='full' className='flex items-center gap-1'>
-            <span className='text-sm'>{formatEventType(event.eventType)}</span>
+      <summary className='grid cursor-pointer list-none gap-3 px-4 py-4 transition-colors hover:bg-muted/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:grid-cols-[minmax(1,0.6fr)_minmax(1,0.4fr)_auto_auto] sm:items-center sm:px-6 [&::-webkit-details-marker]:hidden'>
+        <div className='flex items-center justify-between'>
+          <Badge
+            variant={getEventVariant(event.eventType)}
+            size='lg'
+            radius='full'
+            className='flex items-center gap-1 select-none'>
+            <span className='font-poly text-sm tracking-wide'>{formatEventType(event.eventType)}</span>
           </Badge>
+          <time
+            dateTime={new Date(event.receivedAt).toISOString()}
+            className='font-ios text-xs tabular-nums text-muted-foreground'>
+            {formatDate(event.receivedAt)}
+          </time>
         </div>
         <div className='min-w-0 space-y-2'>
-          <p className='truncate font-poly font-medium text-foreground text-sm'>
+          <p className='truncate font-okx font-medium text-foreground text-sm'>
             {event.subject ?? event.target ?? event.resourceId}
           </p>
         </div>
 
-        <div className='min-w-0 text-sm'>
-          <p className='truncate text-foreground/75'>{event.target ?? 'No recipient recorded'}</p>
-        </div>
-
         <div className='flex items-center justify-between gap-4 sm:justify-end'>
-          <time
-            dateTime={new Date(event.receivedAt).toISOString()}
-            className='text-xs tabular-nums text-muted-foreground'>
-            {formatDate(event.receivedAt)}
-          </time>
-          <span className='flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground'>
-            <Icon name='chevron-down' className='size-4 transition-transform duration-150 group-open:rotate-180' />
+          <div className='min-w-0 text-sm'>
+            <p className='truncate text-foreground/75'>{event.target ?? 'No recipient recorded'}</p>
+          </div>
+          <span className='flex size-8 shrink-0 items-center justify-center text-muted-foreground'>
+            <Icon name='chevron-right' className='size-4 transition-transform duration-150 group-open:rotate-45' />
           </span>
         </div>
       </summary>
 
-      <div className='bg-muted/25 px-4 pb-5 pt-1 sm:px-6 sm:pb-6'>
-        <dl className='grid gap-x-8 gap-y-4 rounded-lg bg-background/75 p-4 ring-1 ring-foreground/8 sm:grid-cols-2 lg:grid-cols-3'>
-          <EventDetail label='Webhook ID' value={event.webhookId} mono />
-          <EventDetail label='Resource ID' value={event.resourceId} mono />
-          <EventDetail label='Event time' value={formatDate(event.eventCreatedAt)} />
-          <EventDetail label='Source' value={event.source ?? 'Not provided'} />
-          <EventDetail label='Target' value={event.target ?? 'Not provided'} />
+      <div className='bg-zinc-200 dark:bg-zinc-800 pt-1'>
+        <dl className='grid bg-background/75 ring-1 ring-foreground/8 sm:grid-cols-2 lg:grid-cols-3 divide-y divide-border/50'>
+          <EventDetail
+            label='Webhook ID'
+            value={event.webhookId}
+            mono
+            copyFn={handleCopy('Webhook ID', event.webhookId)}
+            copied={copiedLabel === 'Webhook ID'}
+          />
+          <EventDetail
+            label='Resource ID'
+            value={event.resourceId}
+            mono
+            copyFn={handleCopy('Resource ID', event.resourceId)}
+            copied={copiedLabel === 'Resource ID'}
+          />
+          <EventDetail
+            label='Event time'
+            value={formatDate(event.eventCreatedAt)}
+            copyFn={handleCopy('Event time', formatDate(event.eventCreatedAt))}
+            copied={copiedLabel === 'Event time'}
+          />
+          <EventDetail
+            label='Source'
+            value={event.source ?? 'Not provided'}
+            copyFn={handleCopy('Source', event.source ?? 'Not provided')}
+            copied={copiedLabel === 'Source'}
+          />
+          <EventDetail
+            label='Target'
+            value={event.target ?? 'Not provided'}
+            copyFn={handleCopy('Target', event.target ?? 'Not provided')}
+            copied={copiedLabel === 'Target'}
+          />
           <EventDetail
             label='Recipients'
             value={event.recipientCount === undefined ? 'Not applicable' : String(event.recipientCount)}
@@ -424,12 +451,24 @@ function WebhookEventRow({ event }: { event: WebhookEvent }) {
   )
 }
 
-function EventDetail({ label, mono, value }: { label: string; mono?: boolean; value: string }) {
+interface EventDetailProps {
+  label: string
+  mono?: boolean
+  value: string
+  copyFn?: VoidFunction
+  copied?: boolean
+}
+
+function EventDetail({ label, mono, value, copyFn, copied }: EventDetailProps) {
   return (
-    <div className='min-w-0 space-y-1'>
-      <dt className='font-ios text-[10px] uppercase tracking-[0.16em] text-muted-foreground'>{label}</dt>
+    <button
+      onClick={copyFn}
+      className='min-w-0 space-y-1 hover:bg-slate-200/80  hover:dark:bg-zinc-900 py-4 px-6 text-left'>
+      <dt className='font-ios text-[10px] uppercase tracking-[0.16em] text-muted-foreground'>
+        {label} <span className='font-medium text-blue-600 opacity-100 text-[11px]'>{copied && ' ✓'}</span>
+      </dt>
       <dd className={cn('wrap-break-word text-sm text-foreground/80', { 'font-mono text-xs': mono })}>{value}</dd>
-    </div>
+    </button>
   )
 }
 
