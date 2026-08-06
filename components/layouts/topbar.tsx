@@ -49,8 +49,7 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
   const router = useRouter()
   const pathname = usePathname()
   const { on: mobileOpen, toggle: toggleMobileOpen, setOn: setMobileOpen } = useToggle(false)
-  const avatarFallback = getUserAvatarFallback(user)
-  const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
+
   const navItems = NAV_ITEMS
   const navigate = (path: string) => () => router.push(path)
 
@@ -103,58 +102,14 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
           <div className='flex items-center gap-2 md:gap-5'>
             <ThemeToggle />
             <MobileNav items={navItems} onNavigate={() => setMobileOpen(false)} open={mobileOpen} />
-            <div className='relative z-60 flex items-center gap-4 px-2'>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <Button
-                      variant='ghost'
-                      size='icon-sm'
-                      aria-label='Open account menu'
-                      className='w-auto shrink-0 aspect-square rounded-full'>
-                      <div className='flex size-5 items-center justify-center rounded-full bg-primary'>
-                        <Avatar className='size-8 md:size-10'>
-                          {user.photoURL ? (
-                            <AvatarImage
-                              src={user.photoURL}
-                              alt={avatarLabel}
-                              className='p-0.5 border border-primary'
-                            />
-                          ) : null}
-                          <AvatarFallback>{avatarFallback}</AvatarFallback>
-                        </Avatar>
-                      </div>
-                    </Button>
-                  }
-                />
-                <DropdownMenuContent align='end' className=''>
-                  {hasAdminClaim
-                    ? adminMenuItems.map((item) => (
-                        <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
-                          <MenuItem {...item} />
-                        </DropdownMenuItem>
-                      ))
-                    : userMenuItems.map((item) => (
-                        <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
-                          <MenuItem {...item} />
-                        </DropdownMenuItem>
-                      ))}
-
-                  <DropdownMenuSeparator className='my-0.75' />
-                  <DropdownMenuItem className='rounded-sm rounded-b-xl'>
-                    <SignOutButton withLabel />
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button
-                variant='ghost'
-                size='icon-sm'
-                className='shrink-0 md:hidden hover:bg-slate-300/50'
-                onClick={toggleMobileOpen}>
-                <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4 text-slate-500 dark:text-slate-400' />
-              </Button>
-            </div>
+            <UserMenu
+              toggleMobileOpen={toggleMobileOpen}
+              mobileOpen={mobileOpen}
+              user={user}
+              hasAdminClaim={hasAdminClaim}
+              adminMenuItems={adminMenuItems}
+              userMenuItems={userMenuItems}
+            />
           </div>
         </div>
       </div>
@@ -194,12 +149,12 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
   return (
     <div
       className={cn(
-        'absolute left-0 right-0 top-full z-40 md:hidden',
+        'absolute left-0 right-0 top-full z-40 md:hidden px-0',
         'origin-top transition-[opacity,transform,visibility] duration-200 ease-out',
         open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0 pointer-events-none'
       )}>
-      <div className='mx-3 mt-0 rounded-2xl border border-border/60 bg-card px-2 pt-2 pb-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:mx-4'>
-        <div className='space-y-2'>
+      <div className='mx-3 rounded-lg border border-slate-500/70 bg-zinc-800 px-2 pt-2 pb-4 shadow-[0_24px_70px_rgba(0,0,0,0.22)] backdrop-blur-xl sm:mx-4'>
+        <div className='space-y-2 pt-1.5 px-1'>
           {items.map((item) => {
             const active = isNavItemActive(pathname, item.value)
             return (
@@ -207,10 +162,12 @@ function MobileNav({ items, onNavigate, open }: { items: NavItem[]; onNavigate: 
                 key={item.value}
                 href={item.value}
                 onClick={onNavigate}
-                className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
-                  active ? 'bg-hermes text-white' : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                className={`flex items-center gap-3 rounded-sm px-3 py-3 text-sm font-okx font-medium transition-colors md:duration-300 ease-in-out ${
+                  active
+                    ? 'bg-primary text-white'
+                    : 'text-background/80 dark:text-foreground/80 hover:text-foreground hover:bg-background/60 hover:dark:bg-zinc-600'
                 }`}>
-                <Icon name={item.icon} className='size-4' />
+                <Icon name={item.icon} className={cn('size-4', item.className)} />
                 <span className='font-okx whitespace-nowrap'>{item.label}</span>
               </Link>
             )
@@ -236,5 +193,75 @@ export const MenuItem = ({ routeHandler, label, icon, className }: MenuItemProps
       <Icon name={icon} className={cn('size-4', className)} />
       <span className='font-okx font-medium text-base text-foreground/70'>{label}</span>
     </Button>
+  )
+}
+
+interface UserMenuProps {
+  user: FirebaseSessionUser
+  hasAdminClaim: boolean
+  adminMenuItems: MenuItemProps[]
+  userMenuItems: MenuItemProps[]
+  toggleMobileOpen: VoidFunction
+  mobileOpen: boolean
+}
+
+export const UserMenu = ({
+  user,
+  hasAdminClaim,
+  adminMenuItems,
+  userMenuItems,
+  toggleMobileOpen,
+  mobileOpen
+}: UserMenuProps) => {
+  const avatarFallback = getUserAvatarFallback(user)
+  const avatarLabel = user.displayName ?? user.email ?? 'User avatar'
+  return (
+    <div className='relative z-60 flex items-center gap-5 px-2'>
+      <Button
+        variant='ghost'
+        size='icon-sm'
+        className='shrink-0 md:hidden hover:bg-slate-300/50'
+        onClick={toggleMobileOpen}>
+        <Icon name={mobileOpen ? 'close' : 'menu'} className='size-4 opacity-70' />
+      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              variant='ghost'
+              size='icon-sm'
+              aria-label='Open account menu'
+              className='w-auto shrink-0 aspect-square rounded-full'>
+              <div className='flex size-5 items-center justify-center rounded-full bg-primary'>
+                <Avatar className='size-8 md:size-10'>
+                  {user.photoURL ? (
+                    <AvatarImage src={user.photoURL} alt={avatarLabel} className='p-0.5 border border-primary' />
+                  ) : null}
+                  <AvatarFallback>{avatarFallback}</AvatarFallback>
+                </Avatar>
+              </div>
+            </Button>
+          }
+        />
+        <DropdownMenuContent align='end' className=''>
+          {hasAdminClaim
+            ? adminMenuItems.map((item) => (
+                <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                  <MenuItem {...item} />
+                </DropdownMenuItem>
+              ))
+            : userMenuItems.map((item) => (
+                <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                  <MenuItem {...item} />
+                </DropdownMenuItem>
+              ))}
+
+          <DropdownMenuSeparator className='my-0.75' />
+          <DropdownMenuItem className='rounded-sm rounded-b-xl'>
+            <SignOutButton withLabel />
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }

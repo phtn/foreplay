@@ -2,12 +2,12 @@
 
 import { PropsWithChildren } from 'react'
 
-import { Topbar } from '@/components/layouts/topbar'
+import { TopbarWithGoogleOneTap } from '@/components/one-tap'
 
 export default function ProtectedClient({ children }: PropsWithChildren) {
   return (
     <div className='min-h-screen bg-background'>
-      <Topbar />
+      <TopbarWithGoogleOneTap />
       <main className='mx-auto max-w-7xl px-3 pb-4 sm:px-4 sm:py-6 md:px-6'>{children}</main>
     </div>
   )

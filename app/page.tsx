@@ -1,6 +1,6 @@
 'use client'
 
-import { Topbar } from '@/components/layouts/topbar'
+import { TopbarWithGoogleOneTap } from '@/components/one-tap'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -15,7 +15,7 @@ export default function HomePage() {
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
       <div className='mx-auto max-w-410 overflow-hidden md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0,0)]'>
-        <Topbar />
+        <TopbarWithGoogleOneTap />
         <main className=' dark:bg-slate-400/90'>
           <div className='flex items-center justify-center space-x-1 h-120'>
             <Icon name='spinner-ring' />

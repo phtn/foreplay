@@ -1,3 +1,4 @@
+import { GoogleOneTap } from '@/components/one-tap'
 import { getVerifiedFirebaseSession } from '@/lib/firebase/server-auth'
 import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
@@ -11,5 +12,10 @@ export default async function AuthRouteLayout({ children }: AuthRouteLayoutProps
     redirect('/')
   }
 
-  return children
+  return (
+    <>
+      {children}
+      <GoogleOneTap />
+    </>
+  )
 }
