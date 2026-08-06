@@ -1,13 +1,15 @@
-import Link from 'next/link'
+'use client'
 
 import { SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { formatRegistrationFee, formatSlotsLabel, getPublicationLabel, timeFormatter } from '@/utils/formatters'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import type { TournamentRegistrationAction } from './registration-action'
 
 interface TourDetailProps {
@@ -22,6 +24,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
   const slotsLabel = formatSlotsLabel(tournament.registered_slots, tournament.slots_limit)
   const teeTimeLabel = `${dateLabel} at ${timeFormatter.format(eventDate)}`
   const tournamentFacts = tournament.overview_facts ?? []
+  const router = useRouter()
 
   return (
     <div className='space-y-4 md:space-y-8'>
@@ -85,8 +88,8 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
                         <span>{tournament.support.phone}</span>
                         <span>&middot;</span>
                         <span>{tournament.support.email}</span>
-                        <span>&middot;</span>
-                        <span className='capitalize'>{tournament.support.name}</span>
+                        <span className='hidden md:flex'>&middot;</span>
+                        <span className='capitalize hidden md:flex'>{tournament.support.name}</span>
                       </p>
                     </p>
                   </div>
@@ -97,14 +100,21 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
         </div>
 
         <div className='space-y-6'>
-          <Card className='border border-slate-500/80 bg-slate-100/50 dark:bg-slate-500/20 p-0'>
+          <Card className='border border-slate-500/80 bg-primary p-0 gap-0'>
             <CardContent className='space-y-4 p-0'>
-              <div className='space-y-4 p-4'>
+              <div className='relative space-y-4 p-4 text-white'>
                 <p className='text-xs uppercase tracking-widest'>Entry fee</p>
                 <p className='font-poly font-medium text-2xl'>
-                  PHP {tournament.registration_fee.toLocaleString()}{' '}
-                  <span className='px-1 font-normal opacity-0'> entry</span>
+                  <span>PHP {tournament.registration_fee.toLocaleString()}</span>
                 </p>
+                <Button
+                  size='xl'
+                  variant='default'
+                  onClick={() => router.push(`/tournaments/${tournament.id}/entry`)}
+                  className='bg-white hover:bg-white/90 text-primary dark:text-background dark:hover:bg-white/90 absolute top-9 right-8 font-poly text-base'>
+                  <span>Book Now</span>
+                  <Icon name='chevron-right' />
+                </Button>
               </div>
             </CardContent>
           </Card>

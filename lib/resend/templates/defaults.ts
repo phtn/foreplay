@@ -7,10 +7,9 @@ export type TemplateProps = Omit<GreetingEmailProps, 'recipientName'> & {
 export const DEFAULT_PROPS: TemplateProps = {
   inviterName: 'We',
   title: 'You are invited.',
-  message: 'Enter the code below to access our app:',
+  message: 'Welcome to Foreplay!',
   ctaLabel: 'Book Entry',
-  ctaUrl: 'https://foreplay.pro',
-  accessCode: 'FP2026'
+  ctaUrl: 'https://foreplay.pro'
 }
 
 export function parseTemplateProps(json: string | undefined): TemplateProps {

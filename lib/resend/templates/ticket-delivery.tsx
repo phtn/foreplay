@@ -27,7 +27,7 @@ export interface TicketDeliveryTemplateProps {
 }
 
 export const TICKET_DELIVERY_SAMPLE_PROPS: TicketDeliveryTemplateProps = {
-  eventTitle: 'Foreplay Invitational',
+  eventTitle: 'Foreplay Invitation',
   playerName: 'Alex Reyes',
   reference: 'FP26',
   ticketCount: 1
@@ -107,7 +107,7 @@ export function TicketDeliveryEmail({
           <Container className='mx-auto max-w-[560px] overflow-hidden rounded-[20px] bg-white'>
             <Section className='bg-[#09090b] px-[32px] py-[28px] text-white'>
               <Text className='m-0 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#f472b6]'>
-                Foreplay gate pass
+                Foreplay Gate Pass
               </Text>
               <Text className='m-0 mt-[12px] text-[26px] font-semibold leading-[32px] text-white'>{eventTitle}</Text>
             </Section>

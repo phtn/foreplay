@@ -52,9 +52,9 @@ function SupportContactCard({ contact }: { contact: SupportContact }) {
     <article className='flex min-w-0 flex-col rounded-xl bg-background p-4'>
       {' '}
       <div className='flex items-start gap-3'>
-        <div className='flex items-center justify-center h-15'>
-          <span className='flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700'>
-            <Icon name='user-fill' className='size-5 opacity-70' />
+        <div className='flex items-center justify-center h-14'>
+          <span className='flex size-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-700'>
+            <Icon name='user-fill' className='size-3.5 opacity-70' />
           </span>
         </div>
         <div className='min-w-0'>

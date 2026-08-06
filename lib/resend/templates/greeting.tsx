@@ -23,17 +23,9 @@ export type GreetingEmailProps = {
   accessCode?: string
 }
 
-const baseUrl = process.env.NODE_ENV === 'development' ? `http://localhost:3000` : 'https://foreplay.pro'
+// const baseUrl = process.env.NODE_ENV === 'development' ? `http://localhost:3000` : 'https://foreplay.pro'
 
-export const GreetingEmail = ({
-  recipientName,
-  inviterName,
-  title,
-  message,
-  ctaLabel,
-  ctaUrl,
-  accessCode
-}: GreetingEmailProps) => (
+export const GreetingEmail = ({ recipientName, inviterName, title, message, ctaLabel, ctaUrl }: GreetingEmailProps) => (
   <Html>
     <Preview>{title}</Preview>
     <Tailwind>
@@ -43,10 +35,10 @@ export const GreetingEmail = ({
           <Section>
             <Column>
               <Img
-                src={'https://res.cloudinary.com/dx0heqhhe/image/upload/v1771881178/rf-wordmark-flex_vrgct3.png'}
+                src={'https://res.cloudinary.com/dx0heqhhe/image/upload/v1785992150/512_bhscfd.webp'}
                 width='auto'
                 height='42'
-                alt='RF Wordmark'
+                alt='foreplay logo'
                 className='aspect-auto'
               />
             </Column>
@@ -65,9 +57,6 @@ export const GreetingEmail = ({
 
           <Section className='flex items-center flex-center rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-[10.01px] py-[8.01px]'>
             <Text className='m-0 text-[14px] leading-5.5 text-[#334155] whitespace-pre-wrap'>{message}</Text>
-            {accessCode ? (
-              <Text className='m-0 mt-[6.01px] text-[13px] leading-5 text-[#64748b]'>Access Code: {accessCode}</Text>
-            ) : null}
           </Section>
 
           <Section className='text-center mt-[14.01px]'>

@@ -372,7 +372,7 @@ export function TournamentHero({
             className={cn(
               buttonVariants({ size: '2xl' }),
               'w-full hover:bg-primary/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center h-18',
-              { 'bg-primary dark:bg-background': darkButton }
+              { 'bg-primary dark:bg-primary': darkButton }
             )}
             href={primaryHref}>
             <span className='text-lg'>{primaryLabel}</span>
@@ -383,7 +383,7 @@ export function TournamentHero({
           <Link
             className={cn(
               buttonVariants({ variant: 'secondary', size: '2xl' }),
-              'w-full font-poly sm:w-auto bg-foreground/5 dark:bg-slate-700/5 hover:bg-white hover:text-slate-900 h-18'
+              'w-full font-poly sm:w-auto bg-foreground/5 dark:bg-slate-700/5 hover:bg-white hover:text-slate-900 dark:hover:text-white dark:hover:bg-neutral-900 h-18'
             )}
             href={secondaryHref}>
             <Icon name='service' className='size-8' />
