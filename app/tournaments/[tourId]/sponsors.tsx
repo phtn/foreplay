@@ -174,20 +174,20 @@ export function Sponsors({ sponsors }: SponsorsProps) {
         </div>
 
         {slideCount > 1 ? (
-          <div className='flex shrink-0 items-center gap-2'>
+          <div className='flex shrink-0 items-center rounded-full border border-slate-600 bg-slate-500/5 hover:border-slate-500/70 divide-x divide-slate-600/80 relative -translate-y-5 overflow-hidden'>
             <button
               type='button'
               aria-label='Show previous sponsors'
-              className='inline-flex size-9 items-center justify-center rounded-full border border-white/15 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70'
+              className='inline-flex size-8 items-center justify-center transition-colors  hover:bg-slate-500/10 active:bg-slate-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:rounded-s-full focus-visible:ring-emerald-300/70'
               onClick={() => showSlide((activeSlideIndex - 1 + slideCount) % slideCount, -1)}>
-              <Icon name='arrow-left' className='size-4' />
+              <Icon name='chevron-right' className='size-4 -rotate-90' />
             </button>
             <button
               type='button'
               aria-label='Show next sponsors'
-              className='inline-flex size-9 items-center justify-center rounded-full border border-white/15 transition-colors hover:border-white/30 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300/70'
+              className='inline-flex size-8 items-center justify-center transition-colors hover:bg-slate-500/10 active:bg-slate-500/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:rounded-e-full focus-visible:ring-emerald-300/70'
               onClick={() => showSlide((activeSlideIndex + 1) % slideCount, 1)}>
-              <Icon name='arrow-right' className='size-4' />
+              <Icon name='chevron-right' className='size-4' />
             </button>
           </div>
         ) : null}
