@@ -113,7 +113,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
                   onClick={() => router.push(`/tournaments/${tournament.id}/entry`)}
                   className='bg-white hover:bg-white/90 text-primary dark:text-background dark:hover:bg-white/90 absolute top-9 md:right-8 right-4 font-poly text-base'>
                   <span>Book Now</span>
-                  <Icon name='chevron-right' className=' hidden md:flex' />
+                  <Icon name='chevron-right' className=' hidden lg:flex' />
                 </Button>
               </div>
             </CardContent>

@@ -177,9 +177,7 @@ export const GoogleOneTap = () => {
               console.log('Signing in with Firebase...')
               const result = await signInWithCredential(firebaseAuth, credential)
               console.log('Successfully signed in with Google One Tap:', {
-                email: result.user.email,
-                uid: result.user.uid,
-                displayName: result.user.displayName
+                uid: result.user.uid.substring(24, 28)
               })
               navigateHome()
               // Authentication state will be updated by useFirebaseUser.
