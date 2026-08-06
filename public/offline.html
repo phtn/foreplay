@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1a1a1a" />
+    <title>Offline ・ Foreplay PRO</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #1f2b27;
+        color: #1c2621;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 20rem;
+        min-height: 100dvh;
+        margin: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        place-items: center;
+        padding: max(1.5rem, env(safe-area-inset-top)) max(1.5rem, env(safe-area-inset-right))
+          max(1.5rem, env(safe-area-inset-bottom)) max(1.5rem, env(safe-area-inset-left));
+      }
+
+      main {
+        width: 100%;
+        max-width: 28rem;
+        padding: 2rem;
+        border-radius: 2rem;
+        background: #dcebe5;
+        box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 24%);
+        text-align: center;
+      }
+
+      img {
+        width: 5rem;
+        height: 5rem;
+        border-radius: 1.25rem;
+        background: #ffffff;
+        box-shadow: 0 0 0 1px rgb(0 0 0 / 10%);
+      }
+
+      h1 {
+        margin: 1.5rem 0 0;
+        font-size: clamp(1.75rem, 7vw, 2.25rem);
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+      }
+
+      p {
+        margin: 0.875rem auto 0;
+        max-width: 22rem;
+        color: #41534c;
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      a {
+        min-height: 2.75rem;
+        margin-top: 1.5rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.75rem 1.25rem;
+        background: #1f6f4a;
+        color: #ffffff;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 0.5rem 1.25rem rgb(31 111 74 / 24%);
+        transition-property: background-color, transform;
+        transition-duration: 150ms;
+      }
+
+      a:hover {
+        background: #185a3c;
+      }
+
+      a:active {
+        transform: scale(0.96);
+      }
+
+      a:focus-visible {
+        outline: 3px solid #1a1a1a;
+        outline-offset: 3px;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        a {
+          transition: none;
+        }
+
+        a:active {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/192.png" alt="" width="80" height="80" />
+      <h1>You’re offline</h1>
+      <p>Foreplay PRO needs an internet connection to load this page. Check your connection and try again.</p>
+      <a href="/">Try again</a>
+    </main>
+  </body>
+</html>

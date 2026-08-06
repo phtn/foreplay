@@ -1,38 +1,9 @@
 'use client'
 
-import { useAppForm } from '@/components/form'
-import { BookedGames } from '@/components/landing/types'
 import { Topbar } from '@/components/layouts/topbar'
 import { Icon } from '@/lib/icons'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
-
-const proofPoints = [
-  { label: '', value: 'Pradera Verde Golf & Country Club', icon: 'location' as const },
-  { label: 'Cash Purse', value: '₱500k', icon: 'cash' as const },
-  { label: 'Hole-in-one', value: 'Ford Everest', icon: 'trophy' as const }
-]
-
-const gamesList: BookedGames[] = [
-  {
-    day: 'Thu',
-    date: '22',
-    month: 'October',
-    time: '06:00 - 07:00',
-    place: 'Pradera Verde clubhouse',
-    team: 'Sponsor check-in',
-    status: 'Open',
-    attendance: 'Corporate guests, player kits, and sponsor flight confirmation.',
-    avatar: 'SM',
-    extra: '+4'
-  }
-]
-
-const courseStats = [
-  { label: 'HOLES', value: '18', unit: '' },
-  { label: 'PAR', value: '72', unit: '' },
-  { label: 'START', value: '7AM', unit: '' }
-]
 
 export default function HomePage() {
   const router = useRouter()
@@ -41,19 +12,14 @@ export default function HomePage() {
     router.replace('/tournaments/som-2026')
   }, [router])
 
-  const form = useAppForm({
-    defaultValues: {
-      search: ''
-    }
-  })
-
   return (
     <div className='min-h-dvh dark:bg-background bg-[#1f2b27] sm:px-3 sm:py-4 text-[#1c2621] md:px-5 md:py-7 lg:px-10'>
       <div className='mx-auto max-w-410 overflow-hidden md:rounded-[3rem] bg-[#dcebe5] dark:md:border shadow-[0_34px_110px_rgba(0,0,0,0,0)]'>
         <Topbar />
         <main className=' dark:bg-slate-400/90'>
-          <div className='flex items-center justify-center h-96'>
+          <div className='flex items-center justify-center space-x-1 h-120'>
             <Icon name='spinner-ring' />
+            <span>Retrieving</span>
           </div>
         </main>
       </div>

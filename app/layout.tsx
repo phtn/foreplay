@@ -1,3 +1,5 @@
+import FooterContent from '@/components/layouts/footer'
+import { PwaRegistration } from '@/components/pwa-registration'
 import { RootProviders } from '@/ctx/root'
 import { getInitialFirebaseAuthState } from '@/lib/firebase/server-auth'
 import { THEME_SCRIPT } from '@/lib/theme'
@@ -130,6 +132,8 @@ export default async function RootLayout({
       </head>
       <body className='min-h-full flex flex-col'>
         <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
+        <PwaRegistration />
+        <FooterContent />
       </body>
     </html>
   )

@@ -4,18 +4,20 @@ import { useRouter } from 'next/navigation'
 
 import { Tab, Tabs } from '@/components/ui/tabs'
 import { type IconName } from '@/lib/icons'
+import { ClassName } from '@/types'
 import { startTransition } from 'react'
 
 export interface NavItem {
   value: string
   label: string
   icon: IconName
+  className?: ClassName
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { value: '/', label: 'Home', icon: 'home-line' },
+  { value: '/', label: 'Home', icon: 'home-fill' },
   // { value: '/tournaments', label: 'Tournaments', icon: 'trophy-line' },
-  { value: '/subscriptions', label: 'My Entries', icon: 'ticket' }
+  { value: '/subscriptions', label: 'My Entries', icon: 'goldticket', className: '-rotate-2' }
   // { value: '/records', label: 'Scorecard', icon: 'bar-chart' }
 ]
 

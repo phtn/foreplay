@@ -69,10 +69,10 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
                     <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
                       {item.label}
                     </p>
-                    <p className='font-ios flex items-center space-x-1 md:space-x-5'>
+                    <div className='font-ios flex items-center space-x-1 md:space-x-5'>
                       <Icon name='chevron-right' className='size-3 text-primary' />
                       <span>{item.value}</span>
-                    </p>
+                    </div>
                   </div>
                 ))}
                 {tournament.support && (
@@ -82,7 +82,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
                     <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
                       {tournament.support.title}
                     </p>
-                    <p className='font-ios flex items-center space-x-1 md:space-x-5'>
+                    <div className='font-ios flex items-center space-x-1 md:space-x-5'>
                       <Icon name='chevron-right' className='size-3 text-primary' />
                       <p className='font-ios space-x-2 md:space-x-1'>
                         <span>{tournament.support.phone}</span>
@@ -91,7 +91,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
                         <span className='hidden md:flex'>&middot;</span>
                         <span className='capitalize hidden md:flex'>{tournament.support.name}</span>
                       </p>
-                    </p>
+                    </div>
                   </div>
                 )}
               </div>

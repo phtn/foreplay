@@ -1,6 +1,8 @@
 'use client'
 
 import { Icon, type IconName } from '@/lib/icons'
+import { cn } from '@/lib/utils'
+import { ClassName } from '@/types'
 import { Tabs as Root } from '@base-ui/react/tabs'
 import { ReactNode, useState } from 'react'
 
@@ -16,6 +18,7 @@ export interface Tab {
   label: string
   icon: IconName
   content?: ReactNode
+  className?: ClassName
 }
 
 export const Tabs = ({ tabs, defaultValue, onValueChange, className }: TabsProps) => {
@@ -27,7 +30,7 @@ export const Tabs = ({ tabs, defaultValue, onValueChange, className }: TabsProps
   return (
     <Root.Root
       className={className}
-      defaultValue={activeValue}
+      value={activeValue}
       onValueChange={(nextValue) => {
         const next = typeof nextValue === 'string' ? nextValue : firstValue
 
@@ -45,7 +48,7 @@ export const Tabs = ({ tabs, defaultValue, onValueChange, className }: TabsProps
             }`}
             // className={`flex h-7 items-center justify-center border-0 px-2 text-sm font-normal break-keep whitespace-nowrap text-foreground/60 outline-hidden select-none before:inset-x-0 before:inset-y-1 before:rounded-xs before:-outline-offset-1 before:outline-blue-800 hover:text-foreground hover:data-active:text-orange-100 dark:hover:data-active:text-background focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-2 data-active:text-background ${index === 0 ? 'first:ml-1' : ''}`}
             value={tab.value}>
-            <Icon name={tab.icon} className='size-4 opacity-80' />
+            <Icon name={tab.icon} className={cn('size-4 opacity-80', tab.className)} />
             <span>{tab.label}</span>
           </Root.Tab>
         ))}
