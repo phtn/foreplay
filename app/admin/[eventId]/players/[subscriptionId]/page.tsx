@@ -54,7 +54,7 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
       playerPhone: registration.player_phone ?? '',
       handicapIndex: registration.handicap_index ?? '',
       division: registration.division ?? '',
-      shirtSize: registration.shirt_size
+      shirtSize: registration.shirt_size ?? ''
     }))
   const divisionOptions = Array.from(
     new Set(
@@ -67,8 +67,8 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
   )
 
   return (
-    <main className='mx-auto w-full max-w-5xl space-y-5 px-2 py-5 pb-24 md:py-8'>
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between'>
+    <main className='mx-auto w-full max-w-5xl space-y-0 px-2 py-0 pb-24 md:py-0'>
+      <div className='flex gap-4 flex-row items-end justify-between'>
         <div className='min-w-0 space-y-3'>
           <Link
             href={`/admin/${encodeURIComponent(eventId)}`}
@@ -79,21 +79,17 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
             />
             <span>Players</span>
           </Link>
-          <div>
-            <p className='font-ios text-[10px] uppercase tracking-widest text-sky-700 dark:text-sky-400'>
-              {event.title}
-            </p>
-            <h1 className='truncate font-poly text-xl font-medium sm:text-2xl'>
-              <span className='font-normal opacity-70'>Player</span> {entry.teamName}
-            </h1>
+          <div className='px-4 md:px-6'>
+            <p className='font-ios text-[10px] uppercase tracking-widest text-sky-700 dark:text-sky-400'>player</p>
+            <h1 className='truncate font-poly text-xl font-medium sm:text-2xl'>{entry.teamName}</h1>
           </div>
         </div>
 
-        <Card size='sm' className='shrink-0 gap-0 rounded-xl py-0 sm:min-w-56'>
+        <Card size='sm' className='shrink-0 gap-0 ring-0 py-0 sm:min-w-56'>
           <CardContent className='flex items-center justify-between gap-5'>
             <div>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Reference</p>
-              <p className='font-mono text-sm font-medium'>{reference}</p>
+              <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Entry ID</p>
+              <p className='font-ios text-base uppercase'>{reference}</p>
             </div>
           </CardContent>
         </Card>

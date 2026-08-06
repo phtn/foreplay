@@ -12,10 +12,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import { api } from '@/convex/_generated/api'
 import { Icon, type IconName } from '@/lib/icons'
 import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
+import { useQuery } from 'convex/react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useCallback, useMemo, useRef, useState, useTransition } from 'react'
@@ -42,6 +44,7 @@ export interface EventSubscriptionTableRow {
   teamName: string
   totalPlayers: number
   totalCheckedIn: number
+  ticketEmailSentCount: number
   paymentAmount: number | null
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
   subscriptionStatus: string
@@ -140,7 +143,7 @@ function DateTimeCell({ timestamp, fallback = '—' }: { timestamp: number | nul
   const parts = dateTimeFormatter.format(timestamp).split(',')
 
   return (
-    <div className='font-okx text-xs text-muted-foreground'>
+    <div className='font-okx text-xs text-muted-foreground tracking-wider'>
       {parts.map((part, index) => (
         <p className='whitespace-nowrap' key={`${part}-${index}`}>
           {part.trim()}
@@ -165,9 +168,11 @@ function ReferenceCell({ eventId, row }: { eventId: string; row: EventSubscripti
 
 function EntriesCell({ row }: { row: EventSubscriptionTableRow }) {
   return (
-    <Link href={`/admin/config/users/${row.userId}`} className='space-y-1'>
+    <Link href={`/admin/config/users/${row.userId}`} className='group/player space-y-1'>
       <p className='text-foreground/85'>
-        <span className='font-okx'>{row.teamName}</span>
+        <span className='font-okx group-hover/player:text-blue-500 group-hover/player:underline underline-offset-4 decoration-dotted'>
+          {row.teamName}
+        </span>
       </p>
       <p className='whitespace-nowrap text-xs text-muted-foreground'>
         <span className='font-okx'>{row.contactEmail}</span>
@@ -488,6 +493,7 @@ function TicketMessagingCell({ eventId, row }: { eventId: string; row: EventSubs
                 : 'text-sky-600 hover:text-sky-500 dark:text-sky-400'
         )}
         onClick={handleSend}>
+        <span>{label}</span>
         <Icon
           name={
             unavailableReason
@@ -503,7 +509,11 @@ function TicketMessagingCell({ eventId, row }: { eventId: string; row: EventSubs
           aria-hidden='true'
           className='size-4'
         />
-        <span>{label}</span>
+        <span
+          id='sent-count'
+          className='font-poly text-foreground/80 bg-slate-200/30 dark:bg-neutral-800 w-5 rounded-xs'>
+          {row.ticketEmailSentCount ?? 0}
+        </span>
       </Button>
       <span className='sr-only' role='status' aria-live='polite' aria-atomic='true'>
         {status?.message ?? (sending ? `Preparing and sending ${deliverableTickets.length} ticket emails.` : '')}
@@ -535,7 +545,7 @@ function RemarksCell({ eventId, row }: { eventId: string; row: EventSubscription
         placeholder='Internal notes'
         className='min-h-10 w-full resize-y rounded-md border border-input bg-background px-2 py-1.5 text-xs whitespace-normal outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 dark:bg-transparent'
       />
-      <FormSubmitButton label='Save' pendingLabel='Saving' className='text-gray-600 hover:text-gray-500' />
+      <FormSubmitButton label='Save' pendingLabel='Saving' className='text-sky-600 hover:text-gray-500' />
     </form>
   )
 }
@@ -641,6 +651,27 @@ function PlayersExportMenu({ eventId, eventTitle, getRows, hasRows }: PlayersExp
 }
 
 export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTableProps) {
+  const rowEmails = useMemo(
+    () => Array.from(new Set(rows.flatMap((row) => (row.contactEmail ? [row.contactEmail.trim().toLowerCase()] : [])))),
+    [rows]
+  )
+  const liveTicketEmailSentCounts = useQuery(
+    api.resendWebhooks.q.getEmailSentCounts,
+    rowEmails.length <= 500 ? { emails: rowEmails } : 'skip'
+  )
+  const ticketEmailSentCounts = useMemo(
+    () => new Map(liveTicketEmailSentCounts?.map(({ email, sentCount }) => [email, sentCount])),
+    [liveTicketEmailSentCounts]
+  )
+  const rowsWithTicketEmailSentCounts = useMemo(
+    () =>
+      rows.map((row) => ({
+        ...row,
+        ticketEmailSentCount:
+          ticketEmailSentCounts.get(row.contactEmail?.trim().toLowerCase() ?? '') ?? row.ticketEmailSentCount
+      })),
+    [rows, ticketEmailSentCounts]
+  )
   const columns = useMemo<ColumnConfig<EventSubscriptionTableRow>[]>(
     () => [
       {
@@ -812,7 +843,7 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
 
   return (
     <DataTable
-      data={rows}
+      data={rowsWithTicketEmailSentCounts}
       title=''
       emptyState={emptyState}
       loading={false}

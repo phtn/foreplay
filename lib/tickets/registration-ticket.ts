@@ -57,7 +57,7 @@ export function toRegistrationTicketData(
     phone: registration.player_phone ?? 'N/A',
     division: registration.division ?? 'N/A',
     handicap: registration.handicap_index ?? 'N/A',
-    shirtSize: registration.shirt_size,
+    shirtSize: registration.shirt_size ?? 'N/A',
     paymentStatus: registration.payment_status,
     venue: context.venue
   }

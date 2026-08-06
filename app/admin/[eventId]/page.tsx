@@ -30,6 +30,11 @@ export default async function EventPage({ params }: EventPageProps) {
     notFound()
   }
 
+  const contactEmails = Array.from(
+    new Set(subscriptions.flatMap((subscription) => (subscription.contact_email ? [subscription.contact_email] : [])))
+  )
+  const emailSentCounts = await fetchQuery(api.resendWebhooks.q.getEmailSentCounts, { emails: contactEmails })
+  const emailSentCountsByTarget = new Map(emailSentCounts.map(({ email, sentCount }) => [email, sentCount]))
   const eventDateLabel = formatEventDate(event.gate_open_at, event.event_date)
   const ticketsBySubscription = new Map<string, RegistrationTicketData[]>()
 
@@ -58,6 +63,8 @@ export default async function EventPage({ params }: EventPageProps) {
     teamName: subscription.team_name ?? 'Team pending',
     totalPlayers: toCount(subscription.total_players),
     totalCheckedIn: toCount(subscription.total_checked_in),
+    ticketEmailSentCount:
+      emailSentCountsByTarget.get(subscription.contact_email?.trim().toLowerCase() ?? '') ?? 0,
     paymentAmount: subscription.payment_amount ?? null,
     paymentStatus: subscription.payment_status,
     subscriptionStatus: subscription.status ?? 'pending_payment',

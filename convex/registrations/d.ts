@@ -11,7 +11,7 @@ export const registrationSchema = v.object({
   affiliate_id: v.optional(v.string()),
   handicap_index: v.optional(v.string()),
   division: v.optional(v.string()),
-  shirt_size: v.union(v.string(), v.string(), v.string(), v.string(), v.string(), v.string(), v.string()),
+  shirt_size: v.optional(v.string()),
   payment_status: v.union(v.string(), v.string(), v.string(), v.string()),
   receipt_image_url: v.optional(v.string()),
   txn_ref_no: v.optional(v.string()),

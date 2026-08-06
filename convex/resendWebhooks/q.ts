@@ -1,7 +1,26 @@
 import { paginationOptsValidator } from 'convex/server'
+import { countEmailSentEventsByTarget } from '@/lib/resend/webhooks/sent-counts'
 import { ConvexError, v } from 'convex/values'
 import { query } from '../_generated/server'
 import { trackedResendWebhookEventTypeValidator } from './d'
+
+const MAX_SENT_COUNT_EMAILS = 500
+
+export const getEmailSentCounts = query({
+  args: { emails: v.array(v.string()) },
+  handler: async (ctx, { emails }) => {
+    if (emails.length > MAX_SENT_COUNT_EMAILS) {
+      throw new ConvexError('Too many email addresses were requested.')
+    }
+
+    const sentEvents = await ctx.db
+      .query('resendWebhookEvents')
+      .withIndex('by_eventType_and_receivedAt', (index) => index.eq('eventType', 'email.sent'))
+      .collect()
+
+    return countEmailSentEventsByTarget(sentEvents, emails)
+  }
+})
 
 export const list = query({
   args: {

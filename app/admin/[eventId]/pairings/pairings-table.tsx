@@ -215,7 +215,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         playerId: registration.player_id,
         playerName: registration.player_name,
         position: index + 1,
-        shirtSize: formatPrincipal(registration.shirt_size)
+        shirtSize: registration.shirt_size ? formatPrincipal(registration.shirt_size) : '-'
       }
     })
 

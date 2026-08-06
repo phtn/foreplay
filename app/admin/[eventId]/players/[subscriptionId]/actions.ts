@@ -20,6 +20,14 @@ class RegistrationDetailsInputError extends Error {}
 function readTextField(formData: FormData, name: string, label: string, maxLength: number, required = false) {
   const value = formData.get(name)
 
+  if (value === null) {
+    if (required) {
+      throw new RegistrationDetailsInputError(`${label} is required.`)
+    }
+
+    return ''
+  }
+
   if (typeof value !== 'string') {
     throw new RegistrationDetailsInputError(`${label} is invalid.`)
   }
@@ -103,7 +111,7 @@ export async function saveRegistrationDetails(
         playerPhone: readTextField(formData, `${prefix}.playerPhone`, `Player ${index + 1} phone`, 64),
         handicapIndex: readTextField(formData, `${prefix}.handicapIndex`, `Player ${index + 1} handicap`, 64),
         division: readTextField(formData, `${prefix}.division`, `Player ${index + 1} division`, 120),
-        shirtSize: readTextField(formData, `${prefix}.shirtSize`, `Player ${index + 1} shirt size`, 64, true)
+        shirtSize: readTextField(formData, `${prefix}.shirtSize`, `Player ${index + 1} shirt size`, 64)
       }
     })
 

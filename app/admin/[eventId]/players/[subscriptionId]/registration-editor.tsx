@@ -8,11 +8,11 @@ import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
-import { type FormEvent, useState, useTransition } from 'react'
+import { type SubmitEvent, useState, useTransition } from 'react'
 import { saveRegistrationDetails, type SaveRegistrationDetailsState } from './actions'
 
 export type RegistrationEditorPlayer = {
-  division: string
+  division?: string
   handicapIndex: string
   playerEmail: string
   playerName: string
@@ -24,7 +24,7 @@ export type RegistrationEditorPlayer = {
 export type RegistrationEditorEntry = {
   contactEmail: string
   contactPhone: string
-  division: string
+  division?: string
   handicapIndex: string
   subscriptionId: string
   teamName: string
@@ -51,7 +51,7 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
   const [state, setState] = useState(initialState)
   const [isPending, startTransition] = useTransition()
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
 
@@ -94,8 +94,8 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
       </datalist>
 
       <fieldset disabled={isPending} className='space-y-5'>
-        <Card size='sm' className='gap-0 rounded-xl py-0'>
-          <CardContent className='grid gap-4 py-5 md:grid-cols-2'>
+        <Card size='sm' className='gap-0 ring-0 py-0'>
+          <CardContent className='grid gap-4 px-0 py-5 md:grid-cols-2'>
             <EditorField
               id='registration-team-name'
               label='Player name'
@@ -207,21 +207,20 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
                         defaultValue={player.handicapIndex}
                         maxLength={64}
                       />
-                      <EditorField
+                      {/*<EditorField
                         id={`${idPrefix}-division`}
                         label='Division'
                         name={`${prefix}.division`}
                         defaultValue={player.division}
                         maxLength={120}
                         list='admin-registration-divisions'
-                      />
+                      />*/}
                       <EditorField
                         id={`${idPrefix}-shirt-size`}
                         label='Shirt size'
                         name={`${prefix}.shirtSize`}
                         defaultValue={player.shirtSize}
                         maxLength={64}
-                        required
                       />
                     </CardContent>
                   </Card>

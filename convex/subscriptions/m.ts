@@ -31,8 +31,8 @@ const trimRequiredAdminDetail = (value: string, label: string, maxLength: number
   return trimmed
 }
 
-const trimOptionalAdminDetail = (value: string, label: string, maxLength: number) => {
-  const trimmed = value.trim()
+const trimOptionalAdminDetail = (value: string | undefined, label: string, maxLength: number) => {
+  const trimmed = value?.trim() ?? ''
 
   if (trimmed.length > maxLength) {
     throw new ConvexError(`${label} must be ${maxLength} characters or fewer.`)
@@ -242,17 +242,17 @@ export const updateRegistrationDetailsForAdmin = mutation({
     teamName: v.string(),
     contactEmail: v.string(),
     contactPhone: v.string(),
-    handicapIndex: v.string(),
-    division: v.string(),
+    handicapIndex: v.optional(v.string()),
+    division: v.optional(v.string()),
     registrations: v.array(
       v.object({
         registrationId: v.id('registrations'),
         playerName: v.string(),
         playerEmail: v.string(),
         playerPhone: v.string(),
-        handicapIndex: v.string(),
-        division: v.string(),
-        shirtSize: v.string()
+        handicapIndex: v.optional(v.string()),
+        division: v.optional(v.string()),
+        shirtSize: v.optional(v.string())
       })
     )
   },
@@ -307,7 +307,7 @@ export const updateRegistrationDetailsForAdmin = mutation({
         playerPhone: trimOptionalAdminDetail(registration.playerPhone, `Player ${index + 1} phone`, 64),
         handicapIndex: trimOptionalAdminDetail(registration.handicapIndex, `Player ${index + 1} handicap`, 64),
         division: trimOptionalAdminDetail(registration.division, `Player ${index + 1} division`, 120),
-        shirtSize: trimRequiredAdminDetail(registration.shirtSize, `Player ${index + 1} shirt size`, 64)
+        shirtSize: trimOptionalAdminDetail(registration.shirtSize, `Player ${index + 1} shirt size`, 64)
       }
     })
 

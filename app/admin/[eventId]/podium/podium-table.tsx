@@ -275,7 +275,7 @@ function AwardTable({
                 <TableCell>
                   {registration ? (
                     <Badge variant='outline' size='sm'>
-                      {formatPrincipal(registration.shirt_size)}
+                      {registration.shirt_size ? formatPrincipal(registration.shirt_size) : '-'}
                     </Badge>
                   ) : (
                     '-'
