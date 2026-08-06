@@ -212,14 +212,15 @@ export const Content = () => {
   }
 
   return (
-    <main className='mx-auto w-full max-w-6xl space-y-5 px-3 py-0 sm:px-5 sm:py-0 lg:px-6'>
-      <section className='relative overflow-hidden rounded-md dark:bg-zinc-500/5 bg-zinc-600 px-5 py-6 text-white shadow-[0_24px_70px_rgba(18,32,27,0.18)] sm:px-7 sm:py-8'>
+    <main className='mx-auto w-full max-w-6xl'>
+      {/* space-y-0 px-3 py-0 sm:px-5 sm:py-0 lg:px-6*/}
+      <section className='relative overflow-hidden md:rounded-md rounded-b-none dark:bg-zinc-500/5 bg-zinc-600 px-4 py-6 text-white shadow-[0_24px_70px_rgba(18,32,27,0.18)] sm:px-6 sm:py-8'>
         <div className='pointer-events-none absolute -right-20 -top-28 size-72 rounded-full bg-zinc-400/15 blur-3xl' />
         <div className='pointer-events-none absolute -bottom-36 left-1/3 size-72 rounded-full bg-neutral-300/10 blur-3xl' />
 
         <div className='relative space-y-7'>
-          <div className='flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between'>
-            <div className='space-y-3'>
+          <div className='flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between'>
+            <div className='space-y-2'>
               <Link
                 href='/admin/config?tab=messaging'
                 className={cn(
@@ -251,7 +252,7 @@ export const Content = () => {
             </div>
             <div className='flex items-center gap-2 font-ios text-[11px] uppercase tracking-[0.2em] text-sky-300'>
               <span>Email Delivery Service</span>
-              <Icon name='email-sending' className='size-3.5' />
+              <Icon name='send' className='size-3.5' />
             </div>
           </div>
 
@@ -259,7 +260,7 @@ export const Content = () => {
             <Metric label='Loaded' value={isLoading ? '—' : String(visibleEvents.length)} />
             <Metric label='Delivered' value={isLoading ? '—' : String(deliveredCount)} />
             <Metric
-              label='Alert'
+              label='Alerts'
               value={isLoading ? '—' : String(attentionCount)}
               valueClassName={attentionCount > 0 ? 'text-orange-300' : undefined}
             />
@@ -269,13 +270,13 @@ export const Content = () => {
 
       <section
         aria-labelledby='webhook-inbox-heading'
-        className='overflow-hidden rounded-md bg-card ring-1 ring-foreground/30'>
+        className='overflow-hidden rounded-md rounded-t-none bg-card border-t-[0.5px] md:border border-foreground/30'>
         <div className='space-y-5 px-4 py-5 sm:px-6 sm:py-6'>
-          <div className='flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'>
+          <div className='flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between'>
             <div className='flex items-center justify-between space-x-4'>
-              <h2 id='webhook-inbox-heading' className='flex items-center gap-1 font-poly text-lg font-medium'>
+              <h2 id='webhook-inbox-heading' className='flex items-center gap-1 font-poly text-base'>
                 <Icon name='webhook' className='' />
-                <span>Recents</span>
+                <span className='opacity-80'>Recents</span>
               </h2>
               <p className='font-ios text-xs text-muted-foreground'>
                 {latestReceivedAt ? `Latest ${formatDate(latestReceivedAt)}` : 'Waiting for the first event'}

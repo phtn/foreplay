@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { onInfo, onSuccess } from '@/ctx/toast'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { type SubmitEvent, useState, useTransition } from 'react'
-import { saveRegistrationDetails, type SaveRegistrationDetailsState } from './actions'
+import { deletePlayerRegistration, saveRegistrationDetails, type SaveRegistrationDetailsState } from './actions'
 
 export type RegistrationEditorPlayer = {
+  checkedIn: boolean
   division?: string
   handicapIndex: string
   playerEmail: string
@@ -31,6 +33,7 @@ export type RegistrationEditorEntry = {
 }
 
 type RegistrationEditorProps = {
+  canDeletePlayers: boolean
   divisionOptions: string[]
   entry: RegistrationEditorEntry
   eventId: string
@@ -45,11 +48,19 @@ const initialState: SaveRegistrationDetailsState = {
 const inputClassName =
   'h-11 border-border/70 bg-background shadow-none focus-visible:border-primary focus-visible:ring-primary/15'
 
-export function RegistrationEditor({ divisionOptions, entry, eventId, players }: RegistrationEditorProps) {
+export function RegistrationEditor({
+  canDeletePlayers,
+  divisionOptions,
+  entry,
+  eventId,
+  players
+}: RegistrationEditorProps) {
   const router = useRouter()
   const { isLoading: isAuthLoading, user } = useFirebaseUser()
   const [state, setState] = useState(initialState)
+  const [deletingRegistrationId, setDeletingRegistrationId] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const isSaving = isPending && deletingRegistrationId === null
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -72,12 +83,65 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
 
         if (result.status === 'success') {
           router.refresh()
+          onSuccess('Save Successful')
         }
       } catch (error) {
         setState({
           status: 'error',
           message: error instanceof Error ? error.message : 'Unable to save registration details. Try again.'
         })
+      }
+    })
+  }
+
+  const handleDelete = (player: RegistrationEditorPlayer) => {
+    const confirmationMessage =
+      players.length === 1
+        ? `Delete ${player.playerName}'s registration and remove this entry from the players table? This action cannot be undone.`
+        : `Delete ${player.playerName}'s registration? This action cannot be undone.`
+
+    if (!window.confirm(confirmationMessage)) {
+      return
+    }
+
+    setState(initialState)
+    setDeletingRegistrationId(player.registrationId)
+
+    startTransition(async () => {
+      if (!user) {
+        setState({
+          status: 'error',
+          message: 'Your Top G session is still loading. Try again in a moment.'
+        })
+        setDeletingRegistrationId(null)
+        return
+      }
+
+      const formData = new FormData()
+      formData.set('eventId', eventId)
+      formData.set('subscriptionId', entry.subscriptionId)
+      formData.set('registrationId', player.registrationId)
+
+      try {
+        const firebaseIdToken = await user.getIdToken(true)
+        const result = await deletePlayerRegistration(formData, firebaseIdToken)
+        setState(result)
+
+        if (result.status === 'success') {
+          if (result.deletedSubscription) {
+            router.replace(`/admin/${encodeURIComponent(eventId)}`)
+            onInfo('Player Deleted')
+          } else {
+            router.refresh()
+          }
+        }
+      } catch (error) {
+        setState({
+          status: 'error',
+          message: error instanceof Error ? error.message : 'Unable to delete this player registration. Try again.'
+        })
+      } finally {
+        setDeletingRegistrationId(null)
       }
     })
   }
@@ -145,7 +209,7 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
           <div className='flex items-end justify-between gap-4 px-1'>
             <div>
               <h2 id='registered-players-title' className='font-okx text-base font-semibold'>
-                Registered Player Info
+                Player Ticket Details
               </h2>
               <p className='text-sm text-muted-foreground'>Player changes are reflected on their active ticket.</p>
             </div>
@@ -168,9 +232,26 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
                         <CardTitle className='truncate font-okx text-base'>Player {index + 1}</CardTitle>
                         <CardDescription className='truncate'>{player.playerName}</CardDescription>
                       </div>
-                      <span className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>
-                        Ticket details
-                      </span>
+                      <div className='flex flex-col justify-center'>
+                        <span className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>
+                          Ticket details
+                        </span>
+                        {canDeletePlayers && !player.checkedIn ? (
+                          <Button
+                            type='button'
+                            size='sm'
+                            variant='ghost'
+                            disabled={isPending}
+                            className='h-8 gap-1.5 px-2.5 text-destructive hover:bg-destructive/10 hover:text-destructive'
+                            onClick={() => handleDelete(player)}>
+                            <Icon
+                              name={deletingRegistrationId === player.registrationId ? 'spinner-ring' : 'trash-delete'}
+                              className='size-3.5'
+                            />
+                            Delete
+                          </Button>
+                        ) : null}
+                      </div>
                     </CardHeader>
                     <CardContent className='grid gap-4 py-5 md:grid-cols-2 lg:grid-cols-3'>
                       <EditorField
@@ -238,7 +319,7 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
           )}
         </section>
 
-        <div className='sticky bottom-3 z-10 rounded-xl border border-border/70 bg-background/90 p-3 backdrop-blur-xl'>
+        <div className='sticky bottom-3 z-10 bg-background/90 p-3 backdrop-blur-xl'>
           {state.status !== 'idle' ? (
             <p
               role={state.status === 'error' ? 'alert' : 'status'}
@@ -259,8 +340,8 @@ export function RegistrationEditor({ divisionOptions, entry, eventId, players }:
               type='submit'
               disabled={isPending || isAuthLoading || !user}
               className='font-poly text-white bg-foreground dark:text-background hover:bg-foreground/90 gap-2 sm:min-w-40'>
-              {isPending && <Icon name='spinner-ring' className='size-4' />}
-              {isPending ? 'Saving ...' : 'Save Changes'}
+              {isSaving ? <Icon name='spinner-ring' className='size-4' /> : null}
+              {isSaving ? 'Saving ...' : 'Save Changes'}
             </Button>
           </div>
         </div>

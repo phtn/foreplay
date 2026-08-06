@@ -1,6 +1,7 @@
 import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { getFirebaseAdminAuth } from '@/lib/firebase/admin'
+import { canViewStaffAccount, hasTopGClaim } from '@/lib/firebase/custom-claim-policy'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { fetchQuery } from 'convex/nextjs'
 import { StaffList } from './staff-list'
@@ -10,11 +11,19 @@ type User = Doc<'users'>
 
 const firebaseUserBatchSize = 100
 
-async function attachFirebaseClaims(users: User[]): Promise<UserWithClaims[]> {
+type UsersWithClaimsResult = {
+  resolvedUserIds: Set<string>
+  usersWithClaims: UserWithClaims[]
+}
+
+async function attachFirebaseClaims(users: User[]): Promise<UsersWithClaimsResult> {
   const firebaseAuth = getFirebaseAdminAuth()
 
   if (!firebaseAuth || users.length === 0) {
-    return users.map((user) => ({ user, claims: {} }))
+    return {
+      resolvedUserIds: new Set(),
+      usersWithClaims: users.map((user) => ({ user, claims: {} }))
+    }
   }
 
   const batches = Array.from({ length: Math.ceil(users.length / firebaseUserBatchSize) }, (_, index) =>
@@ -22,6 +31,11 @@ async function attachFirebaseClaims(users: User[]): Promise<UserWithClaims[]> {
   )
   const batchResults = await Promise.allSettled(
     batches.map((batch) => firebaseAuth.getUsers(batch.map((user) => ({ uid: user.subject }))))
+  )
+  const resolvedUserIds = new Set(
+    batchResults.flatMap((result, index) =>
+      result.status === 'fulfilled' ? batches[index].map((user) => user.subject) : []
+    )
   )
   const claimsByUserId = new Map(
     batchResults.flatMap((result) =>
@@ -31,17 +45,26 @@ async function attachFirebaseClaims(users: User[]): Promise<UserWithClaims[]> {
     )
   )
 
-  return users.map((user) => ({
-    user,
-    claims: claimsByUserId.get(user.subject) ?? {}
-  }))
+  return {
+    resolvedUserIds,
+    usersWithClaims: users.map((user) => ({
+      user,
+      claims: claimsByUserId.get(user.subject) ?? {}
+    }))
+  }
 }
 
 export const StaffContent = async () => {
-  await requireAdminSession()
+  const session = await requireAdminSession()
 
   const users = await fetchQuery(api.users.q.listUsers)
-  const usersWithClaims = await attachFirebaseClaims(users)
+  const { resolvedUserIds, usersWithClaims } = await attachFirebaseClaims(users)
+  const isTopG = hasTopGClaim(session.customClaims)
+  // Fail closed when claims cannot be resolved: the account may carry topg.
+  const visibleUsers = usersWithClaims.filter(
+    ({ claims, user }) =>
+      isTopG || (resolvedUserIds.has(user.subject) && canViewStaffAccount(session.customClaims, claims))
+  )
 
-  return <StaffList data={usersWithClaims} />
+  return <StaffList data={visibleUsers} currentUserId={session.decodedToken.sub} isTopG={isTopG} />
 }

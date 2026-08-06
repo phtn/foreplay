@@ -10,7 +10,7 @@ import { UsersContent } from './_contents/users'
 import { Tab, Tabs } from './tabs'
 
 export const metadata: Metadata = {
-  title: 'Admin Settings',
+  title: 'Admin',
   description: 'Foreplay Admin',
   icons: [
     {

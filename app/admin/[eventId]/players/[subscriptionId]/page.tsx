@@ -1,5 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
+import { canDeletePlayerRegistration } from '@/lib/firebase/custom-claim-policy'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { Icon } from '@/lib/icons'
 import { fetchQuery } from 'convex/nextjs'
@@ -23,7 +24,7 @@ interface RegistrationDetailsPageProps {
 const nonEmpty = (value: string | undefined): value is string => Boolean(value?.trim())
 
 export default async function RegistrationDetailsPage({ params }: RegistrationDetailsPageProps) {
-  const [{ eventId, subscriptionId }] = await Promise.all([params, requireAdminSession()])
+  const [{ eventId, subscriptionId }, session] = await Promise.all([params, requireAdminSession()])
   const [event, details] = await Promise.all([
     fetchQuery(api.tournaments.q.getByTournamentId, { id: eventId }),
     fetchQuery(api.subscriptions.q.getRegistrationDetailsForAdmin, {
@@ -54,7 +55,8 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
       playerPhone: registration.player_phone ?? '',
       handicapIndex: registration.handicap_index ?? '',
       division: registration.division ?? '',
-      shirtSize: registration.shirt_size ?? ''
+      shirtSize: registration.shirt_size ?? '',
+      checkedIn: registration.checked_in === true
     }))
   const divisionOptions = Array.from(
     new Set(
@@ -67,7 +69,7 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
   )
 
   return (
-    <main className='mx-auto w-full max-w-5xl space-y-0 px-2 py-0 pb-24 md:py-0'>
+    <main className='mx-auto w-full max-w-5xl space-y-2 px-2 py-0 pb-24 md:py-0'>
       <div className='flex gap-4 flex-row items-end justify-between'>
         <div className='min-w-0 space-y-3'>
           <Link
@@ -85,7 +87,7 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
           </div>
         </div>
 
-        <Card size='sm' className='shrink-0 gap-0 ring-0 py-0 sm:min-w-56'>
+        <Card size='sm' className='shrink-0 gap-0 ring-0 py-0 bg-transparent sm:min-w-56'>
           <CardContent className='flex items-center justify-between gap-5'>
             <div>
               <p className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>Entry ID</p>
@@ -95,7 +97,13 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
         </Card>
       </div>
 
-      <RegistrationEditor divisionOptions={divisionOptions} entry={entry} eventId={eventId} players={players} />
+      <RegistrationEditor
+        canDeletePlayers={canDeletePlayerRegistration(session.customClaims)}
+        divisionOptions={divisionOptions}
+        entry={entry}
+        eventId={eventId}
+        players={players}
+      />
     </main>
   )
 }

@@ -3,6 +3,7 @@
 import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { getFirebaseAdminAuth } from '@/lib/firebase/admin'
+import { canDeletePlayerRegistration } from '@/lib/firebase/custom-claim-policy'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { fetchMutation } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
@@ -11,6 +12,7 @@ import { revalidatePath } from 'next/cache'
 const MAX_REGISTRATIONS = 20
 
 export type SaveRegistrationDetailsState = {
+  deletedSubscription?: boolean
   message: string
   status: 'idle' | 'success' | 'error'
 }
@@ -45,7 +47,7 @@ function readTextField(formData: FormData, name: string, label: string, maxLengt
   return trimmed
 }
 
-function getConvexErrorMessage(error: ConvexError<string>) {
+function getConvexErrorMessage(error: ConvexError<string>, fallback: string) {
   const data: unknown = error.data
 
   if (typeof data === 'string' && data.trim()) {
@@ -62,7 +64,7 @@ function getConvexErrorMessage(error: ConvexError<string>) {
     return data.message.trim()
   }
 
-  return 'Unable to save registration details.'
+  return fallback
 }
 
 export async function saveRegistrationDetails(
@@ -150,7 +152,7 @@ export async function saveRegistrationDetails(
     if (error instanceof ConvexError) {
       return {
         status: 'error',
-        message: getConvexErrorMessage(error)
+        message: getConvexErrorMessage(error, 'Unable to save registration details.')
       }
     }
 
@@ -158,6 +160,81 @@ export async function saveRegistrationDetails(
     return {
       status: 'error',
       message: 'Unable to save registration details. Try again.'
+    }
+  }
+}
+
+export async function deletePlayerRegistration(
+  formData: FormData,
+  firebaseIdToken: string
+): Promise<SaveRegistrationDetailsState> {
+  const session = await requireAdminSession()
+
+  try {
+    if (!canDeletePlayerRegistration(session.customClaims)) {
+      throw new RegistrationDetailsInputError('Top G access is required to delete player registrations.')
+    }
+
+    const adminAuth = getFirebaseAdminAuth()
+
+    if (!adminAuth || typeof firebaseIdToken !== 'string' || !firebaseIdToken) {
+      throw new RegistrationDetailsInputError('Your admin session is unavailable. Refresh the page and try again.')
+    }
+
+    const decodedIdToken = await adminAuth.verifyIdToken(firebaseIdToken, true)
+
+    if (
+      decodedIdToken.uid !== session.decodedToken.uid ||
+      decodedIdToken.admin !== true ||
+      decodedIdToken.topg !== true
+    ) {
+      throw new RegistrationDetailsInputError('Your Top G session is no longer valid. Sign in again and retry.')
+    }
+
+    const eventId = readTextField(formData, 'eventId', 'Event', 512, true)
+    const subscriptionId = readTextField(formData, 'subscriptionId', 'Subscription', 512, true)
+    const registrationId = readTextField(formData, 'registrationId', 'Player registration', 512, true)
+    const result = await fetchMutation(
+      api.registrations.m.removeForTopG,
+      {
+        registrationId: registrationId as Id<'registrations'>,
+        subscriptionId: subscriptionId as Id<'subscriptions'>,
+        tournamentId: eventId
+      },
+      { token: firebaseIdToken }
+    )
+
+    const encodedEventId = encodeURIComponent(eventId)
+    const encodedSubscriptionId = encodeURIComponent(subscriptionId)
+    revalidatePath(`/admin/${encodedEventId}`)
+    revalidatePath(`/admin/${encodedEventId}/players/${encodedSubscriptionId}`)
+
+    return {
+      deletedSubscription: result.deletedSubscription,
+      status: 'success',
+      message: result.deletedSubscription
+        ? `${result.playerName}'s registration and players-table entry were deleted.`
+        : `${result.playerName}'s registration was deleted.`
+    }
+  } catch (error) {
+    if (error instanceof RegistrationDetailsInputError) {
+      return {
+        status: 'error',
+        message: error.message
+      }
+    }
+
+    if (error instanceof ConvexError) {
+      return {
+        status: 'error',
+        message: getConvexErrorMessage(error, 'Unable to delete this player registration.')
+      }
+    }
+
+    console.error('[admin-registration-editor] Unable to delete player registration.', error)
+    return {
+      status: 'error',
+      message: 'Unable to delete this player registration. Try again.'
     }
   }
 }

@@ -1,12 +1,14 @@
 import { ConvexError, v } from 'convex/values'
 import type { Id } from '../_generated/dataModel'
-import { mutation } from '../_generated/server'
+import { mutation, type MutationCtx } from '../_generated/server'
 import {
   buildRegistrationDocument,
   MAX_REGISTRATIONS_PER_SUBSCRIPTION
 } from './ticket'
+import { buildAdminRegistrationDeletionPlan } from './adminDeletion'
 
 const pairingGroup = v.union(v.literal('A'), v.literal('B'), v.literal('C'))
+const MAX_STATUS_CHANGES_PER_SUBSCRIPTION_DELETE = 100
 
 type GatePassPayload = {
   email?: unknown
@@ -14,6 +16,14 @@ type GatePassPayload = {
   name?: unknown
   registrationId?: unknown
   ticketToken?: unknown
+}
+
+const requireTopGAdminIdentity = async (ctx: MutationCtx) => {
+  const identity = await ctx.auth.getUserIdentity()
+
+  if (!identity || identity.admin !== true || identity.topg !== true) {
+    throw new ConvexError('Top G access is required to delete player registrations.')
+  }
 }
 
 export const createForSubscription = mutation({
@@ -126,6 +136,96 @@ export const removeForSubscription = mutation({
     await ctx.db.delete(args.registrationId)
 
     return { registrationId: args.registrationId }
+  }
+})
+
+export const removeForTopG = mutation({
+  args: {
+    registrationId: v.id('registrations'),
+    subscriptionId: v.id('subscriptions'),
+    tournamentId: v.string()
+  },
+  returns: v.object({
+    deletedSubscription: v.boolean(),
+    registrationId: v.id('registrations'),
+    playerName: v.string()
+  }),
+  handler: async (ctx, args) => {
+    await requireTopGAdminIdentity(ctx)
+
+    const [registration, subscription] = await Promise.all([
+      ctx.db.get(args.registrationId),
+      ctx.db.get(args.subscriptionId)
+    ])
+
+    if (!subscription || subscription.tournament_id !== args.tournamentId) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    if (
+      !registration ||
+      registration.subscription_id !== args.subscriptionId ||
+      registration.tournament_id !== args.tournamentId
+    ) {
+      throw new ConvexError('Player registration not found.')
+    }
+
+    if (registration.checked_in === true) {
+      throw new ConvexError('Checked-in players cannot be deleted.')
+    }
+
+    const [linkedAward, subscriptionRegistrations] = await Promise.all([
+      ctx.db
+        .query('podiumAwards')
+        .withIndex('by_tournamentId', (q) => q.eq('tournament_id', args.tournamentId))
+        .filter((q) => q.eq(q.field('registration_id'), args.registrationId))
+        .first(),
+      ctx.db
+        .query('registrations')
+        .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', args.subscriptionId))
+        .take(MAX_REGISTRATIONS_PER_SUBSCRIPTION + 1)
+    ])
+
+    if (linkedAward) {
+      throw new ConvexError("Remove this player's podium award before deleting their registration.")
+    }
+
+    if (subscriptionRegistrations.length > MAX_REGISTRATIONS_PER_SUBSCRIPTION) {
+      throw new ConvexError('This subscription has more registrations than the supported limit.')
+    }
+
+    const deletionPlan = buildAdminRegistrationDeletionPlan(
+      subscriptionRegistrations.map(({ _id }) => _id),
+      args.registrationId
+    )
+
+    if (deletionPlan.deleteSubscription) {
+      const statusChanges = await ctx.db
+        .query('subscriptionStatusChanges')
+        .withIndex('by_subscription_id', (q) => q.eq('subscription_id', args.subscriptionId))
+        .take(MAX_STATUS_CHANGES_PER_SUBSCRIPTION_DELETE + 1)
+
+      if (statusChanges.length > MAX_STATUS_CHANGES_PER_SUBSCRIPTION_DELETE) {
+        throw new ConvexError('This entry has too much status history to delete in one operation.')
+      }
+
+      await Promise.all([
+        ctx.db.delete(args.registrationId),
+        ...statusChanges.map(({ _id }) => ctx.db.delete(_id)),
+        ctx.db.delete(args.subscriptionId),
+        ...(subscription.receipt_image_url
+          ? [ctx.storage.delete(subscription.receipt_image_url as Id<'_storage'>)]
+          : [])
+      ])
+    } else {
+      await ctx.db.delete(args.registrationId)
+    }
+
+    return {
+      deletedSubscription: deletionPlan.deleteSubscription,
+      registrationId: args.registrationId,
+      playerName: registration.player_name
+    }
   }
 })
 

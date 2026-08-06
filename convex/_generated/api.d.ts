@@ -31,6 +31,7 @@ import type * as paymentMethods_q from "../paymentMethods/q.js";
 import type * as podiumAwards_d from "../podiumAwards/d.js";
 import type * as podiumAwards_m from "../podiumAwards/m.js";
 import type * as podiumAwards_q from "../podiumAwards/q.js";
+import type * as registrations_adminDeletion from "../registrations/adminDeletion.js";
 import type * as registrations_d from "../registrations/d.js";
 import type * as registrations_m from "../registrations/m.js";
 import type * as registrations_q from "../registrations/q.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   "podiumAwards/d": typeof podiumAwards_d;
   "podiumAwards/m": typeof podiumAwards_m;
   "podiumAwards/q": typeof podiumAwards_q;
+  "registrations/adminDeletion": typeof registrations_adminDeletion;
   "registrations/d": typeof registrations_d;
   "registrations/m": typeof registrations_m;
   "registrations/q": typeof registrations_q;

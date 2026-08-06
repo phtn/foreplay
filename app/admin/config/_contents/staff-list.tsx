@@ -5,19 +5,24 @@ import { Badge } from '@/components/reui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Icon } from '@/lib/icons'
-import { useDeferredValue, useId, useMemo, useRef, useState } from 'react'
+import { Icon, type IconName } from '@/lib/icons'
+import { type ComponentProps, type ReactNode, useDeferredValue, useId, useMemo, useRef, useState } from 'react'
+import { useFormStatus } from 'react-dom'
 import { grantAdminClaim, removeCustomClaim, setCustomClaim } from '../actions'
 import { filterStaffUsers, type UserWithClaims } from './staff-list-filter'
 
 interface StaffListProps {
   data: UserWithClaims[] | undefined
+  currentUserId: string
+  isTopG: boolean
 }
 
 type StaffListEntry = UserWithClaims & {
+  canManagePrivilegedClaims: boolean
   id: string
+  isCurrentUser: boolean
 }
 
 const dateFormatter = new Intl.DateTimeFormat('en-US', {
@@ -25,7 +30,7 @@ const dateFormatter = new Intl.DateTimeFormat('en-US', {
   timeStyle: 'short'
 })
 
-export const StaffList = ({ data }: StaffListProps) => {
+export const StaffList = ({ data, currentUserId, isTopG }: StaffListProps) => {
   const searchId = useId()
   const searchDescriptionId = `${searchId}-description`
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -33,11 +38,23 @@ export const StaffList = ({ data }: StaffListProps) => {
   const deferredQuery = useDeferredValue(query)
   const filteredUsers = useMemo(() => filterStaffUsers(data, deferredQuery), [data, deferredQuery])
   const listData = useMemo<StaffListEntry[]>(
-    () => filteredUsers.map((entry) => ({ ...entry, id: entry.user._id })),
-    [filteredUsers]
+    () =>
+      filteredUsers.map((entry) => ({
+        ...entry,
+        canManagePrivilegedClaims: isTopG,
+        id: entry.user._id,
+        isCurrentUser: entry.user.subject === currentUserId
+      })),
+    [currentUserId, filteredUsers, isTopG]
   )
   const listVersion = useMemo(
-    () => listData.map(({ claims, id }) => `${id}:${JSON.stringify(claims)}`).join('|'),
+    () =>
+      listData
+        .map(
+          ({ canManagePrivilegedClaims, claims, id, isCurrentUser }) =>
+            `${id}:${isCurrentUser}:${canManagePrivilegedClaims}:${JSON.stringify(claims)}`
+        )
+        .join('|'),
     [listData]
   )
   const isSearching = deferredQuery.trim().length > 0
@@ -65,7 +82,7 @@ export const StaffList = ({ data }: StaffListProps) => {
           <div className='relative'>
             {query.trim().length === 0 && (
               <Icon
-                name='search'
+                name='slash'
                 className='pointer-events-none absolute inset-y-0 right-3 my-auto size-5 text-foreground/50'
               />
             )}
@@ -105,7 +122,7 @@ export const StaffList = ({ data }: StaffListProps) => {
         </p>
       </div>
 
-      <div className='p-2'>
+      <div className='p-0'>
         {listData.length ? (
           <HyperList
             key={listVersion}
@@ -116,7 +133,7 @@ export const StaffList = ({ data }: StaffListProps) => {
             component={StaffListItem}
           />
         ) : (
-          <Card className='ring-0 rounded-lg border-border/70 py-0'>
+          <Card className='ring-0 rounded-lg py-0'>
             <CardContent className='flex min-h-48 flex-col items-center justify-center px-6 text-center'>
               <Icon name={isSearching ? 'user-circle' : 'person-multiple'} className='size-10 text-foreground/20' />
               <div className='space-y-2 py-4'>
@@ -143,12 +160,12 @@ export const StaffList = ({ data }: StaffListProps) => {
   )
 }
 
-const StaffListItem = ({ user, claims }: StaffListEntry) => {
+const StaffListItem = ({ canManagePrivilegedClaims, claims, isCurrentUser, user }: StaffListEntry) => {
   const displayName = user.name ?? user.preferredUsername ?? user.email ?? user.subject
 
   return (
-    <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none'>
-      <AccordionItem value={user._id} className='bg-transparent p-0 **:data-[slot=accordion-content]:p-0!'>
+    <Accordion key={user._id} multiple={false} defaultValue={['1']} className='border-none rounded-none'>
+      <AccordionItem value={user._id} className='p-0 **:data-[slot=accordion-content]:p-0!'>
         <AccordionTrigger className='items-center px-2 pb-2 pt-3 hover:no-underline'>
           <div className='flex items-center gap-2 md:gap-4'>
             <Avatar className='size-8 border border-foreground'>
@@ -158,7 +175,12 @@ const StaffListItem = ({ user, claims }: StaffListEntry) => {
             <div className='inline-flex items-center gap-3'>
               <span className='font-okx font-medium text-foreground/80 text-lg'>{displayName}</span>
               <div className='font-okx font-medium flex shrink-0 items-center gap-2 uppercase'>
-                <Badge variant={claims.admin === true ? 'top-g-outline' : 'focus-outline'} size='default' radius='md'>
+                {claims.topg === true ? (
+                  <Badge variant='top-g-outline' size='default' radius='md'>
+                    Top G
+                  </Badge>
+                ) : null}
+                <Badge variant={claims.admin === true ? 'god-outline' : 'focus-outline'} size='default' radius='md'>
                   {claims.admin === true ? 'Admin' : 'User'}
                 </Badge>
                 {claims.staff === true ? (
@@ -170,104 +192,332 @@ const StaffListItem = ({ user, claims }: StaffListEntry) => {
             </div>
           </div>
         </AccordionTrigger>
-        <AccordionContent className='py-0 ring-none rounded-none bg-transparent md:mt-1'>
-          <UserClaimCard claims={claims} user={user} />
+        <AccordionContent className='py-0 ring-none rounded-none md:mt-1'>
+          <UserClaimCard
+            canManagePrivilegedClaims={canManagePrivilegedClaims}
+            claims={claims}
+            isCurrentUser={isCurrentUser}
+            user={user}
+          />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
   )
 }
 
-function UserClaimCard({ claims, user }: UserWithClaims) {
+type UserClaimCardProps = UserWithClaims & Pick<StaffListEntry, 'canManagePrivilegedClaims' | 'isCurrentUser'>
+
+function UserClaimCard({ canManagePrivilegedClaims, claims, isCurrentUser, user }: UserClaimCardProps) {
+  const cardId = useId()
   const hasAdminClaim = claims.admin === true
   const hasStaffClaim = claims.staff === true
+  const claimEntries = Object.entries(claims).toSorted(([left], [right]) => left.localeCompare(right))
+  const adminProtectionMessage = isCurrentUser
+    ? 'You cannot remove admin access from your own account.'
+    : 'Only Top G accounts can remove admin access.'
 
   return (
-    <Card className='ring-0 border-t dark:border-zinc-700 border-dashed rounded-none mb-1 py-1'>
-      <CardContent className='space-y-5 pt-4 mt-1 px-2 md:px-4'>
-        <div className='space-y-2'>
-          {/*<p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Custom claims</p>*/}
-          <ClaimBadges claims={claims} />
-        </div>
-
-        <div className='grid gap-3 md:grid-cols-[auto_1fr] md:items-end'>
-          <div className='flex flex-wrap gap-2'>
-            <form action={hasAdminClaim ? removeCustomClaim : grantAdminClaim}>
-              <input type='hidden' name='uid' value={user.subject} />
-              {hasAdminClaim ? <input type='hidden' name='claimKey' value='admin' /> : null}
-              <Button type='submit' size='sm' variant={hasAdminClaim ? 'destructive' : 'default'}>
-                {hasAdminClaim ? 'Remove admin' : 'Grant admin'}
-              </Button>
-            </form>
-            <form action={hasStaffClaim ? removeCustomClaim : setCustomClaim}>
-              <input type='hidden' name='uid' value={user.subject} />
-              <input type='hidden' name='claimKey' value='staff' />
-              {hasStaffClaim ? null : <input type='hidden' name='claimValue' value='true' />}
-              <Button type='submit' size='sm' variant={hasStaffClaim ? 'destructive' : 'outline'}>
-                {hasStaffClaim ? 'Remove staff' : 'Grant staff'}
-              </Button>
-            </form>
-          </div>
-
-          <form action={setCustomClaim} className='grid gap-2 sm:grid-cols-[minmax(120px,0.4fr)_1fr_auto]'>
-            <input type='hidden' name='uid' value={user.subject} />
-            <Input name='claimKey' placeholder='claim key' aria-label='Claim key' className='h-9' />
-            <Input name='claimValue' placeholder='true, false, \"staff\", 1' aria-label='Claim value' className='h-9' />
-            <Button type='submit' size='sm' variant='outline'>
-              Set claim
-            </Button>
-          </form>
-        </div>
-
-        {Object.keys(claims).length ? (
-          <div className='space-y-2'>
-            <p className='font-ios text-xs uppercase tracking-widest text-muted-foreground'>Remove claim</p>
-            <div className='flex flex-wrap gap-2'>
-              {Object.keys(claims).map((claimKey) => (
-                <form key={claimKey} action={removeCustomClaim}>
-                  <input type='hidden' name='uid' value={user.subject} />
-                  <input type='hidden' name='claimKey' value={claimKey} />
-                  <Button
-                    type='submit'
-                    size='sm'
-                    variant='ghost'
-                    className='h-8 text-destructive hover:bg-destructive/10'>
-                    <Icon name='close' className='size-3.5' />
-                    {claimKey}
-                  </Button>
-                </form>
-              ))}
+    <Card className='mb-1 gap-0 rounded-none border-x-0 border-b-0 border-t border-dashed border-border/70 bg-muted/15 py-0 ring-0'>
+      <CardHeader className='gap-0 px-3 py-4 sm:px-4'>
+        <div className='flex flex-wrap items-start justify-between gap-4'>
+          <div className='flex min-w-0 items-start gap-3'>
+            <div className='flex size-7 shrink-0 items-center justify-center rounded-sm bg-foreground/5 text-foreground ring-1 ring-foreground/10'>
+              <Icon name='key' className='size-4' />
+            </div>
+            <div className='min-w-0'>
+              <CardTitle className='font-okx text-base'>Access Controls</CardTitle>
+              <CardDescription className='leading-5'>Manage roles and custom claims for this account.</CardDescription>
             </div>
           </div>
-        ) : null}
-
-        <div className='grid md:gap-2 md:border-t border-border/70 md:pt-4 text-xs text-muted-foreground sm:grid-cols-2'>
-          <p>Provider: {user.nickname ?? 'Unknown'}</p>
-          <p className='md:text-right'>Updated: {dateFormatter.format(user.updatedAt)}</p>
+          <div className='flex flex-wrap items-center justify-end gap-1.5'>
+            {isCurrentUser ? (
+              <Badge variant='god-light' size='lg' radius='full'>
+                Current
+              </Badge>
+            ) : null}
+            <Badge variant='outline' size='lg' radius='full'>
+              {claimEntries.length} {claimEntries.length === 1 ? 'claim' : 'claims'}
+            </Badge>
+          </div>
         </div>
+      </CardHeader>
+
+      <CardContent className='space-y-6 px-3 pb-4 sm:px-4'>
+        <section aria-labelledby={`${cardId}-roles`} className='space-y-3'>
+          <SectionHeading id={`${cardId}-roles`} title='Roles' description='' />
+
+          <div className='grid gap-3 lg:grid-cols-2'>
+            <RoleControl
+              title='Admin'
+              description={
+                hasAdminClaim && (!canManagePrivilegedClaims || isCurrentUser)
+                  ? adminProtectionMessage
+                  : 'Full access to administration and configuration.'
+              }
+              icon='horse-head'
+              isAssigned={hasAdminClaim}>
+              {hasAdminClaim ? (
+                canManagePrivilegedClaims && !isCurrentUser ? (
+                  <form action={removeCustomClaim}>
+                    <input type='hidden' name='uid' value={user.subject} />
+                    <input type='hidden' name='claimKey' value='admin' />
+                    <FormSubmitButton icon='minus' label='Remove admin' variant='destructive' />
+                  </form>
+                ) : (
+                  <ProtectedAction label={isCurrentUser ? 'Current account' : 'Top G required'} />
+                )
+              ) : (
+                <form action={grantAdminClaim}>
+                  <input type='hidden' name='uid' value={user.subject} />
+                  <FormSubmitButton icon='add' label='Grant admin' />
+                </form>
+              )}
+            </RoleControl>
+
+            <RoleControl
+              title='Staff'
+              description='Access to staff tools and event operations.'
+              icon='user-box-fill'
+              isAssigned={hasStaffClaim}>
+              <form action={hasStaffClaim ? removeCustomClaim : setCustomClaim}>
+                <input type='hidden' name='uid' value={user.subject} />
+                <input type='hidden' name='claimKey' value='staff' />
+                {hasStaffClaim ? null : <input type='hidden' name='claimValue' value='true' />}
+                <FormSubmitButton
+                  icon={hasStaffClaim ? 'minus' : 'add'}
+                  label={hasStaffClaim ? 'Remove staff' : 'Grant staff'}
+                  variant={hasStaffClaim ? 'destructive' : 'outline'}
+                />
+              </form>
+            </RoleControl>
+          </div>
+        </section>
+
+        <section aria-labelledby={`${cardId}-editor`} className='space-y-3'>
+          <SectionHeading
+            id={`${cardId}-editor`}
+            title='Add or update a claim'
+            description='Use a claim key and a JSON value, or enter plain text.'
+          />
+
+          <form action={setCustomClaim} className='rounded-xl bg-background/70 p-3 ring-1 ring-foreground/8 sm:p-4'>
+            <input type='hidden' name='uid' value={user.subject} />
+            <div className='grid gap-3 sm:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)_auto] sm:items-end'>
+              <div className='space-y-1.5'>
+                <label htmlFor={`${cardId}-claim-key`} className='text-xs font-medium text-foreground/80'>
+                  Claim key
+                </label>
+                <Input
+                  id={`${cardId}-claim-key`}
+                  name='claimKey'
+                  placeholder='department'
+                  autoComplete='off'
+                  spellCheck={false}
+                  maxLength={64}
+                  required
+                  className='font-mono md:text-xs'
+                />
+              </div>
+              <div className='space-y-1.5'>
+                <label htmlFor={`${cardId}-claim-value`} className='text-xs font-medium text-foreground/80'>
+                  Claim value
+                </label>
+                <Input
+                  id={`${cardId}-claim-value`}
+                  name='claimValue'
+                  placeholder='true, 1, or "operations"'
+                  autoComplete='off'
+                  spellCheck={false}
+                  required
+                  className='font-mono md:text-xs'
+                />
+              </div>
+              <FormSubmitButton icon='add' label='Set claim' variant='secondary' className='sm:min-w-28' />
+            </div>
+            <p className='mt-3 text-xs leading-5 text-muted-foreground'>
+              The <code className='font-mono text-foreground/75'>topg</code> claim and admin removal are protected.
+            </p>
+          </form>
+        </section>
+
+        <section aria-labelledby={`${cardId}-claims`} className='space-y-3'>
+          <SectionHeading
+            id={`${cardId}-claims`}
+            title='Assigned claims'
+            description='Review the exact values currently stored in Firebase.'
+          />
+
+          {claimEntries.length ? (
+            <div className='overflow-hidden rounded-xl bg-background/70 ring-1 ring-foreground/8'>
+              {claimEntries.map(([claimKey, claimValue]) => {
+                const isManagedRole =
+                  (claimKey === 'admin' && claimValue === true) || (claimKey === 'staff' && claimValue === true)
+                const isSelfProtected = isCurrentUser && (claimKey === 'admin' || claimKey === 'topg')
+                const requiresTopG = (claimKey === 'admin' || claimKey === 'topg') && !canManagePrivilegedClaims
+
+                return (
+                  <div
+                    key={claimKey}
+                    className='flex min-w-0 items-center justify-between gap-3 border-t border-border/50 px-3 py-3 first:border-t-0 sm:px-4'>
+                    <div className='min-w-0 space-y-0.5'>
+                      <p className='truncate font-mono text-xs font-medium text-foreground'>{claimKey}</p>
+                      <p className='wrap-break-word font-mono text-xs leading-5 text-muted-foreground'>
+                        {formatClaimValue(claimValue)}
+                      </p>
+                    </div>
+                    {isManagedRole ? (
+                      <Badge variant='secondary' size='sm' radius='full'>
+                        Role
+                      </Badge>
+                    ) : isSelfProtected || requiresTopG ? (
+                      <ProtectedAction compact label={isSelfProtected ? 'Current account' : 'Top G required'} />
+                    ) : (
+                      <form action={removeCustomClaim}>
+                        <input type='hidden' name='uid' value={user.subject} />
+                        <input type='hidden' name='claimKey' value={claimKey} />
+                        <ClaimRemoveButton claimKey={claimKey} />
+                      </form>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className='rounded-xl border border-dashed border-border/70 bg-background/50 px-4 py-6 text-center'>
+              <Icon name='key' className='mx-auto size-5 text-muted-foreground/60' />
+              <p className='mt-2 text-sm font-medium text-foreground/75'>No custom claims</p>
+              <p className='mt-1 text-xs text-muted-foreground'>Add a claim above or assign a role.</p>
+            </div>
+          )}
+        </section>
+
+        <dl className='grid gap-3 rounded-xl bg-muted/40 px-3 py-3 text-xs sm:grid-cols-2 sm:px-4'>
+          <AccountMetadata label='Provider' value={user.nickname ?? 'Unknown'} />
+          <AccountMetadata label='Last updated' value={dateFormatter.format(user.updatedAt)} alignEnd />
+        </dl>
+
+        <p className='text-xs leading-5 text-muted-foreground'>
+          Role changes take effect after the user refreshes their authentication token.
+        </p>
       </CardContent>
     </Card>
   )
 }
 
-function ClaimBadges({ claims }: { claims: Record<string, unknown> }) {
-  const entries = Object.entries(claims)
-
-  if (!entries.length) {
-    return <span className='text-sm text-muted-foreground'>Zero Claims</span>
-  }
-
+function SectionHeading({ description, id, title }: { description: string; id: string; title: string }) {
   return (
-    <div className='flex flex-wrap gap-1.5'>
-      {entries.map(([key, value]) => (
-        <Badge
-          key={key}
-          variant={key === 'admin' && value === true ? 'success' : 'outline'}
-          size='lg'
-          className='uppercase'>
-          {key}: {JSON.stringify(value)}
-        </Badge>
-      ))}
+    <div className='space-y-1'>
+      <h3 id={id} className='font-okx text-sm font-medium text-foreground'>
+        {title}
+      </h3>
+      <p className='text-xs leading-5 text-muted-foreground'>{description}</p>
     </div>
   )
+}
+
+function RoleControl({
+  children,
+  description,
+  icon,
+  isAssigned,
+  title
+}: {
+  children: ReactNode
+  description: string
+  icon: IconName
+  isAssigned: boolean
+  title: string
+}) {
+  return (
+    <div className='flex min-h-44 flex-col rounded-sm bg-background/70 p-4 ring-1 ring-foreground/8'>
+      <div className='flex items-start justify-between gap-3'>
+        <div className='flex min-w-0 items-center gap-2.5'>
+          <div className='flex size-9 shrink-0 items-center justify-center rounded-lg text-foreground/70'>
+            <Icon name={icon} className='size-5' />
+          </div>
+          <p className='font-okx text-sm font-medium text-foreground'>{title}</p>
+        </div>
+        <Badge variant={isAssigned ? 'success-light' : 'outline'} size='sm' radius='full'>
+          {isAssigned ? 'Assigned' : 'Not assigned'}
+        </Badge>
+      </div>
+      <p className='mt-3 text-xs leading-5 text-muted-foreground'>{description}</p>
+      <div className='mt-auto pt-4 [&>form]:w-full'>{children}</div>
+    </div>
+  )
+}
+
+function FormSubmitButton({
+  className,
+  icon,
+  label,
+  variant = 'outline'
+}: {
+  className?: string
+  icon: IconName
+  label: string
+  variant?: ComponentProps<typeof Button>['variant']
+}) {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button
+      type='submit'
+      size='sm'
+      variant={variant}
+      disabled={pending}
+      aria-busy={pending}
+      className={`w-full ${className ?? ''}`}>
+      <Icon name={pending ? 'spinner-ring' : icon} className='size-3.5' />
+      {label}
+    </Button>
+  )
+}
+
+function ClaimRemoveButton({ claimKey }: { claimKey: string }) {
+  const { pending } = useFormStatus()
+
+  return (
+    <Button
+      type='submit'
+      size='icon-sm'
+      variant='ghost'
+      disabled={pending}
+      aria-busy={pending}
+      aria-label={`Remove ${claimKey} claim`}
+      className='rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive'>
+      <Icon name={pending ? 'spinner-ring' : 'close'} className='size-3.5' />
+    </Button>
+  )
+}
+
+function ProtectedAction({ compact = false, label }: { compact?: boolean; label: string }) {
+  return (
+    <div
+      className={
+        compact
+          ? 'flex shrink-0 items-center gap-1.5 text-[11px] text-muted-foreground'
+          : 'flex min-h-8 w-full items-center justify-center gap-1.5 rounded-lg bg-muted px-3 text-xs font-medium text-muted-foreground'
+      }>
+      <Icon name='lock' className='size-3.5' />
+      <span>{label}</span>
+    </div>
+  )
+}
+
+function AccountMetadata({ alignEnd = false, label, value }: { alignEnd?: boolean; label: string; value: string }) {
+  return (
+    <div className={alignEnd ? 'sm:text-end' : undefined}>
+      <dt className='font-ios text-[10px] uppercase tracking-widest text-muted-foreground'>{label}</dt>
+      <dd className='mt-1 truncate font-mono text-xs text-foreground/75'>{value}</dd>
+    </div>
+  )
+}
+
+function formatClaimValue(value: unknown) {
+  if (typeof value === 'string') {
+    return value
+  }
+
+  return JSON.stringify(value) ?? String(value)
 }

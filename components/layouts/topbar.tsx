@@ -56,15 +56,21 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
 
   const adminMenuItems: MenuItemProps[] = [
     {
+      routeHandler: navigate('/profile'),
+      label: 'account',
+      icon: 'user-fill',
+      className: 'size-5 mr-3.5'
+    },
+    {
       routeHandler: navigate('/admin/config'),
       label: 'admin',
       icon: 're-up.ph',
       className: 'size-4 ml-0.5 mr-4'
     },
     {
-      routeHandler: navigate('/profile'),
-      label: 'account',
-      icon: 'user-fill',
+      routeHandler: navigate('/admin/scanner'),
+      label: 'qr scanner',
+      icon: 'qr-code-scanner',
       className: 'size-5 mr-3.5'
     }
   ]
@@ -122,17 +128,17 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
                   }
                 />
                 <DropdownMenuContent align='end' className=''>
-                  {userMenuItems.map((item) => (
-                    <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
-                      <MenuItem {...item} />
-                    </DropdownMenuItem>
-                  ))}
-                  {hasAdminClaim &&
-                    adminMenuItems.map((item) => (
-                      <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
-                        <MenuItem {...item} />
-                      </DropdownMenuItem>
-                    ))}
+                  {hasAdminClaim
+                    ? adminMenuItems.map((item) => (
+                        <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                          <MenuItem {...item} />
+                        </DropdownMenuItem>
+                      ))
+                    : userMenuItems.map((item) => (
+                        <DropdownMenuItem key={item.label} className='rounded-sm first:rounded-t-xl last:rounded-b-xl'>
+                          <MenuItem {...item} />
+                        </DropdownMenuItem>
+                      ))}
 
                   <DropdownMenuSeparator className='my-0.75' />
                   <DropdownMenuItem className='rounded-sm rounded-b-xl'>

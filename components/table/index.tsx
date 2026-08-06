@@ -886,7 +886,7 @@ export const DataTable = <T,>({
           />
         </div>
 
-        <HyperWrap className='flex h-[calc(100svh-7rem)] min-h-0 w-full max-w-full flex-col gap-0 overflow-hidden p-0 md:w-full'>
+        <HyperWrap className='flex md:h-[calc(100svh-12rem)] h-[calc(100svh-9rem)] min-h-0 w-full max-w-full flex-col gap-0 overflow-hidden p-0 md:w-full'>
           <div data-slot='table-scroll-area' className='min-h-0 flex-1 overflow-auto overscroll-contain'>
             <table
               data-slot='table'

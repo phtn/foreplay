@@ -12,6 +12,7 @@ import {
   type FirebaseCustomClaimValue,
   type FirebaseCustomClaims
 } from '@/lib/firebase/custom-claims'
+import { canRemoveCustomClaim, canSetCustomClaim } from '@/lib/firebase/custom-claim-policy'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import {
   normalizeProductOrderTonesConfig,
@@ -76,8 +77,20 @@ export async function setCustomClaim(formData: FormData) {
 
   validateClaimKey(claimKey)
 
+  if (!canSetCustomClaim(session.customClaims, claimKey, claimValue)) {
+    throw new Error(
+      claimKey === 'admin'
+        ? 'Only Top G accounts can remove admin access.'
+        : 'Only Top G accounts can change the topg claim.'
+    )
+  }
+
   if (uid === session.decodedToken.sub && claimKey === 'admin' && claimValue !== true) {
     throw new Error('You cannot remove your own admin access from this page.')
+  }
+
+  if (uid === session.decodedToken.sub && claimKey === 'topg' && claimValue !== true) {
+    throw new Error('You cannot remove your own topg access from this page.')
   }
 
   await mergeFirebaseCustomUserClaims(uid, {
@@ -103,8 +116,16 @@ export async function removeCustomClaim(formData: FormData) {
 
   validateClaimKey(claimKey)
 
-  if (uid === session.decodedToken.sub && claimKey === 'admin') {
-    throw new Error('You cannot remove your own admin access from this page.')
+  if (!canRemoveCustomClaim(session.customClaims, claimKey)) {
+    throw new Error(
+      claimKey === 'admin'
+        ? 'Only Top G accounts can remove admin access.'
+        : 'Only Top G accounts can remove the topg claim.'
+    )
+  }
+
+  if (uid === session.decodedToken.sub && (claimKey === 'admin' || claimKey === 'topg')) {
+    throw new Error(`You cannot remove your own ${claimKey} access from this page.`)
   }
 
   const nextClaims = await getExistingCustomClaims(uid)
