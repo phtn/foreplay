@@ -170,7 +170,7 @@ export const GoogleOneTap = () => {
               const credential = GoogleAuthProvider.credential(response.credential)
 
               if (!credential) {
-                console.error('Failed to create Firebase credential from Google credential')
+                console.error('Failed to create Firebase creds from Google credential')
                 return
               }
 
