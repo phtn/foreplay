@@ -246,14 +246,14 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
     <div className='h-screen bg-background print:h-auto! print:max-h-none! print:overflow-visible!'>
       {/* Header */}
       <header className='absolute w-full top-0 z-40 border-b border-border backdrop-blur-2xl supports-backdrop-filter:bg-origin/40 print:hidden'>
-        <div className='flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8'>
+        <div className='flex h-16 items-center justify-between px-2 sm:px-6 lg:px-8'>
           <div className='flex items-center gap-2 md:gap-4'>
             <Link
               href='/'
               className='inline-flex items-center justify-center rounded-md text-sm p-2 hover:bg-muted'
               aria-label='Back to Homepage'>
               <Icon name='chevron-right' className='size-5 -rotate-90' />
-              <span className='opacity-80'>Homepage</span>
+              <span className='opacity-80'>Home</span>
             </Link>
 
             <div className='hidden'>
@@ -263,20 +263,20 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
             </div>
           </div>
 
-          <div className='flex items-center space-x-1'>
+          <Link href={`/`} className='flex items-center space-x-1'>
             <Image
               src='/apple-icon.png'
               alt='foreplay-wordmark'
               width={100}
               height={100}
-              className='h-8 w-auto'
+              className='h-7 w-auto rounded-full'
               priority
               unoptimized
             />
             <h1 className='font-poly'>Foreplay</h1>
-          </div>
+          </Link>
 
-          <div className='flex items-center space-x-4'>
+          <div className='flex items-center space-x-1 md:space-x-4'>
             <Button
               variant='ghost'
               onClick={handlePrint}
@@ -288,7 +288,7 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
               onClick={() => startTransition(() => setIsDrawerOpen(true))}
               className='inline-flex items-center justify-center rounded-md p-2 hover:bg-muted lg:hidden'
               aria-label='Toggle table of contents'>
-              <Icon name='add' className='size-5 opacity-70' />
+              <Icon name='list-dot-line' className='size-5 opacity-70' />
             </button>
           </div>
         </div>

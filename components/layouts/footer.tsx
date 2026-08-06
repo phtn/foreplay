@@ -12,7 +12,7 @@ export default function FooterContent() {
           <span className='font-ios text-xs tracking-wider px-2'>privacy</span>
         </Link>
         <span>&middot;</span>
-        <Link href='/term-of-use' className='hover:underline underline-offset-4 decoration-dotted'>
+        <Link href='/terms-of-use' className='hover:underline underline-offset-4 decoration-dotted'>
           <span className='font-ios text-xs tracking-wider px-2'>terms</span>
         </Link>
       </div>

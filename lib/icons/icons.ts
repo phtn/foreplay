@@ -768,6 +768,12 @@ export const icons = {
       '<path fill="currentColor" fill-rule="evenodd" d="M10.671 2.843a2 2 0 0 1 2.658 0l3.934 3.497l.25-1.504a1 1 0 0 1 1.973.328L19.03 7.91l2.635 2.342a1 1 0 0 1-1.328 1.495l-.464-.412l-.787 7.864a2 2 0 0 1-1.99 1.8H6.905a2 2 0 0 1-1.99-1.8l-.786-7.864l-.465.412a1 1 0 1 1-1.328-1.495z" clip-rule="evenodd"/>',
     viewBox: '0 0 24 24',
     set: 'mingcute'
+  },
+  'list-dot-line': {
+    symbol:
+      '<path fill="currentColor" d="M5 5a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0m0 7a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0m0 7a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M9 5h11M9 12h11M9 19h11M5 5a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0Zm0 7a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0Zm0 7a.5.5 0 1 1-1 0a.5.5 0 0 1 1 0Z"/>',
+    viewBox: '0 0 24 24',
+    set: 'mingcute'
   }
 }
 /*
