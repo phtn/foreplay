@@ -1,3 +1,4 @@
+import { FirebaseAnalytics } from '@/components/firebase-analytics'
 import FooterContent from '@/components/layouts/footer'
 import { PwaRegistration } from '@/components/pwa-registration'
 import { RootProviders } from '@/ctx/root'
@@ -134,6 +135,7 @@ export default async function RootLayout({
         <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
         <PwaRegistration />
         <FooterContent />
+        <FirebaseAnalytics />
       </body>
     </html>
   )
