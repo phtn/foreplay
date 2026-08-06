@@ -14,9 +14,9 @@ interface ToggleProps {
 }
 export const Toggle = ({ title, checked, onChange, disabled, id, className, label }: ToggleProps) => {
   return (
-    <div className='inline-flex items-center gap-x-2!'>
+    <div className='inline-flex items-center gap-x-1!'>
       {label && (
-        <Label htmlFor={id} className='font-clash font-medium'>
+        <Label htmlFor={id} className='font-ios'>
           {label}
         </Label>
       )}

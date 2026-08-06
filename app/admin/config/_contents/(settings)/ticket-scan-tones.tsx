@@ -12,12 +12,13 @@ import {
 import { useQuery } from 'convex/react'
 import type { User } from 'firebase/auth'
 import { saveScanTicketTonesConfig } from '../../actions'
-import { TonesEditor, type ToneEditorEvent } from './tones-editor'
+import { TonesCategory } from './tones-category'
+import { type ToneEditorEvent } from './tones-editor'
 
 const SCAN_TICKET_LABELS: Record<ScanTicketToneKey, string> = {
-  used: 'Ticket Used',
+  good: 'Valid Ticket',
   invalid: 'Invalid Ticket',
-  good: 'Valid Ticket'
+  used: 'Ticket Used'
 }
 
 const SCAN_TICKET_EVENTS: readonly ToneEditorEvent<ScanTicketToneKey>[] = SCAN_TICKET_KEYS.map((key) => ({
@@ -50,7 +51,7 @@ export const TicketScanTones = ({ user }: { user: User | null }) => {
   }
 
   return (
-    <TonesEditor
+    <TonesCategory
       key={configKey}
       id='ticket-scan-tones'
       title='Ticket Scan Tones'

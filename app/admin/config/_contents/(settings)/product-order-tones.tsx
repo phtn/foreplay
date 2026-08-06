@@ -12,7 +12,8 @@ import {
 import { useQuery } from 'convex/react'
 import type { User } from 'firebase/auth'
 import { saveProductOrderTonesConfig } from '../../actions'
-import { TonesEditor, type ToneEditorEvent } from './tones-editor'
+import { TonesCategory } from './tones-category'
+import { type ToneEditorEvent } from './tones-editor'
 
 const PRODUCT_ORDER_LABELS: Record<ProductOrderToneKey, string> = {
   entry: 'New Entry',
@@ -50,10 +51,10 @@ export const ProductOrderTones = ({ user }: { user: User | null }) => {
   }
 
   return (
-    <TonesEditor
+    <TonesCategory
       key={configKey}
       id='product-order-tones'
-      title='Product Order Tones'
+      title='Product Tones'
       description='Configure the sound used for each product order event.'
       events={PRODUCT_ORDER_EVENTS}
       config={config}

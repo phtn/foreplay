@@ -12,6 +12,7 @@ import { registrationSchema } from './registrations/d'
 import { resendWebhookEventSchema } from './resendWebhooks/d'
 import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema, subscriptionStatusChangeSchema } from './subscriptions/d'
+import { toneSchema } from './tones/d'
 import { tournamentSchema } from './tournaments/d'
 import { txnSchema } from './txns/d'
 import { userSchema } from './users/d'
@@ -60,5 +61,6 @@ export default defineSchema({
   messagingConfigs: defineTable(messagingConfigsSchema)
     .index('by_title', ['title'])
     .index('by_intent', ['intent'])
-    .index('by_group', ['group'])
+    .index('by_group', ['group']),
+  tones: defineTable(toneSchema).index('by_title', ['title'])
 })
