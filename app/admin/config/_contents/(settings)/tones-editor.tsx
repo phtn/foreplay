@@ -256,7 +256,8 @@ export function TonesEditor<Key extends string>({
                       if (isToneSynthType(next)) {
                         setDraftField(key, 'synthType', next)
                       }
-                    }}>
+                    }}
+                  >
                     <SelectTrigger id={synthId} className='w-full'>
                       <SelectValue />
                     </SelectTrigger>
@@ -281,7 +282,8 @@ export function TonesEditor<Key extends string>({
                         if (isToneOscillator(next)) {
                           setDraftField(key, 'waveform', next)
                         }
-                      }}>
+                      }}
+                    >
                       <SelectTrigger id={waveformId} className='w-full'>
                         <SelectValue />
                       </SelectTrigger>
@@ -344,7 +346,8 @@ export function TonesEditor<Key extends string>({
                   variant='secondary'
                   onClick={() => void handleTest(key)}
                   disabled={!isEnabled || !draft.enabled || testingKey !== null}
-                  className='rounded-sm font-clash'>
+                  className='rounded-sm font-clash'
+                >
                   <Icon name={testingKey === key ? 'spinner-ring' : 'play'} className='size-4' />
                   <span>Play</span>
                 </Button>

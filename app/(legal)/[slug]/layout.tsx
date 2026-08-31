@@ -243,16 +243,16 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
   }, [headings, route])
 
   return (
-    <div className='h-screen bg-background print:h-auto! print:max-h-none! print:overflow-visible!'>
+    <div className='overflow-hidden bg-background print:h-auto! print:max-h-none! print:overflow-visible!'>
       {/* Header */}
       <header className='absolute w-full top-0 z-40 border-b border-border backdrop-blur-2xl supports-backdrop-filter:bg-origin/40 print:hidden'>
         <div className='flex h-16 items-center justify-between px-2 sm:px-6 lg:px-8'>
           <div className='flex items-center gap-2 md:gap-4'>
             <Link
               href='/'
-              className='inline-flex items-center justify-center rounded-md text-sm p-2 hover:bg-muted'
+              className='opacity-0 inline-flex items-center justify-center rounded-md text-sm p-2 hover:bg-muted'
               aria-label='Back to Homepage'>
-              <Icon name='chevron-right' className='size-5 -rotate-90' />
+              <Icon name='chevron-right' className='size-4 -rotate-90 text-muted-foreground' />
               <span className='opacity-80'>Home</span>
             </Link>
 
@@ -310,29 +310,25 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
         {/* Main content */}
         <main
           ref={contentRootRef}
-          className='h-fit flex-1 mx-auto md:max-w-160 lg:max-w-180 xl:max-w-200 2xl:max-w-240 px-4 sm:px-6 lg:px-8 print:h-auto! print:max-h-none! print:overflow-visible! print:mb-24!'>
+          className='h-screen overflow-hidden flex-1 mx-auto md:max-w-160 lg:max-w-180 xl:max-w-200 2xl:max-w-240 px-4 sm:px-6 lg:px-8 print:h-auto! print:max-h-none! print:overflow-visible! print:mb-24!'>
           {children}
         </main>
 
-        <aside className='absolute left-0 hidden xl:w-72 2xl:w-96 md:h-screen overflow-y-scroll border-r border-border bg-muted/30 p-6 lg:block print:hidden'>
-          <SpaceX />
-          <div className='sticky top-8 font-figtree'>
-            <div className='mb-8 opacity-60 tracking-wider uppercase text-xs'>Resources</div>
+        <aside className='absolute left-0 hidden xl:w-72 2xl:w-96 h-[calc(100vh)] overflow-y-scroll border-r border-border bg-muted/30 p-5 lg:block print:hidden'>
+          <div className='sticky top-8'>
+            <div className=' py-10 opacity-60 tracking-wider uppercase text-xs'>Resources</div>
 
             {legalDocuments.map((doc) => (
               <Link
                 key={doc.slug}
                 href={`/${doc.slug}`}
-                className='w-fit group flex items-center justify-between bg-background transition-all hover:border-primary-hover hover:bg-muted/60 mb-2 md:mb-3'>
+                className='w-fit group flex items-center justify-between transition-all py-2'>
                 <div>
                   <p
-                    className={cn(
-                      'font-semibold text-foreground group-hover:text-mac-blue dark:group-hover:text-primary-hover',
-                      {
-                        'text-mac-blue dark:text-primary-hover underline underline-offset-4 decoration-dotted':
-                          doc.slug === route
-                      }
-                    )}>
+                    className={cn('font-sans font-medium text-foreground/80 group-hover:text-foreground', {
+                      'text-active underline underline-offset-6 decoration-[0.5px] decoration-dotted decoration-foreground/80':
+                        doc.slug === route
+                    })}>
                     {doc.title}
                   </p>
                 </div>
@@ -347,7 +343,7 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
         <aside className='absolute right-0 hidden xl:w-72 2xl:w-96 md:h-screen overflow-y-scroll border-l border-border bg-foreground/2 lg:block print:hidden p-6'>
           <SpaceX />
           <div className='sticky top-8 font-okx'>
-            <div className='mb-8 opacity-60 tracking-wider uppercase text-xs'>Table of Contents</div>
+            <div className='mb-8 opacity-60 font-sans tracking-wider uppercase text-xs'>Table of Contents</div>
 
             <nav className='space-y-3 text-sm'>
               {headings.map((heading) => (
@@ -362,10 +358,10 @@ export default function LegalDocumentLayout({ children }: LegalDocumentLayoutPro
                     }
                   }}
                   className={cn(
-                    'block truncate rounded font-figtree tracking-tight px-2 py-1 text-muted-foreground transition-colors hover:bg-background hover:text-foreground',
-                    heading.level === 2 ? 'font-medium' : 'ml-2',
+                    'block truncate rounded font-sans text-muted-foreground px-2 py-1 transition-colors hover:text-foreground',
+                    heading.level === 2 ? 'font-medium' : 'ml-3 font-normal',
                     heading.id === activeHeadingId &&
-                      'bg-background text-mac-blue underline decoration-dotted dark:text-primary-hover'
+                      'text-active underline underline-offset-6 decoration-[0.5px] decoration-dotted decoration-foreground/80'
                   )}>
                   <span>{heading.text}</span>
                 </a>

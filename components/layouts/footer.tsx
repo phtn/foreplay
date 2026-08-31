@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function FooterContent() {
   return (
-    <div className='h-28 mt-8 w-full flex items-center justify-between px-6 md:px-12 bg-slate-600/2'>
+    <div className='h-28 w-full flex items-center justify-between px-6 md:px-12  bg-foreground/2'>
       <div className='flex items-center justify-center text-xs tracking-wider text-foreground/50'>
         <span className='font-mono'>&copy;{new Date().getFullYear()}</span>{' '}
         <span className='font-ios tracking-wider px-2'>foreplay.pro</span>

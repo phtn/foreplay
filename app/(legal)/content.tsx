@@ -43,7 +43,7 @@ export const Content = () => {
   const router = useRouter()
 
   return (
-    <main className='min-h-screen bg-background fontfont-figtree'>
+    <main className='min-h-screen bg-background'>
       <div className='mx-auto max-w-6xl px-4 py-4 md:py-16 sm:px-6 lg:px-8'>
         <div className='max-w-5xl mx-auto mb-4 md:mb-12'>
           <div className='w-fit mb-2 font-bold text-foreground tracking-tight'>

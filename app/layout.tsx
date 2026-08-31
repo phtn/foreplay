@@ -133,8 +133,8 @@ export default async function RootLayout({
       </head>
       <body className='min-h-full flex flex-col'>
         <RootProviders initialAuthState={initialAuthState}>{children}</RootProviders>
-        <PwaRegistration />
         <FooterContent />
+        <PwaRegistration />
         <FirebaseAnalytics />
       </body>
     </html>

@@ -98,6 +98,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-hermes: oklch(0.64 0.207 34.88);
   --color-webhooks: oklch(0.451 0.259 269.98);
+  --color-active: oklch(0.6135 0.2095 267.78);
 }
 
 :root {

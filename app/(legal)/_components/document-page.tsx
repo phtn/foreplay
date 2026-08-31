@@ -72,7 +72,7 @@ export function LegalDocumentPage({ document }: LegalDocumentPageProps) {
                   <Link
                     key={doc.slug}
                     href={`/legal/${doc.slug}`}
-                    className='min-w-lg group flex items-center justify-between rounded-3xl border border-origin bg-background p-4 transition-all hover:border-primary-hover hover:bg-muted/60'>
+                    className='min-w-lg group flex items-center justify-between rounded-3xl border border-origin bg-background p-4 transition-all hover:border-primary-hover'>
                     <>
                       <p className='text-sm text-muted-foreground'>{doc.slug}</p>
                       <p className='font-semibold text-foreground group-hover:text-primary'>{doc.title}</p>

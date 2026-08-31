@@ -39,7 +39,7 @@ const components = {
     const text = extractText(children)
     const headingId = id || slugify(text)
     return (
-      <h1 id={headingId} className='font-semibold pt-12 mb-0 text-3xl' {...props}>
+      <h1 id={headingId} className='font-sans font-semibold text-4xl opacity-90 pt-12 mb-0' {...props}>
         {children}
       </h1>
     )
@@ -48,7 +48,7 @@ const components = {
     const text = extractText(children)
     const headingId = id || slugify(text)
     return (
-      <h2 id={headingId} className='mb-4 mt-6 text-2xl font-normal font-clash' {...props}>
+      <h2 id={headingId} className='mb-4 mt-6 font-poly font-normal text-xl opacity-90' {...props}>
         {children}
       </h2>
     )
@@ -57,7 +57,7 @@ const components = {
     const text = extractText(children)
     const headingId = id || slugify(text)
     return (
-      <h3 id={headingId} className='text-gray-800 dark:text-zinc-200 font-medium mt-8 mb-3' {...props}>
+      <h3 id={headingId} className=' font-medium text-gray-800 dark:text-zinc-200 mt-8 mb-3' {...props}>
         {children}
       </h3>
     )
@@ -82,12 +82,10 @@ const components = {
   ),
   li: (props: ListItemProps) => <li className='pl-1' {...props} />,
   em: (props: ComponentPropsWithoutRef<'em'>) => <em className='font-medium' {...props} />,
-  strong: (props: ComponentPropsWithoutRef<'strong'>) => (
-    <strong className='ml-2 font-bold font-figtree text-2xl md:text-3xl' {...props} />
-  ),
+  strong: (props: ComponentPropsWithoutRef<'strong'>) => <strong className='ml-2 font-semibold' {...props} />,
   a: ({ href, children, ...props }: AnchorProps) => {
     const className =
-      'text-blue-500 hover:text-blue-700 dark:text-indigo-400 hover:dark:text-indigo-300 dark:opacity-100 dark:underline dark:underline-offset-2 dark:decoration-indigo-400 decoration-dotted'
+      'text-blue-500 hover:text-blue-700 dark:text-gray-400 hover:dark:text-gray-300 dark:underline dark:underline-offset-2 dark:decoration-gray-800'
     if (href?.startsWith('/')) {
       return (
         <Link href={href} className={className} {...props}>

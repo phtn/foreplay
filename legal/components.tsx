@@ -6,14 +6,14 @@ interface Props {
 
 export const TitleHeader = ({ title, effectiveDate, lastUpdated }: Props) => (
   <div className='flex items-center justify-between w-full h-36'>
-    <h1 className='text-3xl md:text-4xl capitalize font-bold font-figtree text-foreground tracking-tighter'>{title}</h1>
+    <h1 className='text-4xl md:text-5xl capitalize font-bold font-sans text-foreground tracking-tighter'>{title}</h1>
     <div className='font-figtree text-right text-sm'>
       <div className='hidden'>
         <span className='font-semibold mr-2'>Effective Date:</span> {effectiveDate}
       </div>
       <div className='md:max-w-full max-w-[13ch] flex flex-col'>
-        <p className='font-space'>{lastUpdated}</p>
-        <p className='font-semibold'>Last Updated</p>
+        <p className='font-sans opacity-80'>{lastUpdated}</p>
+        <p className='font-sans font-medium opacity-80'>Last Updated</p>
       </div>
     </div>
   </div>
