@@ -4,6 +4,7 @@ import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { toRegistrationTicketData, type RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { formatEventDate } from '@/utils/formatters'
 import { fetchQuery } from 'convex/nextjs'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PlayersDataTable, type EventSubscriptionTableRow } from './players-data-table'
 
@@ -83,8 +84,11 @@ export default async function EventPage({ params }: EventPageProps) {
       <div className='flex items-center justify-between px-2 md:px-2 pb-0'>
         <SectionTitle eyebrow='Events' href='/admin' />
 
-        <div className='w-full h-10 flex items-start justify-center overflow-hidden'>
-          <h1 className='font-poly font-medium text-base sm:text-xl md:text-xl whitespace-nowrap'>{event.title}</h1>
+        <div className='flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-center'>
+          <h1 className='max-w-full truncate font-poly font-medium text-base sm:text-xl'>{event.title}</h1>
+          <Link href={`/admin/${encodeURIComponent(eventId)}/edit`} className='text-xs text-muted-foreground underline-offset-4 hover:underline'>
+            Edit event
+          </Link>
         </div>
 
         <LinkTitle title={undefined} eyebrow='Pairings' icon='document' href={`/admin/${eventId}/pairings`} />

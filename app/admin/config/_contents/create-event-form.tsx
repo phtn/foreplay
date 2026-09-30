@@ -4,13 +4,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import type { Id } from '@/convex/_generated/dataModel'
+import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { useImageConverter } from '@/hooks/use-image-converter'
+import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { type ChangeEvent, RefObject, SubmitEvent, useEffect, useMemo, useRef, useState } from 'react'
-import { createTournamentEvent, generateEventAssetUploadUrl } from '../actions'
+import { createTournamentEvent, generateEventAssetUploadUrl, updateTournamentEvent } from '../actions'
 
 const imageAccept = 'image/png,image/jpeg,image/webp,image/avif'
 
@@ -23,7 +25,8 @@ const pesoFormatter = new Intl.NumberFormat('en-PH', {
 const datePreviewFormatter = new Intl.DateTimeFormat('en-US', {
   month: 'short',
   day: 'numeric',
-  year: 'numeric'
+  year: 'numeric',
+  timeZone: 'Asia/Manila'
 })
 
 type UploadConvertedImageOptions = {
@@ -43,6 +46,27 @@ type EventDraft = {
   description: string
 }
 
+export type EditableEvent = Pick<
+  Doc<'tournaments'>,
+  | '_id'
+  | 'title'
+  | 'venue'
+  | 'gate_open_at'
+  | 'registration_fee'
+  | 'slots_limit'
+  | 'divisions'
+  | 'description'
+  | 'published'
+  | 'ticket_logo_url'
+  | 'cover_photo_url'
+> & { id: string }
+
+type EventFormProps = {
+  event?: EditableEvent
+  initialCoverUrl?: string | null
+  initialLogoUrl?: string | null
+}
+
 const emptyDraft: EventDraft = {
   title: '',
   id: '',
@@ -53,6 +77,34 @@ const emptyDraft: EventDraft = {
   slotsLimit: '',
   divisions: '',
   description: ''
+}
+
+function getEventDraft(event: EditableEvent): EventDraft {
+  const dateParts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23'
+    })
+      .formatToParts(event.gate_open_at)
+      .map(({ type, value }) => [type, value])
+  )
+
+  return {
+    title: event.title,
+    id: event.id,
+    venue: event.venue,
+    date: `${dateParts.year}-${dateParts.month}-${dateParts.day}`,
+    time: `${dateParts.hour}:${dateParts.minute}`,
+    registrationFee: String(event.registration_fee),
+    slotsLimit: event.slots_limit === undefined ? '' : String(event.slots_limit),
+    divisions: event.divisions?.join(', ') ?? '',
+    description: event.description ?? ''
+  }
 }
 
 function getRequiredFormValue(formData: FormData, key: string) {
@@ -98,7 +150,7 @@ function formatPreviewDate(date: string, time: string) {
     return 'Date pending'
   }
 
-  const timestamp = new Date(`${date}T${time || '00:00'}:00`).getTime()
+  const timestamp = new Date(`${date}T${time || '00:00'}:00+08:00`).getTime()
 
   if (!Number.isFinite(timestamp)) {
     return 'Date pending'
@@ -140,16 +192,18 @@ async function uploadConvertedImage({ file, convert }: UploadConvertedImageOptio
   return uploadResult.storageId
 }
 
-export function CreateEventForm() {
+export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: EventFormProps) {
+  const router = useRouter()
+  const { user } = useFirebaseUser()
   const formRef = useRef<HTMLFormElement>(null)
   const logoPreviewUrlRef = useRef<string | null>(null)
   const coverPreviewUrlRef = useRef<string | null>(null)
-  const [draft, setDraft] = useState<EventDraft>(emptyDraft)
+  const [draft, setDraft] = useState<EventDraft>(() => (event ? getEventDraft(event) : emptyDraft))
   const [ticketLogoFile, setTicketLogoFile] = useState<File | null>(null)
   const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null)
-  const [published, setPublished] = useState(false)
+  const [published, setPublished] = useState(event ? event.published !== false : false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -161,6 +215,7 @@ export function CreateEventForm() {
   const previewVenue = draft.venue || 'Venue'
   const previewDate = formatPreviewDate(draft.date, draft.time)
   const previewFee = formatPreviewFee(draft.registrationFee)
+  const isEditing = Boolean(event)
 
   useEffect(() => {
     return () => {
@@ -208,12 +263,12 @@ export function CreateEventForm() {
 
   const resetForm = () => {
     formRef.current?.reset()
-    setDraft(emptyDraft)
+    setDraft(event ? getEventDraft(event) : emptyDraft)
     setTicketLogoFile(null)
     setCoverPhotoFile(null)
     setLogoPreviewUrl(null)
     setCoverPreviewUrl(null)
-    setPublished(true)
+    setPublished(event ? event.published !== false : true)
 
     if (logoPreviewUrlRef.current) {
       URL.revokeObjectURL(logoPreviewUrlRef.current)
@@ -226,21 +281,20 @@ export function CreateEventForm() {
     }
   }
 
-  const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = async (submitEvent: SubmitEvent<HTMLFormElement>) => {
+    submitEvent.preventDefault()
     setErrorMessage(null)
     setSuccessMessage(null)
     setIsSubmitting(true)
 
     try {
-      const formData = new FormData(event.currentTarget)
+      const formData = new FormData(submitEvent.currentTarget)
       const [ticketLogoStorageId, coverPhotoStorageId] = await Promise.all([
         uploadConvertedImage({ file: ticketLogoFile, convert }),
         uploadConvertedImage({ file: coverPhotoFile, convert })
       ])
 
-      await createTournamentEvent({
-        id: getRequiredFormValue(formData, 'id'),
+      const eventInput = {
         title: getRequiredFormValue(formData, 'title'),
         venue: getRequiredFormValue(formData, 'venue'),
         date: getRequiredFormValue(formData, 'date'),
@@ -252,12 +306,22 @@ export function CreateEventForm() {
         ticketLogoStorageId,
         coverPhotoStorageId,
         published
-      })
+      }
 
-      resetForm()
-      setSuccessMessage('Event created.')
+      if (event) {
+        if (!user) throw new Error('Your admin session is still loading. Try again in a moment.')
+        const firebaseIdToken = await user.getIdToken(true)
+        await updateTournamentEvent({ tournamentId: event._id, ...eventInput }, firebaseIdToken)
+        router.push(`/admin/${encodeURIComponent(event.id)}`)
+      } else {
+        await createTournamentEvent({ id: getRequiredFormValue(formData, 'id'), ...eventInput })
+        resetForm()
+        setSuccessMessage('Event created.')
+      }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to create event.')
+      setErrorMessage(
+        error instanceof Error ? 'Size limit exceeded.' : `Unable to ${isEditing ? 'update' : 'create'} event.`
+      )
     } finally {
       setIsSubmitting(false)
     }
@@ -267,20 +331,27 @@ export function CreateEventForm() {
     <form ref={formRef} onSubmit={handleSubmit} className='grid gap-5 xl:grid-cols-[minmax(360px,0.82fr)_1.18fr]'>
       <section className='grid content-start gap-4'>
         <div className='overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm'>
-          <div className='relative min-h-72 bg-neutral-400'>
-            {coverPreviewUrl ? (
-              <Image src={coverPreviewUrl} alt='' fill unoptimized className='object-cover opacity-85' sizes='520px' />
+          <div className='relative min-h-72 bg-neutral-800'>
+            {coverPreviewUrl || initialCoverUrl ? (
+              <Image
+                src={coverPreviewUrl ?? initialCoverUrl!}
+                alt=''
+                fill
+                unoptimized
+                className='object-cover bg-zinc-100!'
+                sizes='520px'
+              />
             ) : (
-              <div className='absolute inset-0 bg-[linear-gradient(135deg,#e9e6de,#d18ee2_52%,#ff7759)]' />
+              <div className='absolute inset-0 bg-[#c0c0c0]/70' />
             )}
             <div className='absolute inset-0 bg-black/28' />
             <div className='relative flex min-h-72 flex-col justify-between p-5 text-white'>
               <div className='flex items-start justify-between gap-4'>
                 <div className='flex items-center gap-3'>
-                  <div className='relative flex size-14 items-center justify-center overflow-hidden rounded-lg border border-white/25 bg-white/15'>
-                    {logoPreviewUrl ? (
+                  <div className='relative flex size-14 items-center justify-center overflow-hidden rounded-lg border border-white/25 bg-white'>
+                    {logoPreviewUrl || initialLogoUrl ? (
                       <Image
-                        src={logoPreviewUrl}
+                        src={logoPreviewUrl ?? initialLogoUrl!}
                         alt=''
                         fill
                         unoptimized
@@ -310,10 +381,9 @@ export function CreateEventForm() {
             </div>
           </div>
 
-          <div className='grid grid-cols-3 divide-x divide-border/60 border-t border-border/70 bg-card'>
+          <div className='grid grid-cols-2 divide-x divide-border/60 border-t border-border/70 bg-card'>
             <PreviewMetric label='When' value={previewDate} />
             <PreviewMetric label='Field' value={draft.slotsLimit ? `${draft.slotsLimit} slots` : 'Open'} />
-            <PreviewMetric label='Where' value={previewVenue} />
           </div>
         </div>
 
@@ -344,8 +414,10 @@ export function CreateEventForm() {
         <div className='border-b border-border/70 p-4 sm:p-5'>
           <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
             <div>
-              <p className='font-ios text-xs uppercase tracking-widest text-sky-600'>Create event</p>
-              <h2 className='mt-1 font-okx text-xl font-semibold'>Tournament setup</h2>
+              <p className='font-ios text-xs uppercase tracking-widest text-sky-600'>
+                {isEditing ? 'Edit event' : 'Create event'}
+              </p>
+              <h2 className='mt-1 font-okx text-xl font-semibold'>Tournament Setup</h2>
             </div>
             <div className='flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-muted/20 px-3 py-2'>
               <div>
@@ -377,8 +449,12 @@ export function CreateEventForm() {
                 onChange={(value) => updateDraft('id', value.toLowerCase())}
                 placeholder='som-2026'
                 pattern='[a-z0-9]+(-[a-z0-9]+)*'
+                readOnly={isEditing}
                 required
               />
+              {isEditing ? (
+                <p className='text-xs text-muted-foreground md:col-start-2'>Event slugs stay fixed after creation.</p>
+              ) : null}
             </div>
             <EventInput
               id='event-venue'
@@ -465,7 +541,8 @@ export function CreateEventForm() {
                 id='event-ticket-logo'
                 label='Logo'
                 file={ticketLogoFile}
-                previewUrl={logoPreviewUrl}
+                previewUrl={logoPreviewUrl ?? initialLogoUrl ?? null}
+                existingSaved={Boolean(event?.ticket_logo_url)}
                 onChange={(event) =>
                   handleImageChange(event, {
                     setFile: setTicketLogoFile,
@@ -478,7 +555,8 @@ export function CreateEventForm() {
                 id='event-cover-photo'
                 label='Cover photo'
                 file={coverPhotoFile}
-                previewUrl={coverPreviewUrl}
+                previewUrl={coverPreviewUrl ?? initialCoverUrl ?? null}
+                existingSaved={Boolean(event?.cover_photo_url)}
                 onChange={(event) =>
                   handleImageChange(event, {
                     setFile: setCoverPhotoFile,
@@ -509,18 +587,18 @@ export function CreateEventForm() {
               className='h-11 justify-center'
               disabled={isSubmitting}
               onClick={resetForm}>
-              Reset
+              {isEditing ? 'Revert changes' : 'Reset'}
             </Button>
             <Button type='submit' className='h-11 justify-center' disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
                   <Icon name='spinner-ring' className='size-4' />
-                  <span>Creating</span>
+                  <span>{isEditing ? 'Saving' : 'Creating'}</span>
                 </>
               ) : (
                 <>
-                  <Icon name='add' className='size-4' />
-                  <span>Create event</span>
+                  {!isEditing ? <Icon name='add' className='size-4' /> : null}
+                  <span>{isEditing ? 'Save changes' : 'Create event'}</span>
                 </>
               )}
             </Button>
@@ -576,12 +654,14 @@ function EventInput({
 }
 
 function EventFileInput({
+  existingSaved,
   file,
   id,
   label,
   onChange,
   previewUrl
 }: {
+  existingSaved?: boolean
   file: File | null
   id: string
   label: string
@@ -602,12 +682,14 @@ function EventFileInput({
         ) : (
           <span className='flex w-full flex-col items-center justify-center gap-2 p-5 text-center text-muted-foreground'>
             <Icon name='file' className='size-7' />
-            <span className='font-okx text-sm'>{file?.name ?? 'Select image'}</span>
+            <span className='font-okx text-sm'>
+              {file?.name ?? (existingSaved ? 'Choose replacement image' : 'Select image')}
+            </span>
           </span>
         )}
         {previewUrl ? (
           <span className='absolute inset-x-3 bottom-3 truncate rounded-md bg-background/90 px-2 py-1 text-xs shadow-sm'>
-            {file?.name ?? 'Selected image'}
+            {file?.name ?? (existingSaved ? 'Current image' : 'Selected image')}
           </span>
         ) : null}
       </label>

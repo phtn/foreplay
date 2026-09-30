@@ -35,7 +35,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
         description={tournament.description ?? ''}
         venueLabel={tournament.venue}
         primaryHref={`/tournaments/${tournament.id}/entry`}
-        primaryLabel='Register Now'
+        primaryLabel='Book Entry'
         secondaryLabel={tournament.support?.phone}
         secondaryHref={`tel:${tournament.support?.phone}`}
         teeTimeAt={eventDate.toISOString()}

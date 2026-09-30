@@ -308,8 +308,8 @@ export function TournamentHero({
                 <Link
                   className={cn(
                     buttonVariants({ size: '2xl' }),
-                    'w-full hover:bg-foreground/80 backdrop-blur-3xl text-white px-8 text-sm font-poly font-medium sm:w-auto flex items-center',
-                    { 'bg-foreground/80 dark:bg-background/80': darkButton }
+                    ' bg-[#333637] hover:bg-[#333637]/90 text-[#e3e3e3] dark:hover:bg-[#333637]/90 font-poly text-base',
+                    { 'bg-foreground/80 dark:bg-background/10 dark:hover:[#1c1e23]/98!': darkButton }
                   )}
                   href={primaryHref}>
                   <span>{primaryLabel}</span>

@@ -127,6 +127,65 @@ export const create = mutation({
   }
 })
 
+export const updateDetails = mutation({
+  args: {
+    tournamentId: v.id('tournaments'),
+    title: v.string(),
+    venue: v.string(),
+    eventDate: v.string(),
+    gateOpenAt: v.number(),
+    registrationFee: v.number(),
+    slotsLimit: v.optional(v.number()),
+    divisions: v.array(v.string()),
+    description: v.optional(v.string()),
+    ticketLogoStorageId: v.optional(v.id('_storage')),
+    coverPhotoStorageId: v.optional(v.id('_storage')),
+    published: v.boolean()
+  },
+  returns: tournamentUpdateResult,
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (!identity || identity.admin !== true) {
+      throw new ConvexError('Unauthorized')
+    }
+
+    const tournament = await getTournament(ctx, args.tournamentId)
+
+    if (!Number.isFinite(args.gateOpenAt)) {
+      throw new ConvexError('Event date and time are invalid.')
+    }
+
+    if (!Number.isFinite(args.registrationFee) || args.registrationFee < 0) {
+      throw new ConvexError('Registration fee must be zero or greater.')
+    }
+
+    if (args.slotsLimit !== undefined && (!Number.isFinite(args.slotsLimit) || args.slotsLimit < 1)) {
+      throw new ConvexError('Slots limit must be at least one.')
+    }
+
+    if (args.slotsLimit !== undefined && args.slotsLimit < tournament.registered_slots) {
+      throw new ConvexError(`Slots limit cannot be below ${tournament.registered_slots} registered slots.`)
+    }
+
+    await ctx.db.patch(args.tournamentId, {
+      title: trimRequired(args.title, 'Title'),
+      venue: trimRequired(args.venue, 'Venue'),
+      event_date: trimRequired(args.eventDate, 'Event date'),
+      gate_open_at: args.gateOpenAt,
+      gate_open: args.gateOpenAt,
+      registration_fee: Math.round(args.registrationFee),
+      slots_limit: args.slotsLimit === undefined ? undefined : Math.max(1, Math.round(args.slotsLimit)),
+      divisions: args.divisions.length ? args.divisions : ['Open'],
+      description: trimOptional(args.description),
+      published: args.published,
+      ...(args.ticketLogoStorageId ? { ticket_logo_url: args.ticketLogoStorageId } : {}),
+      ...(args.coverPhotoStorageId ? { cover_photo_url: args.coverPhotoStorageId } : {})
+    })
+
+    return toTournamentUpdateResult(tournament)
+  }
+})
+
 export const generateAssetUploadUrl = mutation({
   args: {},
   returns: v.string(),

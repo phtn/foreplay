@@ -207,11 +207,18 @@ const EventRow = (row: EventRow) => {
               <EventToolbar event={row.event} />
             </div>
             {row.href ? (
-              <Link
-                className={cn(buttonVariants({ size: 'default' }), 'h-12 w-full rounded-md dark:bg-[#eef1ea]')}
-                href={row.href}>
-                <span className='font-medium'>Open event</span>
-              </Link>
+              <div className='grid grid-cols-2 gap-2'>
+                <Link
+                  className={cn(buttonVariants({ variant: 'outline', size: 'default' }), 'h-12 rounded-md')}
+                  href={`${row.href}/edit`}>
+                  Edit event
+                </Link>
+                <Link
+                  className={cn(buttonVariants({ size: 'default' }), 'h-12 rounded-md dark:bg-[#eef1ea]')}
+                  href={row.href}>
+                  <span className='font-medium'>Open event</span>
+                </Link>
+              </div>
             ) : null}
           </div>
         </div>
@@ -228,7 +235,11 @@ const EventRow = (row: EventRow) => {
 
         <div className='min-w-0 space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
-            <h3 className='min-w-0 font-poly text-lg text-foreground'>{row.title}</h3>
+            <Link
+              href={`${row.href}/edit`}
+              className='underline underline-offset-4 decoration-dashed decoration-background hover:decoration-[#ccc]'>
+              <h3 className='min-w-0 font-poly text-lg text-foreground'>{row.title}</h3>
+            </Link>
             <span
               className={cn(
                 'rounded-full bg-muted px-2 py-0.5 font-ios text-[12px] uppercase tracking-wide text-foreground',
@@ -258,13 +269,20 @@ const EventRow = (row: EventRow) => {
         <div className='w-full'>
           <EventToolbar event={row.event} />
         </div>
-        <div className='flex justify-end'>
+        <div className='flex justify-end gap-2'>
           {row.href ? (
-            <Link
-              className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'h-12 rounded-md dark:bg-[#eef1ea]')}
-              href={row.href}>
-              <span className='font-medium'>Open event</span>
-            </Link>
+            <>
+              <Link
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-12 rounded-md')}
+                href={`${row.href}/edit`}>
+                Edit
+              </Link>
+              <Link
+                className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'h-12 rounded-md dark:bg-[#eef1ea]')}
+                href={row.href}>
+                <span className='font-medium'>Open event</span>
+              </Link>
+            </>
           ) : (
             <span className='text-sm text-muted-foreground'>n/a</span>
           )}

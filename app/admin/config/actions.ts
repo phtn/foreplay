@@ -161,6 +161,10 @@ type CreateTournamentEventInput = {
   published: boolean
 }
 
+type UpdateTournamentEventInput = Omit<CreateTournamentEventInput, 'id'> & {
+  tournamentId: Id<'tournaments'>
+}
+
 export type SaveMessagingTemplateInput = {
   body: string
   group: string
@@ -356,4 +360,57 @@ export async function createTournamentEvent(input: CreateTournamentEventInput) {
 
   revalidatePath('/admin/config')
   revalidatePath('/admin')
+}
+
+export async function updateTournamentEvent(input: UpdateTournamentEventInput, firebaseIdToken: string) {
+  await requireAdminSession()
+
+  const title = input.title.trim()
+  const venue = input.venue.trim()
+  const date = input.date.trim()
+  const time = input.time.trim()
+  const gateOpenAt = new Date(`${date}T${time}:00+08:00`).getTime()
+
+  if (!title || !venue || !date || !time) {
+    throw new Error('Event title, venue, date, and time are required.')
+  }
+
+  if (!Number.isFinite(gateOpenAt)) {
+    throw new Error('Event date and time are invalid.')
+  }
+
+  if (input.registrationFee !== undefined && (!Number.isFinite(input.registrationFee) || input.registrationFee < 0)) {
+    throw new Error('Registration fee must be zero or greater.')
+  }
+
+  if (input.slotsLimit !== undefined && (!Number.isFinite(input.slotsLimit) || input.slotsLimit < 1)) {
+    throw new Error('Slots limit must be at least one.')
+  }
+
+  const result = await fetchMutation(api.tournaments.m.updateDetails, {
+    tournamentId: input.tournamentId,
+    title,
+    venue,
+    eventDate: formatEventDate(date, time),
+    gateOpenAt,
+    registrationFee: input.registrationFee ?? 0,
+    slotsLimit: input.slotsLimit,
+    divisions: input.divisions ?? [],
+    description: input.description?.trim() || undefined,
+    ticketLogoStorageId: input.ticketLogoStorageId,
+    coverPhotoStorageId: input.coverPhotoStorageId,
+    published: input.published
+  }, { token: firebaseIdToken })
+
+  revalidatePath('/admin')
+  revalidatePath('/admin/config')
+  if (result.eventId) {
+    const eventPath = encodeURIComponent(result.eventId)
+    revalidatePath(`/admin/${eventPath}`)
+    revalidatePath(`/admin/${eventPath}/edit`)
+    revalidatePath(`/tournaments/${eventPath}`)
+    revalidatePath(`/tournaments/${eventPath}/sponsorship`)
+  }
+
+  return result
 }

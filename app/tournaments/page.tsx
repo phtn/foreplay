@@ -18,8 +18,8 @@ export default function TournamentsPage() {
           title='Seoul of Manila'
           description={featuredTournament.description}
           venueLabel={featuredTournament.venue}
-          primaryHref='/subscriptions'
-          primaryLabel='My Entries'
+          primaryHref='/tournaments/som-2026'
+          primaryLabel='View Tournament'
           secondaryLabel=''
           teeTimeAt={featuredTournament.teeTimeAt}
           teeTimeLabel={featuredTournament.teeTimeLabel}
