@@ -175,7 +175,14 @@ const EventRow = (row: EventRow) => {
               <h3 className='font-poly text-base leading-snug text-foreground'>{row.title}</h3>
               <p className='text-sm text-muted-foreground'>{row.place}</p>
             </div>
-            <span className='shrink-0 rounded-full bg-muted px-2 py-1 font-ios text-[10px] uppercase tracking-wide text-foreground'>
+            <span
+              className={cn(
+                'shrink-0 rounded-full bg-muted px-2 py-1 font-ios text-[11px] uppercase tracking-wide text-foreground',
+                {
+                  'dark:text-blue-400 text-blue-500 bg-blue-100/8': row.status.toLocaleLowerCase() === 'published',
+                  'border border-dashed bg-muted/10': row.status.toLocaleLowerCase() === 'draft'
+                }
+              )}>
               {row.status}
             </span>
           </div>
@@ -195,13 +202,15 @@ const EventRow = (row: EventRow) => {
             </div>
           </div>
 
-          <div className='flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3'>
-            <div className='w-36 max-w-full'>
+          <div className='space-y-3 border-t border-border/70 pt-3'>
+            <div className='w-full'>
               <EventToolbar event={row.event} />
             </div>
             {row.href ? (
-              <Link className={cn(buttonVariants({ size: 'sm' }), 'rounded-full')} href={row.href}>
-                <span className='dark:text-white'>Open event</span>
+              <Link
+                className={cn(buttonVariants({ size: 'default' }), 'h-12 w-full rounded-md dark:bg-[#eef1ea]')}
+                href={row.href}>
+                <span className='font-medium'>Open event</span>
               </Link>
             ) : null}
           </div>
@@ -209,7 +218,7 @@ const EventRow = (row: EventRow) => {
       </article>
 
       {/* Desktop */}
-      <article className='hidden rounded-xl border border-border/70 bg-background p-4 lg:grid lg:grid-cols-[64px_minmax(0,1fr)_120px_150px_auto] lg:items-center lg:gap-4'>
+      <article className='hidden rounded-xl border border-border/70 bg-background p-4 lg:grid lg:grid-cols-[64px_minmax(0,1fr)_100px_240px_auto] lg:items-center lg:gap-4'>
         <div className='flex items-center justify-center border-e border-border/70 pe-4'>
           <div className='space-y-1 text-center'>
             <p className='font-ios text-xs uppercase text-muted-foreground'>{row.day}</p>
@@ -223,7 +232,11 @@ const EventRow = (row: EventRow) => {
             <span
               className={cn(
                 'rounded-full bg-muted px-2 py-0.5 font-ios text-[12px] uppercase tracking-wide text-foreground',
-                { 'dark:text-blue-500 bg-blue-100/8': row.status.toLocaleLowerCase() === 'published' }
+                {
+                  'dark:text-blue-400 text-blue-500 dark:bg-blue-100/8 bg-blue-500/5':
+                    row.status.toLocaleLowerCase() === 'published',
+                  'border border-dashed bg-muted/10': row.status.toLocaleLowerCase() === 'draft'
+                }
               )}>
               {row.status}
             </span>
@@ -242,13 +255,13 @@ const EventRow = (row: EventRow) => {
           <p className='font-ios text-[10px] uppercase tracking-wide text-muted-foreground'>Entry fee</p>
           <p className='text-sm text-foreground'>{row.feeLabel}</p>
         </div>
-        <div className='w-36'>
+        <div className='w-full'>
           <EventToolbar event={row.event} />
         </div>
         <div className='flex justify-end'>
           {row.href ? (
             <Link
-              className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'rounded-lg bg-[#eef1ea]')}
+              className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'h-12 rounded-md dark:bg-[#eef1ea]')}
               href={row.href}>
               <span className='font-medium'>Open event</span>
             </Link>

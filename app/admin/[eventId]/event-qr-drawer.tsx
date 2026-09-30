@@ -64,18 +64,19 @@ export function EventQrDrawer({ eventTitle, fileName, qrSvg, tournamentUrl }: Ev
     <Drawer swipeDirection='right'>
       <Tooltip>
         <TooltipTrigger
-          delay={150}
+          delay={250}
           render={
             <DrawerTrigger
               className='w-full'
               render={
                 <Button
                   type='button'
-                  size='icon'
+                  size='sm'
                   variant='ghost'
-                  className='rounded-full text-sky-600 hover:text-sky-500 flex items-center md:dark:hover:bg-white'
+                  className='flex h-11 w-full items-center justify-center rounded-md lg:h-11 text-sky-600 dark:hover:text-sky-500 hover:bg-[#e3e3e3] lg:dark:hover:bg-[#e2e2e2]/15'
                   aria-label={`Show QR code for ${eventTitle}`}>
-                  <Icon name='qrcode' className='size-5' />
+                  <Icon name='qrcode' className='size-5 lg:hidden' />
+                  <span className='hidden lg:inline'>QR code</span>
                 </Button>
               }
             />

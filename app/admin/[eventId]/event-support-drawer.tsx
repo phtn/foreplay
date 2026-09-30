@@ -131,18 +131,19 @@ export function EventSupportDrawer({ eventTitle, support, tournamentId }: EventS
       <Tooltip>
         <TooltipTrigger
           className='w-full'
-          delay={150}
+          delay={250}
           render={
             <DrawerTrigger
-              className='text-center'
+              className='w-full'
               render={
                 <Button
                   type='button'
                   variant='ghost'
-                  size='icon'
-                  className='relative w-fit rounded-full text-sky-600 hover:text-sky-500 flex items-center justify-center md:dark:hover:bg-white'
+                  size='sm'
+                  className='relative flex h-11 w-full items-center justify-center rounded-md text-sky-600 dark:hover:text-sky-500 hover:bg-[#e3e3e3] lg:h-11 lg:dark:hover:bg-[#e2e2e2]/15'
                   aria-label={`${configured ? 'Edit' : 'Add'} support details for ${eventTitle}`}>
-                  <Icon name='service' className='size-5 md:size-6' />
+                  <Icon name='service' className='size-5 lg:hidden' />
+                  <span className='hidden lg:inline'>Support</span>
                 </Button>
               }
             />

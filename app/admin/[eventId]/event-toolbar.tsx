@@ -29,7 +29,7 @@ export const EventToolbar = ({ event }: EventToolbarProps) => {
   })
 
   return (
-    <div className='grid grid-cols-3 w-full'>
+    <div className='grid w-full grid-cols-3 gap-1 rounded-md bg-muted/50 p-1'>
       <EventQrDrawer
         eventTitle={event.title}
         fileName={`${event.id}-tournament-qr.svg`}

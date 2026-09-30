@@ -1,6 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
+import { Icon, type IconName } from '@/lib/icons'
 import { type ClassName } from '@/types'
 import { Tabs as Root } from '@base-ui/react/tabs'
 import { useQueryState } from 'nuqs'
@@ -13,7 +14,8 @@ interface TabsProps {
 
 export interface Tab {
   value: string
-  label: ReactNode
+  label: string
+  icon: IconName
   content?: ReactNode
 }
 
@@ -35,38 +37,22 @@ export const Tabs = ({ tabs, className }: TabsProps) => {
           typeof nextValue === 'string' && tabs.some((tab) => tab.value === nextValue) ? nextValue : defaultValue
         void setValue(validValue)
       }}>
-      <Root.List className='relative z-0 flex gap-4 md:gap-6 px-4'>
-        {tabs.map((tab, index) => (
+      <Root.List className='relative z-0 grid grid-cols-7 gap-1 px-3 sm:px-4 md:gap-2'>
+        {tabs.map((tab) => (
           <Root.Tab
             key={tab.value}
             className={cn(
-              `transition-colors duration-250 ease-in-out group cursor-pointer`,
-              `flex h-6 items-center justify-center border-0 px-1.5 md:px-2.5 text-sm font-normal break-keep whitespace-nowrap text-foreground/60 outline-hidden select-none before:inset-x-0 before:inset-y-1 before:rounded-xs before:outline-blue-800/0 hover:text-foreground hover:data-active:text-orange-100 dark:hover:data-active:text-background focus-visible:relative focus-visible:before:absolute focus-visible:before:outline-2 data-active:text-background ${index === 0 ? 'first:ml-1' : ''}`,
-              {
-                'text-lg w-6 rounded-full bg-slate-500/8':
-                  tab.value === 'settings' ||
-                  tab.value === 'messaging' ||
-                  tab.value === 'create-event' ||
-                  tab.value === 'payments' ||
-                  tab.value === 'users'
-              }
+              'group relative flex h-11 min-w-0 cursor-pointer items-center justify-center rounded-md px-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus data-active:text-background md:px-2'
             )}
             value={tab.value}>
-            {tab.label}
+            <Icon name={tab.icon} className='size-5 md:hidden' />
+            <span className='sr-only md:not-sr-only'>{tab.label}</span>
           </Root.Tab>
         ))}
 
         <Root.Indicator
           className={cn(
-            'absolute top-1/2 left-0 z-[-1] h-6 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-[4.1px] bg-foreground/90 transition-all duration-250 ease-in-out',
-            {
-              'rounded-full':
-                activeValue === 'settings' ||
-                activeValue === 'messaging' ||
-                activeValue === 'create-event' ||
-                activeValue === 'payments' ||
-                activeValue === 'users'
-            }
+            'absolute top-1/2 left-0 z-[-1] h-10 w-(--active-tab-width) translate-x-(--active-tab-left) -translate-y-1/2 rounded-md bg-foreground/90 transition-all duration-250 ease-in-out'
           )}
         />
       </Root.List>
