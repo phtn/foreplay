@@ -13,7 +13,7 @@ interface TourContentProps {
 }
 
 export async function TourContent({ tourId }: TourContentProps) {
-  const tournamentPromise = fetchQuery(api.tournaments.q.getByTournamentId, { id: tourId })
+  const tournamentPromise = fetchQuery(api.tournaments.q.getForEditing, { id: tourId })
   const registrationsPromise = getVerifiedFirebaseSession().then((session) => {
     if (!session) {
       return []
@@ -24,17 +24,18 @@ export async function TourContent({ tourId }: TourContentProps) {
       userIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
     })
   })
-  const [tournament, registrations] = await Promise.all([tournamentPromise, registrationsPromise])
+  const [tournamentDetails, registrations] = await Promise.all([tournamentPromise, registrationsPromise])
 
-  if (!tournament?.id) {
+  if (!tournamentDetails?.event.id) {
     notFound()
   }
 
+  const { event: tournament, ticketLogoUrl } = tournamentDetails
   const registrationAction = getTournamentRegistrationAction(tourId, registrations)
 
   return (
     <main>
-      <TourDetail tournament={tournament} registrationAction={registrationAction} />
+      <TourDetail tournament={tournament} ticketLogoUrl={ticketLogoUrl} registrationAction={registrationAction} />
       <Sponsors sponsors={tournament.sponsor_list ?? []} />
       <SupportDetails support={tournament.support} />
     </main>

@@ -1,6 +1,6 @@
 'use client'
 
-import { SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
+import { featuredTournament, SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,10 +14,11 @@ import type { TournamentRegistrationAction } from './registration-action'
 
 interface TourDetailProps {
   tournament: Doc<'tournaments'>
+  ticketLogoUrl: string | null
   registrationAction: TournamentRegistrationAction | null
 }
 
-export default function TourDetail({ tournament, registrationAction }: TourDetailProps) {
+export default function TourDetail({ tournament, ticketLogoUrl, registrationAction }: TourDetailProps) {
   const eventDate = new Date(tournament.gate_open_at)
   const dateLabel = tournament.event_date
   const feeLabel = formatRegistrationFee(tournament.registration_fee)
@@ -30,6 +31,7 @@ export default function TourDetail({ tournament, registrationAction }: TourDetai
     <div className='space-y-4 md:space-y-8'>
       <TournamentHero
         darkButton
+        heroLogoSrc={tournament.id === featuredTournament.id ? undefined : ticketLogoUrl}
         eyebrow={getPublicationLabel(tournament.published) === 'Published' ? 'OPEN ENTRY' : ''}
         title={tournament.title}
         description={tournament.description ?? ''}

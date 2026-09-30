@@ -321,7 +321,7 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
     } catch (error) {
       setErrorMessage(
         error instanceof Error && error.message
-          ? 'Size limit exceeded.'
+          ? 'Size limit exceeded.' + error.message
           : `Unable to ${isEditing ? 'update' : 'create'} event.`
       )
     } finally {

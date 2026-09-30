@@ -211,6 +211,7 @@ export function SectionTitle({
 }
 
 interface TournamentHeroProps {
+  heroLogoSrc?: string | null
   eyebrow: string
   title: string
   description: string
@@ -233,6 +234,7 @@ interface TournamentHeroProps {
 }
 
 export function TournamentHero({
+  heroLogoSrc = '/som-optimized.svg',
   eyebrow,
   title,
   description,
@@ -252,14 +254,21 @@ export function TournamentHero({
     <div>
       <Card className='relative rounded-3xl overflow-hidden border border-slate-400 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)] p-0'>
         <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
-        <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
-          <Image
-            fill
-            alt='logo'
-            src='/som-optimized.svg'
-            className='opacity-25 w-auto aspect-auto object-cover shadow-xl'
-          />
-        </div>
+        {heroLogoSrc ? (
+          <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
+            <Image
+              fill
+              alt=''
+              src={heroLogoSrc}
+              sizes='(max-width: 768px) 100vw, 720px'
+              unoptimized={heroLogoSrc !== '/som-optimized.svg'}
+              className={cn('opacity-25 w-auto aspect-auto shadow-xl', {
+                'object-cover': heroLogoSrc === '/som-optimized.svg',
+                'object-contain': heroLogoSrc !== '/som-optimized.svg'
+              })}
+            />
+          </div>
+        ) : null}
         {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
         <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
         <CardContent className='min-h-64 relative grid gap-6 p-0 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
