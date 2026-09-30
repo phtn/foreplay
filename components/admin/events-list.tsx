@@ -201,7 +201,7 @@ const EventRow = (row: EventRow) => {
             </div>
             {row.href ? (
               <Link className={cn(buttonVariants({ size: 'sm' }), 'rounded-full')} href={row.href}>
-                Open event
+                <span className='dark:text-white'>Open event</span>
               </Link>
             ) : null}
           </div>
@@ -209,7 +209,7 @@ const EventRow = (row: EventRow) => {
       </article>
 
       {/* Desktop */}
-      <article className='hidden rounded-lg border border-border/70 bg-background p-4 lg:grid lg:grid-cols-[64px_minmax(0,1fr)_120px_150px_auto] lg:items-center lg:gap-4'>
+      <article className='hidden rounded-xl border border-border/70 bg-background p-4 lg:grid lg:grid-cols-[64px_minmax(0,1fr)_120px_150px_auto] lg:items-center lg:gap-4'>
         <div className='flex items-center justify-center border-e border-border/70 pe-4'>
           <div className='space-y-1 text-center'>
             <p className='font-ios text-xs uppercase text-muted-foreground'>{row.day}</p>
@@ -220,7 +220,11 @@ const EventRow = (row: EventRow) => {
         <div className='min-w-0 space-y-1'>
           <div className='flex flex-wrap items-center gap-2'>
             <h3 className='min-w-0 font-poly text-lg text-foreground'>{row.title}</h3>
-            <span className='rounded-full bg-muted px-2 py-0.5 font-ios text-[10px] uppercase tracking-wide text-foreground'>
+            <span
+              className={cn(
+                'rounded-full bg-muted px-2 py-0.5 font-ios text-[12px] uppercase tracking-wide text-foreground',
+                { 'dark:text-blue-500 bg-blue-100/8': row.status.toLocaleLowerCase() === 'published' }
+              )}>
               {row.status}
             </span>
           </div>
@@ -243,8 +247,10 @@ const EventRow = (row: EventRow) => {
         </div>
         <div className='flex justify-end'>
           {row.href ? (
-            <Link className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'rounded-full')} href={row.href}>
-              Open event
+            <Link
+              className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'rounded-lg bg-[#eef1ea]')}
+              href={row.href}>
+              <span className='font-medium'>Open event</span>
             </Link>
           ) : (
             <span className='text-sm text-muted-foreground'>n/a</span>
