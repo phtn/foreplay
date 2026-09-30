@@ -320,7 +320,9 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
       }
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? 'Size limit exceeded.' : `Unable to ${isEditing ? 'update' : 'create'} event.`
+        error instanceof Error && error.message
+          ? 'Size limit exceeded.'
+          : `Unable to ${isEditing ? 'update' : 'create'} event.`
       )
     } finally {
       setIsSubmitting(false)
@@ -338,7 +340,7 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
                 alt=''
                 fill
                 unoptimized
-                className='object-cover bg-zinc-100!'
+                className='object-cover opacity-25'
                 sizes='520px'
               />
             ) : (
