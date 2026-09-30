@@ -41,10 +41,10 @@ export const AdminHeader = () => {
   return (
     <header className='flex h-16 ps-2 pe-6 backdrop-blur md:items-center justify-between'>
       <div className='flex items-center gap-2 md:gap-5'>
-        <Brand />
+        <Brand wordmark={false} />
         <Link
           href='/admin/config'
-          className='font-ios text-xs md:text-sm uppercase md:tracking-widest text-pink-500 dark:text-pink-400'>
+          className='font-ios text-base md:text-base uppercase md:tracking-widest text-pink-500 dark:text-pink-300'>
           Admin
         </Link>
       </div>

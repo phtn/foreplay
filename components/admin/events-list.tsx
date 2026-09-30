@@ -140,107 +140,114 @@ export const EventsList = ({ data }: EventsListProps) => {
     return null
   }
 
-  return <HyperList data={rows} keyId='tournamentId' orderBy='sortOrder' component={EventRow} container='space-y-4' />
+  return (
+    <HyperList
+      data={rows}
+      keyId='tournamentId'
+      orderBy='sortOrder'
+      component={EventRow}
+      itemStyle='mb-8'
+      container='space-y-3'
+    />
+  )
 }
 
 export const List = EventsList
 
 const EventRow = (row: EventRow) => {
   return (
-    <div className='px-1 py-2'>
+    <div>
       {row.monthLabel ? (
-        <p className='my-2 px-3 text-xs md:text-base font-ios font-medium text-slate-600 dark:text-slate-300 tracking-widest'>
+        <p className='mb-3 mt-5 px-1 font-ios text-xs font-medium uppercase tracking-widest text-muted-foreground first:mt-0 sm:text-sm'>
           {row.monthLabel}
         </p>
       ) : null}
 
       {/* Mobile */}
-      <article className='overflow-hidden rounded-xs md:hidden'>
-        <div className='space-y-8 px-2 pt-5 sm:p-5'>
-          <div className='flex items-start justify-between gap-4'>
-            <div className='flex items-start gap-4'>
-              <div className='shrink-0 rounded-lg bg-[#1d2824] dark:bg-slate-700 flex flex-col items-center justify-center size-11 aspect-square text-white '>
-                <p className='font-okx text-[10px] uppercase tracking-[0.24em] text-foreground/70'>{row.day}</p>
-                <p className='mt-1 font-poly text-lg leading-none'>{row.date}</p>
-              </div>
+      <article className='rounded-lg border border-border/70 bg-background p-4 lg:hidden'>
+        <div className='space-y-4'>
+          <div className='flex items-start gap-3'>
+            <div className='flex size-12 shrink-0 flex-col items-center justify-center rounded-md bg-foreground text-background'>
+              <p className='font-ios text-[10px] uppercase leading-none'>{row.day}</p>
+              <p className='mt-1 font-poly text-lg leading-none'>{row.date}</p>
+            </div>
+            <div className='min-w-0 flex-1 space-y-1'>
+              <h3 className='font-poly text-base leading-snug text-foreground'>{row.title}</h3>
+              <p className='text-sm text-muted-foreground'>{row.place}</p>
+            </div>
+            <span className='shrink-0 rounded-full bg-muted px-2 py-1 font-ios text-[10px] uppercase tracking-wide text-foreground'>
+              {row.status}
+            </span>
+          </div>
 
-              <div className='min-w-0'>
-                <p className='font-poly font-medium text-base text-[#1d2824] dark:text-white'>{row.title}</p>
-                <p className='mt-0.5 text-sm text-[#1d2824]/65 dark:text-foreground/80'>{row.place}</p>
-              </div>
+          <div className='grid grid-cols-2 gap-3 rounded-md bg-muted/50 p-3 text-sm sm:grid-cols-3'>
+            <div>
+              <p className='font-ios text-[10px] uppercase tracking-wide text-muted-foreground'>Start</p>
+              <p className='mt-1 text-foreground'>{row.time}</p>
+            </div>
+            <div>
+              <p className='font-ios text-[10px] uppercase tracking-wide text-muted-foreground'>Entry fee</p>
+              <p className='mt-1 text-foreground'>{row.feeLabel}</p>
+            </div>
+            <div className='col-span-2 sm:col-span-1'>
+              <p className='font-ios text-[10px] uppercase tracking-wide text-muted-foreground'>Registration</p>
+              <p className='mt-1 text-foreground'>{row.slotsLabel}</p>
             </div>
           </div>
 
-          <div className='flex items-center justify-end'>
-            <EventToolbar event={row.event} />
-          </div>
-
-          <div className='grid grid-cols-3 gap-3 md:rounded-2xl bg-white/60 dark:bg-slate-400/4 p-3'>
-            <div className='flex flex-col items-center justify-center'>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
-                Start
-              </p>
-              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.time}</p>
+          <div className='flex flex-wrap items-center justify-between gap-3 border-t border-border/70 pt-3'>
+            <div className='w-36 max-w-full'>
+              <EventToolbar event={row.event} />
             </div>
-            <div className='flex flex-col items-center justify-center'>
-              <p className='font-ios text-[10px] uppercase tracking-widest text-[#1d2824]/65 dark:text-slate-400'>
-                Entry fee
-              </p>
-              <p className='mt-1 text-sm text-[#1d2824]/80 dark:text-slate-400'>{row.feeLabel}</p>
-            </div>
-
-            <div className='flex flex-col items-center justify-center'>
-              <Link
-                className={cn(buttonVariants({ size: 'sm' }), 'bg-foreground hover:bg-foreground/80 rounded-full')}
-                href={row.href ?? '#'}>
-                <Icon name='arrow-right' className='size-4' />
+            {row.href ? (
+              <Link className={cn(buttonVariants({ size: 'sm' }), 'rounded-full')} href={row.href}>
+                Open event
               </Link>
-            </div>
+            ) : null}
           </div>
         </div>
       </article>
 
       {/* Desktop */}
-      <article className='hidden rounded-sm border border-[#1d2824]/0 bg-white dark:bg-slate-300 p-4 md:grid md:grid-cols-[64px_minmax(0,1.35fr)_auto_auto_auto] md:items-center md:gap-4'>
-        <div className='flex items-center justify-center border-r border-[#1d2824]/10 pr-4'>
-          <div className='text-center space-y-1'>
-            <p className='font-okx text-sm text-hermes'>{row.day}</p>
-            <p className='font-poly text-2xl leading-none text-[#1d2824]'>{row.date}</p>
+      <article className='hidden rounded-lg border border-border/70 bg-background p-4 lg:grid lg:grid-cols-[64px_minmax(0,1fr)_120px_150px_auto] lg:items-center lg:gap-4'>
+        <div className='flex items-center justify-center border-e border-border/70 pe-4'>
+          <div className='space-y-1 text-center'>
+            <p className='font-ios text-xs uppercase text-muted-foreground'>{row.day}</p>
+            <p className='font-poly text-2xl leading-none text-foreground'>{row.date}</p>
           </div>
         </div>
 
-        <div className='min-w-0 space-y-1 w-full font-okx'>
-          <div className='flex items-center gap-3'>
-            <p className='truncate font-poly text-base md:text-lg text-[#1d2824]'>{row.title}</p>
+        <div className='min-w-0 space-y-1'>
+          <div className='flex flex-wrap items-center gap-2'>
+            <h3 className='min-w-0 font-poly text-lg text-foreground'>{row.title}</h3>
+            <span className='rounded-full bg-muted px-2 py-0.5 font-ios text-[10px] uppercase tracking-wide text-foreground'>
+              {row.status}
+            </span>
           </div>
 
-          <div className='flex items-center gap-1 text-sm md:text-base text-foreground/70'>
-            <Icon name='map-pin' className='size-4 opacity-70 dark:text-zinc-500' />
-            <span className='truncate dark:text-zinc-600'>{row.place}</span>
+          <div className='flex items-center gap-1 text-sm text-muted-foreground'>
+            <Icon name='map-pin' className='size-4 shrink-0' />
+            <span className='truncate'>{row.place}</span>
           </div>
-        </div>
-
-        <div className='px-4 space-y-2 w-32'>
-          <p className='font-ios text-[10px] md:text-xs uppercase tracking-widest text-foreground/70 dark:text-zinc-600'>
-            Entry fee
+          <p className='text-xs text-muted-foreground'>
+            {row.time} · {row.slotsLabel}
           </p>
-          <p className='mt-1 font-medium text-foreground/70 dark:text-zinc-600'>{row.feeLabel}</p>
         </div>
-        <div className='flex items-center md:space-x-8 md:w-48'>
+
+        <div className='space-y-1'>
+          <p className='font-ios text-[10px] uppercase tracking-wide text-muted-foreground'>Entry fee</p>
+          <p className='text-sm text-foreground'>{row.feeLabel}</p>
+        </div>
+        <div className='w-36'>
           <EventToolbar event={row.event} />
         </div>
-        <div className='flex items-center justify-end min-w-36'>
+        <div className='flex justify-end'>
           {row.href ? (
-            <Link
-              className={cn(
-                buttonVariants({ variant: 'default', size: 'default' }),
-                'bg-foreground dark:bg-background hover:bg-foreground/80 dark:hover:bg-background/80 rounded-full text-sky-400'
-              )}
-              href={row.href}>
-              <span className='font-poly'>Open</span>
+            <Link className={cn(buttonVariants({ variant: 'default', size: 'sm' }), 'rounded-full')} href={row.href}>
+              Open event
             </Link>
           ) : (
-            <span className='text-sm text-[#1d2824]/45'>n/a</span>
+            <span className='text-sm text-muted-foreground'>n/a</span>
           )}
         </div>
       </article>

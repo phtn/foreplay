@@ -9,7 +9,7 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace('/tournaments/som-2026')
+    router.replace('/tournaments') //tournaments/som-2026
   }, [router])
 
   return (

@@ -13,57 +13,71 @@ export const Content = ({ events }: ContentProps) => {
   const counts = tournamentList.reduce(
     (acc, event) => {
       acc.total += 1
-      acc.registeredSlots += event.registered_slots
-
       if (event.published === false) {
         acc.drafts += 1
       } else {
         acc.published += 1
       }
 
-      if (event.slots_limit && event.registered_slots >= event.slots_limit) {
+      if (event.published !== false && event.slots_limit && event.registered_slots >= event.slots_limit) {
         acc.full += 1
       }
 
       return acc
     },
-    { total: 0, published: 0, drafts: 0, full: 0, registeredSlots: 0 }
+    { total: 0, published: 0, drafts: 0, full: 0 }
   )
 
   return (
-    <main className='md:space-y-4'>
-      <div className='grid grid-cols-3 xl:grid-cols-3 border rounded-none md:rounded-sm divide-x divide-border'>
+    <div className='space-y-8 px-4 pb-12 pt-6 sm:px-6 lg:px-8'>
+      <header className='space-y-1'>
+        <h1 className='font-poly text-xl text-foreground sm:text-2xl'>Tournaments</h1>
+      </header>
+
+      <section aria-label='Tournament overview' className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
         {[
           { label: 'Events', value: counts.total },
           { label: 'Published', value: counts.published },
-          { label: 'Drafts', value: counts.drafts }
+          { label: 'Drafts', value: counts.drafts },
+          { label: 'Full', value: counts.full }
         ].map((stat) => (
-          <Card key={stat.label} size='sm' className='ring-0 py-1! md:py-2! rounded-none bg-transparent'>
-            <CardContent className='space-y-1 ps-4'>
-              <p className='font-ios text-[9px] md:text-xs uppercase tracking-widest text-muted-foreground'>
-                {stat.label}
-              </p>
-              <p className='font-heading text-base md:text-xl font-bold'>{stat.value}</p>
+          <Card key={stat.label} size='sm' className='min-w-0 rounded-lg bg-card py-4! ring-border/60'>
+            <CardContent className='space-y-2 px-4! sm:px-5!'>
+              <p className='font-ios text-[11px] uppercase tracking-wider text-muted-foreground'>{stat.label}</p>
+              <p className='font-poly text-2xl leading-none tabular-nums sm:text-3xl'>{stat.value}</p>
             </CardContent>
           </Card>
         ))}
-      </div>
+      </section>
 
-      <Card className='ring-border p-0 md:py-1 bg-border/0 rounded-xs md:rounded-sm'>
-        <CardContent className='px-0 rounded-xs md:rounded-lg border-0'>
-          {tournamentList.length ? (
-            <EventsList data={tournamentList} />
-          ) : (
-            <div className='flex min-h-56 flex-col items-center justify-center gap-3 p-8 text-center'>
-              <Icon name='trophy-line' className='size-10 text-foreground/50' />
-              <div className='space-y-1'>
-                <p className='font-okx text-base'>No tournaments yet</p>
-                <p className='text-sm text-muted-foreground'>Seed or create an event to populate the admin queue.</p>
+      <section aria-labelledby='events-heading' className='space-y-8'>
+        <div className='flex flex-wrap items-end justify-between gap-2'>
+          <div className='space-y-1'>
+            <h2 id='events-heading' className='font-poly text-xl text-foreground sm:text-2xl'>
+              Events
+            </h2>
+          </div>
+          <p className='font-ios text-xs uppercase tracking-wider text-muted-foreground'>
+            {counts.total} {counts.total === 1 ? 'event' : 'events'}
+          </p>
+        </div>
+
+        <Card className='rounded-lg bg-card dark:bg-transparent p-0! ring-0'>
+          <CardContent className='px-0!'>
+            {tournamentList.length ? (
+              <EventsList data={tournamentList} />
+            ) : (
+              <div className='flex min-h-56 flex-col items-center justify-center gap-3 p-8 text-center'>
+                <Icon name='trophy-line' className='size-10 text-foreground/50' />
+                <div className='space-y-1'>
+                  <p className='font-okx text-base'>No tournaments yet</p>
+                  <p className='text-sm text-muted-foreground'>Seed or create an event to populate the admin queue.</p>
+                </div>
               </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </main>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+    </div>
   )
 }
