@@ -14,11 +14,11 @@ export default function TournamentsPage() {
     <ProtectedLayout>
       <div className='space-y-4 md:space-y-8'>
         <TournamentHero
-          eyebrow='120 Slots'
-          title='Seoul of Manila'
+          eyebrow='Open Entry'
+          title={featuredTournament.title}
           description={featuredTournament.description}
           venueLabel={featuredTournament.venue}
-          primaryHref='/tournaments/som-2026'
+          primaryHref={`/tournaments/${featuredTournament.id}`}
           primaryLabel='View Tournament'
           secondaryLabel=''
           teeTimeAt={featuredTournament.teeTimeAt}

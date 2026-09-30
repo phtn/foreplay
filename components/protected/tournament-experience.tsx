@@ -64,7 +64,7 @@ export type LeaderboardRow = {
 
 export const featuredTournament: TournamentSpotlight = {
   id: 'som-2026',
-  title: 'Seoul of Manila Golf Tournament 2026',
+  title: 'Seoul of Manila',
   venue: 'Pradera Verde Golf & Country Club, Pampanga',
   venueCoordinates: {
     latitude: 14.888219,
@@ -72,11 +72,11 @@ export const featuredTournament: TournamentSpotlight = {
   },
   dateLabel: 'October 22, 2026 · Thursday',
   feeLabel: 'Sponsor packages from ₱20,000',
-  slotsLabel: '100+ executives',
+  slotsLabel: '120+ slots',
   formatLabel: 'System 36',
   statusLabel: 'Sponsors open',
   description:
-    'A corporate golf and networking tournament built around executive access, premium brand placement, a major hole-in-one prize, and a high-value sponsor package ladder.',
+    'A corporate golf event offering executive networking, premium brand placement, and a major hole-in-one prize.',
   divisions: ['Corporate', 'System 36', 'Sponsor flights', 'VIP banquet'],
   teeTimeAt: '2026-07-18T07:00:00+08:00',
   teeTimeLabel: 'October 22, 2026 at 7:00 AM',
