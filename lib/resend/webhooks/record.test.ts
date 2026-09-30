@@ -17,6 +17,7 @@ const deliveredEvent: WebhookEventPayload = {
     created_at: '2026-08-01T04:00:00.000Z',
     email_id: 'email_test',
     from: 'Foreplay <hello@foreplay.pro>',
+    message_id: 'message_test',
     subject: 'Tournament update',
     to: ['golfer@example.com', 'partner@example.com']
   },
@@ -35,6 +36,27 @@ test('builds a compact email event record for the admin inbox', () => {
     subject: 'Tournament update',
     target: 'golfer@example.com',
     webhookId: 'webhook_test'
+  })
+})
+
+test('builds a contact topics event record without contact-only fields', () => {
+  const event: WebhookEventPayload = {
+    created_at: '2026-08-01T04:00:00.000Z',
+    data: {
+      email: 'golfer@example.com',
+      topics: [{ id: 'topic_test', subscription: 'opt_in' }]
+    },
+    type: 'contact.topics.updated'
+  }
+
+  assert.deepEqual(buildResendWebhookRecord(event, 'webhook_topics'), {
+    category: 'contact',
+    detail: 'Topics updated',
+    eventCreatedAt: '2026-08-01T04:00:00.000Z',
+    eventType: 'contact.topics.updated',
+    resourceId: 'webhook_topics',
+    target: 'golfer@example.com',
+    webhookId: 'webhook_topics'
   })
 })
 

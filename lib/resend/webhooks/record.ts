@@ -61,17 +61,27 @@ export function buildResendWebhookRecord(
     }
   }
 
-  if (event.type.startsWith('contact.')) {
-    const contactEvent = event as Extract<WebhookEventPayload, { type: `contact.${string}` }>
-
+  if (event.type === 'contact.topics.updated') {
     return {
       category: 'contact',
-      detail: contactEvent.data.unsubscribed ? 'Unsubscribed' : 'Subscribed',
+      detail: 'Topics updated',
       eventCreatedAt: event.created_at,
       eventType: event.type,
-      resourceId: normalizeText(contactEvent.data.id, 256) ?? webhookId,
-      source: normalizeText(contactEvent.data.audience_id, 512),
-      target: normalizeText(contactEvent.data.email, 512),
+      resourceId: webhookId,
+      target: normalizeText(event.data.email, 512),
+      webhookId
+    }
+  }
+
+  if (event.type === 'contact.created' || event.type === 'contact.updated' || event.type === 'contact.deleted') {
+    return {
+      category: 'contact',
+      detail: event.data.unsubscribed ? 'Unsubscribed' : 'Subscribed',
+      eventCreatedAt: event.created_at,
+      eventType: event.type,
+      resourceId: normalizeText(event.data.id, 256) ?? webhookId,
+      source: normalizeText(event.data.audience_id, 512),
+      target: normalizeText(event.data.email, 512),
       webhookId
     }
   }

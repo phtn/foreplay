@@ -1,4 +1,5 @@
-import { describe, expect, test } from 'bun:test'
+import assert from 'node:assert/strict'
+import { describe, test } from 'node:test'
 import {
   formatCommission,
   formatRegistrationFee,
@@ -9,31 +10,31 @@ import {
 
 describe('Gleam-backed formatters', () => {
   test('formats registration fee labels', () => {
-    expect(formatRegistrationFee(0)).toBe('Sponsor-driven event')
-    expect(formatRegistrationFee(1000)).toBe(peso(1000))
+    assert.equal(formatRegistrationFee(0), 'Sponsor-driven event')
+    assert.equal(formatRegistrationFee(1000), peso(1000))
   })
 
   test('formats slot labels with JavaScript optional-value semantics', () => {
-    expect(formatSlotsLabel(12)).toBe('12')
-    expect(formatSlotsLabel(12, 0)).toBe('12')
-    expect(formatSlotsLabel(12, 24)).toBe('12/24')
+    assert.equal(formatSlotsLabel(12), '12')
+    assert.equal(formatSlotsLabel(12, 0), '12')
+    assert.equal(formatSlotsLabel(12, 24), '12/24')
   })
 
   test('formats publication labels', () => {
-    expect(getPublicationLabel(undefined)).toBe('Published')
-    expect(getPublicationLabel(true)).toBe('Published')
-    expect(getPublicationLabel(false)).toBe('Draft')
+    assert.equal(getPublicationLabel(undefined), 'Published')
+    assert.equal(getPublicationLabel(true), 'Published')
+    assert.equal(getPublicationLabel(false), 'Draft')
   })
 
   test('formats commission labels, including a configured zero', () => {
-    expect(formatCommission('fixed')).toBe('Not configured')
-    expect(formatCommission('fixed', 0)).toBe('fixed · 0')
+    assert.equal(formatCommission('fixed'), 'Not configured')
+    assert.equal(formatCommission('fixed', 0), 'fixed · 0')
   })
 
   test('formats status labels without changing the remaining character case', () => {
-    expect(formatStatus(undefined)).toBe('Pending Payment')
-    expect(formatStatus('WAITING_review')).toBe('WAITING Review')
-    expect(formatStatus('')).toBe('')
+    assert.equal(formatStatus(undefined), 'Pending Payment')
+    assert.equal(formatStatus('WAITING_review'), 'WAITING Review')
+    assert.equal(formatStatus(''), '')
   })
 })
 
