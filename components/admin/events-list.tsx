@@ -172,7 +172,9 @@ const EventRow = (row: EventRow) => {
               <p className='mt-1 font-poly text-lg leading-none'>{row.date}</p>
             </div>
             <div className='min-w-0 flex-1 space-y-1'>
-              <h3 className='font-poly text-base leading-snug text-foreground'>{row.title}</h3>
+              <Link href={`${row.href}/edit`}>
+                <h3 className='font-poly text-base leading-snug text-foreground'>{row.title}</h3>
+              </Link>
               <p className='text-sm text-muted-foreground'>{row.place}</p>
             </div>
             <span
@@ -273,7 +275,7 @@ const EventRow = (row: EventRow) => {
           {row.href ? (
             <>
               <Link
-                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-12 rounded-md')}
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'h-12 rounded-md md:flex hidden')}
                 href={`${row.href}/edit`}>
                 Edit
               </Link>
