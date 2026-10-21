@@ -144,7 +144,10 @@ export const getRegistrationDetailsForAdmin = query({
 
     return {
       registrations,
-      subscription
+      subscription,
+      receiptImageUrl: subscription.receipt_image_url
+        ? await ctx.storage.getUrl(subscription.receipt_image_url as Id<'_storage'>)
+        : null
     }
   }
 })

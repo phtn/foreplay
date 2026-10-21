@@ -2,6 +2,7 @@
 
 import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
+import { getFirebaseAdminAuth } from '@/lib/firebase/admin'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
 import { fetchMutation } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
@@ -109,27 +110,42 @@ const getAdminActor = async () => {
   }
 }
 
-const revalidateAdminEvent = (eventId: string) => {
+const revalidateAdminEvent = (eventId: string, subscriptionId?: string) => {
   revalidatePath('/admin')
   revalidatePath(`/admin/${encodeURIComponent(eventId)}`)
+
+  if (subscriptionId) {
+    revalidatePath(`/admin/${encodeURIComponent(eventId)}/players/${encodeURIComponent(subscriptionId)}`)
+  }
 }
 
 export async function confirmSubscription(
-  input: SubscriptionStatusActionInput
+  input: SubscriptionStatusActionInput,
+  firebaseIdToken: string
 ) {
   const { eventId, subscriptionId } =
     validateStatusActionInput(input)
-  const actor = await getAdminActor()
+  const session = await requireAdminSession()
+  const adminAuth = getFirebaseAdminAuth()
+
+  if (!adminAuth || typeof firebaseIdToken !== 'string' || !firebaseIdToken) {
+    throw new Error('Your admin session is unavailable. Refresh the page and try again.')
+  }
+
+  const decodedIdToken = await adminAuth.verifyIdToken(firebaseIdToken, true)
+
+  if (decodedIdToken.uid !== session.decodedToken.uid || decodedIdToken.admin !== true) {
+    throw new Error('Your admin session is no longer valid. Sign in again and retry.')
+  }
 
   await fetchMutation(api.subscriptions.m.confirmForAdmin, {
     subscriptionId,
-    tournamentId: eventId,
-    confirmedById: actor.id,
-    confirmedByEmail: actor.email,
-    confirmedByName: actor.name
+    tournamentId: eventId
+  }, {
+    token: firebaseIdToken
   })
 
-  revalidateAdminEvent(eventId)
+  revalidateAdminEvent(eventId, subscriptionId)
 }
 
 export async function updateSubscriptionStatus(

@@ -47,6 +47,8 @@ const requireAdminIdentity = async (ctx: MutationCtx) => {
   if (!identity || identity.admin !== true) {
     throw new ConvexError('Unauthorized')
   }
+
+  return identity
 }
 
 const adminStatusChangeResult = v.object({
@@ -406,6 +408,104 @@ export const updateReceipt = mutation({
   }
 })
 
+const MAX_ADMIN_RECEIPT_SIZE_BYTES = 10 * 1024 * 1024
+
+export const generateReceiptUploadUrlForAdmin = mutation({
+  args: {
+    subscriptionId: v.id('subscriptions'),
+    tournamentId: v.string()
+  },
+  returns: v.string(),
+  handler: async (ctx, args) => {
+    await requireAdminIdentity(ctx)
+
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription || subscription.tournament_id !== args.tournamentId) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    return await ctx.storage.generateUploadUrl()
+  }
+})
+
+export const updateReceiptForAdmin = mutation({
+  args: {
+    subscriptionId: v.id('subscriptions'),
+    tournamentId: v.string(),
+    storageId: v.id('_storage')
+  },
+  returns: v.object({
+    subscriptionId: v.id('subscriptions'),
+    receiptImageUrl: v.string()
+  }),
+  handler: async (ctx, args) => {
+    const identity = await requireAdminIdentity(ctx)
+    const subscription = await ctx.db.get(args.subscriptionId)
+
+    if (!subscription || subscription.tournament_id !== args.tournamentId) {
+      throw new ConvexError('Subscription not found.')
+    }
+
+    const metadata = await ctx.db.system.get('_storage', args.storageId)
+
+    if (!metadata) {
+      throw new ConvexError('The uploaded receipt could not be found.')
+    }
+
+    if (!metadata.contentType?.startsWith('image/')) {
+      throw new ConvexError('Receipt must be an image.')
+    }
+
+    if (metadata.size > MAX_ADMIN_RECEIPT_SIZE_BYTES) {
+      throw new ConvexError('Receipt image must be 10 MB or smaller.')
+    }
+
+    if (subscription.payment_status === 'pending' && subscription.status !== 'payment_review') {
+      await applyAdminStatus(ctx, {
+        subscriptionId: args.subscriptionId,
+        tournamentId: args.tournamentId,
+        action: 'payment_review',
+        actor: {
+          id: identity.subject,
+          email: typeof identity.email === 'string' ? identity.email : undefined,
+          name: typeof identity.name === 'string' ? identity.name : undefined
+        }
+      })
+    }
+
+    const registrations = await ctx.db
+      .query('registrations')
+      .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', args.subscriptionId))
+      .take(MAX_REGISTRATIONS_PER_SUBSCRIPTION + 1)
+
+    if (registrations.length > MAX_REGISTRATIONS_PER_SUBSCRIPTION) {
+      throw new ConvexError('This subscription has more registrations than the supported limit.')
+    }
+
+    await Promise.all([
+      ctx.db.patch(args.subscriptionId, {
+        receipt_image_url: args.storageId,
+        updatedAt: Date.now()
+      }),
+      ...registrations.map((registration) =>
+        ctx.db.patch(registration._id, {
+          receipt_image_url: args.storageId
+        })
+      )
+    ])
+
+    if (subscription.receipt_image_url && subscription.receipt_image_url !== args.storageId) {
+      await ctx.storage.delete(subscription.receipt_image_url as Id<'_storage'>)
+    }
+
+    return {
+      subscriptionId: args.subscriptionId,
+      receiptImageUrl: args.storageId
+    }
+  }
+})
+
 export const cancel = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
@@ -442,21 +542,20 @@ export const cancel = mutation({
 export const confirmForAdmin = mutation({
   args: {
     subscriptionId: v.id('subscriptions'),
-    tournamentId: v.string(),
-    confirmedById: v.string(),
-    confirmedByEmail: v.optional(v.string()),
-    confirmedByName: v.optional(v.string())
+    tournamentId: v.string()
   },
   returns: adminStatusChangeResult,
   handler: async (ctx, args) => {
+    const identity = await requireAdminIdentity(ctx)
+
     return await applyAdminStatus(ctx, {
       subscriptionId: args.subscriptionId,
       tournamentId: args.tournamentId,
       action: 'confirm_payment',
       actor: {
-        id: args.confirmedById,
-        email: args.confirmedByEmail,
-        name: args.confirmedByName
+        id: identity.subject,
+        email: typeof identity.email === 'string' ? identity.email : undefined,
+        name: typeof identity.name === 'string' ? identity.name : undefined
       }
     })
   }

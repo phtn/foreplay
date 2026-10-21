@@ -44,7 +44,15 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
     contactEmail: details.subscription.contact_email ?? '',
     contactPhone: details.subscription.contact_phone ?? '',
     handicapIndex: details.subscription.handicap_index ?? '',
-    division: details.subscription.division ?? ''
+    division: details.subscription.division ?? '',
+    paymentStatus: details.subscription.payment_status,
+    subscriptionStatus: details.subscription.status ?? 'pending_payment',
+    receiptUrl: details.receiptImageUrl,
+    confirmedBy:
+      details.subscription.confirmed_by_name ??
+      details.subscription.confirmed_by_email ??
+      null,
+    confirmedAt: details.subscription.confirmed_at ?? null
   }
   const players: RegistrationEditorPlayer[] = details.registrations
     .toSorted((left, right) => left._creationTime - right._creationTime)

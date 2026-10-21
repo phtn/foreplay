@@ -47,6 +47,40 @@ function readTextField(formData: FormData, name: string, label: string, maxLengt
   return trimmed
 }
 
+function validateAdminReceiptTarget(eventId: string, subscriptionId: string) {
+  if (!eventId.trim() || eventId.length > 512) {
+    throw new RegistrationDetailsInputError('Event is invalid.')
+  }
+
+  if (!subscriptionId.trim() || subscriptionId.length > 512) {
+    throw new RegistrationDetailsInputError('Subscription is invalid.')
+  }
+
+  return {
+    eventId,
+    subscriptionId: subscriptionId as Id<'subscriptions'>
+  }
+}
+
+async function verifyAdminFirebaseToken(
+  firebaseIdToken: string,
+  session: Awaited<ReturnType<typeof requireAdminSession>>
+) {
+  const adminAuth = getFirebaseAdminAuth()
+
+  if (!adminAuth || typeof firebaseIdToken !== 'string' || !firebaseIdToken) {
+    throw new RegistrationDetailsInputError('Your admin session is unavailable. Refresh the page and try again.')
+  }
+
+  const decodedIdToken = await adminAuth.verifyIdToken(firebaseIdToken, true)
+
+  if (decodedIdToken.uid !== session.decodedToken.uid || decodedIdToken.admin !== true) {
+    throw new RegistrationDetailsInputError('Your admin session is no longer valid. Sign in again and retry.')
+  }
+
+  return decodedIdToken
+}
+
 function getConvexErrorMessage(error: ConvexError<string>, fallback: string) {
   const data: unknown = error.data
 
@@ -235,6 +269,98 @@ export async function deletePlayerRegistration(
     return {
       status: 'error',
       message: 'Unable to delete this player registration. Try again.'
+    }
+  }
+}
+
+export type SaveAdminReceiptState = {
+  message: string
+  status: 'success' | 'error'
+}
+
+export async function generateAdminReceiptUploadUrl(
+  input: { eventId: string; subscriptionId: string },
+  firebaseIdToken: string
+) {
+  const session = await requireAdminSession()
+
+  try {
+    const { eventId, subscriptionId } = validateAdminReceiptTarget(input.eventId, input.subscriptionId)
+    await verifyAdminFirebaseToken(firebaseIdToken, session)
+
+    return await fetchMutation(
+      api.subscriptions.m.generateReceiptUploadUrlForAdmin,
+      {
+        subscriptionId,
+        tournamentId: eventId
+      },
+      { token: firebaseIdToken }
+    )
+  } catch (error) {
+    if (error instanceof RegistrationDetailsInputError) {
+      throw new Error(error.message)
+    }
+
+    if (error instanceof ConvexError) {
+      throw new Error(getConvexErrorMessage(error, 'Unable to prepare the receipt upload.'))
+    }
+
+    throw error
+  }
+}
+
+export async function saveAdminReceipt(
+  input: { eventId: string; subscriptionId: string; storageId: string },
+  firebaseIdToken: string
+): Promise<SaveAdminReceiptState> {
+  const session = await requireAdminSession()
+
+  try {
+    const { eventId, subscriptionId } = validateAdminReceiptTarget(input.eventId, input.subscriptionId)
+
+    if (typeof input.storageId !== 'string' || !input.storageId.trim() || input.storageId.length > 512) {
+      throw new RegistrationDetailsInputError('Uploaded receipt is invalid.')
+    }
+
+    await verifyAdminFirebaseToken(firebaseIdToken, session)
+    await fetchMutation(
+      api.subscriptions.m.updateReceiptForAdmin,
+      {
+        subscriptionId,
+        tournamentId: eventId,
+        storageId: input.storageId as Id<'_storage'>
+      },
+      { token: firebaseIdToken }
+    )
+
+    const encodedEventId = encodeURIComponent(eventId)
+    const encodedSubscriptionId = encodeURIComponent(subscriptionId)
+    revalidatePath(`/admin/${encodedEventId}`)
+    revalidatePath(`/admin/${encodedEventId}/players/${encodedSubscriptionId}`)
+
+    return {
+      status: 'success',
+      message: 'Receipt uploaded successfully.'
+    }
+  } catch (error) {
+    if (error instanceof RegistrationDetailsInputError) {
+      return {
+        status: 'error',
+        message: error.message
+      }
+    }
+
+    if (error instanceof ConvexError) {
+      return {
+        status: 'error',
+        message: getConvexErrorMessage(error, 'Unable to save the receipt.')
+      }
+    }
+
+    console.error('[admin-registration-editor] Unable to upload receipt.', error)
+    return {
+      status: 'error',
+      message: 'Unable to upload the receipt. Try again.'
     }
   }
 }

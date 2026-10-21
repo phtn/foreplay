@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { api } from '@/convex/_generated/api'
 import { Icon, type IconName } from '@/lib/icons'
+import { useFirebaseUser } from '@/lib/firebase/auth'
 import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
@@ -237,7 +238,15 @@ const isCurrentStatusAction = (row: EventSubscriptionTableRow, action: StatusMen
   return row.subscriptionStatus === action
 }
 
-function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: EventSubscriptionTableRow }) {
+function SubscriptionStatusActions({
+  eventId,
+  row,
+  user
+}: {
+  eventId: string
+  row: EventSubscriptionTableRow
+  user: ReturnType<typeof useFirebaseUser>['user']
+}) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [pendingAction, setPendingAction] = useState<StatusMenuActionId | 'undo' | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -258,7 +267,12 @@ function SubscriptionStatusActions({ eventId, row }: { eventId: string; row: Eve
         }
 
         if (action === 'confirm_payment') {
-          await confirmSubscription(input)
+          if (!user) {
+            throw new Error('Your admin session is still loading. Try again in a moment.')
+          }
+
+          const firebaseIdToken = await user.getIdToken(true)
+          await confirmSubscription(input, firebaseIdToken)
         } else if (action === 'undo') {
           await undoSubscriptionStatus(input)
         } else {
@@ -651,6 +665,7 @@ function PlayersExportMenu({ eventId, eventTitle, getRows, hasRows }: PlayersExp
 }
 
 export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTableProps) {
+  const { user } = useFirebaseUser()
   const rowEmails = useMemo(
     () => Array.from(new Set(rows.flatMap((row) => (row.contactEmail ? [row.contactEmail.trim().toLowerCase()] : [])))),
     [rows]
@@ -792,7 +807,7 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         enableGlobalFiltering: false,
         enableHiding: true,
         enableSorting: false,
-        cell: ({ row }) => <SubscriptionStatusActions eventId={eventId} row={row.original} />
+        cell: ({ row }) => <SubscriptionStatusActions eventId={eventId} row={row.original} user={user} />
       },
       {
         id: 'confirmedAt',
@@ -827,7 +842,7 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         cell: ({ row }) => <DateTimeCell timestamp={row.original.createdAt} />
       }
     ],
-    [eventId]
+    [eventId, user]
   )
   const renderExportMenu = useCallback(
     ({ getFilteredData }: TableToolbarContext<EventSubscriptionTableRow>) => (
