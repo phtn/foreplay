@@ -47,7 +47,7 @@ test('renders direct email and phone actions for both contacts', () => {
   )
 
   assert.match(html, /id="tournament-support"/)
-  assert.match(html, />Questions &amp; inquiries</)
+  assert.match(html, />Questions &amp; Inquiries</)
   assert.match(html, />Primary Contact</)
   assert.match(html, />Secondary Contact</)
   assert.match(html, /href="mailto:primary@example\.com"/)

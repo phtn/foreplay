@@ -16,7 +16,7 @@ const createSponsor = (
   ...overrides
 })
 
-test('creates active sponsor slides with three sponsors per cycle', () => {
+test('creates active sponsor slides with two sponsors per slide', () => {
   const slides = createSponsorSlides([
     createSponsor('Sponsor A'),
     createSponsor('Hidden sponsor', { is_active: false }),
@@ -28,8 +28,8 @@ test('creates active sponsor slides with three sponsors per cycle', () => {
   assert.deepEqual(
     slides.map((slide) => slide.map((sponsor) => sponsor.value)),
     [
-      ['Sponsor A', 'Sponsor B', 'Sponsor C'],
-      ['Sponsor D', 'Sponsor A', 'Sponsor B']
+      ['Sponsor A', 'Sponsor B'],
+      ['Sponsor C', 'Sponsor D']
     ]
   )
 })
@@ -63,11 +63,11 @@ test('renders the first sponsor group with safe partner links', () => {
   )
 
   assert.match(html, /id="sponsors"/)
-  assert.match(html, />Tournament partners</)
+  assert.match(html, />Tournament Partners</)
   assert.match(html, />Sponsor A</)
   assert.match(html, />Sponsor B</)
-  assert.match(html, />Sponsor C</)
   assert.match(html, /href="https:\/\/example\.com\/"/)
+  assert.doesNotMatch(html, />Sponsor C</)
   assert.doesNotMatch(html, />Sponsor D</)
   assert.doesNotMatch(html, />Hidden sponsor</)
 })

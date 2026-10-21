@@ -36,7 +36,7 @@ test('renders editable ticket delivery copy into the branded email', async () =>
 
   assert.equal(rendered.subject, 'Manila Open ticket for Jamie & Cruz')
   assert.equal(rendered.message, 'Hello Jamie & Cruz. Bring ticket ABCD to Manila Open.')
-  assert.match(rendered.html, /Foreplay gate pass/)
+  assert.match(rendered.html, /Foreplay gate pass/i)
   assert.match(rendered.html, /Jamie &amp; Cruz/)
   assert.match(rendered.html, /ticket image/)
 })

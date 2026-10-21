@@ -27,7 +27,7 @@ export interface TicketDeliveryTemplateProps {
 }
 
 export const TICKET_DELIVERY_SAMPLE_PROPS: TicketDeliveryTemplateProps = {
-  eventTitle: 'Foreplay Invitation',
+  eventTitle: 'Foreplay Invitational',
   playerName: 'Alex Reyes',
   reference: 'FP26',
   ticketCount: 1
