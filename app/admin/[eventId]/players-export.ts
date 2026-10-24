@@ -24,6 +24,7 @@ const CSV_HEADERS = [
   'Created',
   'Player',
   'Email',
+  'Phone',
   'Total players',
   'Checked in',
   'Amount',
@@ -41,12 +42,14 @@ const PDF_HEADERS = [
   'Created',
   'Player',
   'Email',
+  'Phone',
   'Entries',
   'Amount',
   'Payment',
   'Entry status',
   'Confirmation',
-  'Remarks'
+  'Remarks',
+  'Receipt'
 ] as const
 
 const formatExportDate = (timestamp: number | null) =>
@@ -72,6 +75,7 @@ const getCsvRow = (row: EventSubscriptionTableRow): Array<string | number | null
   formatExportDate(row.createdAt),
   row.teamName,
   row.contactEmail,
+  row.contactPhone,
   row.totalPlayers,
   row.totalCheckedIn,
   row.paymentAmount,
@@ -90,12 +94,14 @@ const getPdfRow = (row: EventSubscriptionTableRow): string[] =>
     formatExportDate(row.createdAt),
     row.teamName,
     row.contactEmail ?? '',
+    row.contactPhone ?? '',
     `${row.totalCheckedIn}/${row.totalPlayers}`,
     row.paymentAmount === null ? '' : `PHP ${amountFormatter.format(row.paymentAmount)}`,
     formatStatus(row.paymentStatus),
     formatStatus(row.subscriptionStatus),
     [row.confirmer, formatExportDate(row.confirmedAt)].filter(Boolean).join('\n'),
-    row.adminRemarks
+    row.adminRemarks,
+    row.receiptUrl ? 'Open' : ''
   ].map(normalizePdfText)
 
 export function createPlayersCsv(rows: EventSubscriptionTableRow[]) {
@@ -148,16 +154,18 @@ export async function createPlayersPdf({ eventId, eventTitle, rows }: PlayersExp
       textColor: [30, 41, 59]
     },
     columnStyles: {
-      0: { cellWidth: 21 },
-      1: { cellWidth: 24 },
-      2: { cellWidth: 33 },
-      3: { cellWidth: 41 },
-      4: { cellWidth: 15, halign: 'center' },
-      5: { cellWidth: 21, halign: 'right' },
-      6: { cellWidth: 20 },
-      7: { cellWidth: 23 },
-      8: { cellWidth: 40 },
-      9: { cellWidth: 39 }
+      0: { cellWidth: 20 },
+      1: { cellWidth: 22 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 35 },
+      4: { cellWidth: 24 },
+      5: { cellWidth: 14, halign: 'center' },
+      6: { cellWidth: 18, halign: 'right' },
+      7: { cellWidth: 17 },
+      8: { cellWidth: 20 },
+      9: { cellWidth: 32 },
+      10: { cellWidth: 30 },
+      11: { cellWidth: 15, halign: 'center', textColor: [2, 132, 199], fontStyle: 'bold' }
     },
     head: [[...PDF_HEADERS]],
     headStyles: {
@@ -185,6 +193,14 @@ export async function createPlayersPdf({ eventId, eventTitle, rows }: PlayersExp
       valign: 'middle'
     },
     theme: 'grid',
+    didDrawCell: (data) => {
+      if (data.section !== 'body' || data.column.index !== 11) return
+
+      const receiptUrl = rows[data.row.index]?.receiptUrl
+      if (receiptUrl) {
+        document.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: receiptUrl })
+      }
+    },
     willDrawPage: () => {
       document.setFont('helvetica', 'bold')
       document.setFontSize(12)
