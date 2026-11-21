@@ -120,16 +120,16 @@ export function RegistrationTicketCard({
 
         <div className='grid sm:grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1fr)_16.5rem]'>
           <section className='min-w-0 p-5 pt-4 sm:p-6 sm:pt-5 md:p-7 relative'>
-            <div className='absolute top-4 right-2 bg-[url("/som-optimized.svg")] bg-cover bg-no-repeat w-12 h-10 md:w-18 md:h-16 aspect-auto opacity-80 rounded-lg' />
+            <div className='absolute top-4 right-12 bg-[url("/kapalowers-cup-2-en.webp")] bg-cover bg-no-repeat w-32 h-18 md:w-40 md:h-24 aspect-auto opacity-80 rounded-lg' />
             <div
               id='tournament-title'
-              className='absolute md:top-6 top-4 md:right-50 right-30 font-poly md:text-base text-sm whitespace-nowrap w-14 capitalize'>
+              className='absolute hidden md:top-6 top-4 md:right-64 right-60 font-poly md:text-base text-sm whitespace-nowrap w-14 capitalize'>
               {registration.eventName}
             </div>
             {registration.eventSupportPhone ? (
               <div
                 id='tournament-support'
-                className='absolute md:top-12 top-9 md:right-50 right-30 font-okx text-xs md:text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
+                className='absolute hidden md:top-12 top-9 md:right-64 right-60 font-okx text-xs md:text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
                 <Icon name='service' className='size-3 md:size-4' />
                 <span>{registration.eventSupportPhone}</span>
               </div>
