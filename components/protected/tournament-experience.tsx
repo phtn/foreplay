@@ -63,23 +63,23 @@ export type LeaderboardRow = {
 }
 
 export const featuredTournament: TournamentSpotlight = {
-  id: 'som-2026',
-  title: 'Seoul of Manila',
-  venue: 'Pradera Verde Golf & Country Club, Pampanga',
+  id: 'kc2',
+  title: '',
+  venue: 'Vista Golf & Country Club, New Clark City, Tarlac',
   venueCoordinates: {
     latitude: 14.888219,
     longitude: 120.497161
   },
-  dateLabel: 'October 22, 2026 · Thursday',
+  dateLabel: 'December 22, 2026 · Tuesday',
   feeLabel: 'Sponsor packages from ₱20,000',
   slotsLabel: '120+ slots',
-  formatLabel: 'System 36',
+  formatLabel: '',
   statusLabel: 'Sponsors open',
   description:
     'A corporate golf event offering executive networking, premium brand placement, and a major hole-in-one prize.',
   divisions: ['Corporate', 'System 36', 'Sponsor flights', 'VIP banquet'],
   teeTimeAt: '2026-07-18T07:00:00+08:00',
-  teeTimeLabel: 'October 22, 2026 at 7:00 AM',
+  teeTimeLabel: 'December 22, 2026 at 7:00 AM',
   prizes: [
     '2026 Ford Everest 4x2 Sport hole-in-one grand prize',
     '₱500,000 total cash rewards',
@@ -234,7 +234,7 @@ interface TournamentHeroProps {
 }
 
 export function TournamentHero({
-  heroLogoSrc = '/som-optimized.svg',
+  heroLogoSrc = '/kapalowers-cup-2-en.webp',
   eyebrow,
   title,
   description,
@@ -253,18 +253,18 @@ export function TournamentHero({
   return (
     <div>
       <Card className='relative rounded-3xl overflow-hidden border border-slate-400 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)] p-0'>
-        <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl' />
+        <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl bg-[url("/vista-country-club.webp")] md:w-full bg-cover bg-center bg-no-repeat' />
         {heroLogoSrc ? (
-          <div className='md:absolute md:rounded-full md:rounded-e-none size-auto md:size-180 overflow-hidden portrait:left-0 -top-10 md:-right-10 md:-top-20'>
+          <div className='md:absolute w-full md:rounded-full md:rounded-e-none size-40 portrait:px-10 sm:size-100 overflow-hidden top-16 sm:right-2 sm:-top-14'>
             <Image
               fill
               alt=''
               src={heroLogoSrc}
-              sizes='(max-width: 768px) 100vw, 720px'
-              unoptimized={heroLogoSrc !== '/som-optimized.svg'}
-              className={cn('opacity-25 w-auto aspect-auto shadow-xl', {
-                'object-cover': heroLogoSrc === '/som-optimized.svg',
-                'object-contain': heroLogoSrc !== '/som-optimized.svg'
+              sizes='(max-width: 400px) 100vw, 720px'
+              unoptimized={heroLogoSrc !== '/kapalowers-cup-2.webp'}
+              className={cn('w-auto aspect-auto shadow-xl', {
+                'object-cover': heroLogoSrc === '/kapalowers-cup-2.webp',
+                'object-contain': heroLogoSrc !== '/kapalowers-cup-2.webp'
               })}
             />
           </div>
@@ -285,11 +285,11 @@ export function TournamentHero({
                   {title}
                 </h1>
               </div>
-              <p className='hidden md:flex max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
+              <p className='hidden max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
                 {description}
               </p>
             </div>
-            <div className='portrait:hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-4'>
+            <div className='portrait:hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-3'>
               <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
                 <Icon name='location' className='size-4' />
                 <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
