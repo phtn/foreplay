@@ -120,7 +120,9 @@ export function RegistrationTicketCard({
 
         <div className='grid sm:grid-cols-[minmax(0,1fr)_13.5rem] md:grid-cols-[minmax(0,1fr)_16.5rem]'>
           <section className='min-w-0 p-5 pt-4 sm:p-6 sm:pt-5 md:p-7 relative'>
-            <div className='absolute top-4 right-12 bg-[url("/kapalowers-cup-2-en.webp")] bg-cover bg-no-repeat w-32 h-18 md:w-40 md:h-24 aspect-auto opacity-80 rounded-lg' />
+            <div className='absolute top-4 right-12 md:right-4 flex items-center justify-center w-30 h-18 md:w-50 md:h-29 '>
+              <div className='bg-[url("/kapalowers-cup-2-en.webp")] bg-cover bg-no-repeat size-full aspect-auto' />
+            </div>
             <div
               id='tournament-title'
               className='absolute hidden md:top-6 top-4 md:right-64 right-60 font-poly md:text-base text-sm whitespace-nowrap w-14 capitalize'>
@@ -129,7 +131,7 @@ export function RegistrationTicketCard({
             {registration.eventSupportPhone ? (
               <div
                 id='tournament-support'
-                className='absolute hidden md:top-12 top-9 md:right-64 right-60 font-okx text-xs md:text-base whitespace-nowrap w-14 flex items-center space-x-1 tracking-wider'>
+                className='absolute hidden md:top-12 top-9 md:right-64 right-60 font-okx text-xs md:text-base whitespace-nowrap w-14 _flex items-center space-x-1 tracking-wider'>
                 <Icon name='service' className='size-3 md:size-4' />
                 <span>{registration.eventSupportPhone}</span>
               </div>
