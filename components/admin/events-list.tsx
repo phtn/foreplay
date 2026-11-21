@@ -105,7 +105,8 @@ function getTournamentHref(event: Tournament) {
 }
 
 function buildEventRows(events: Tournament[]): EventRow[] {
-  const sortedEvents = [...events].sort((left, right) => left.gate_open_at - right.gate_open_at)
+  const filteredEvents = events.filter((event) => event.published)
+  const sortedEvents = [...filteredEvents].sort((left, right) => left.gate_open_at - right.gate_open_at)
   let previousMonthLabel: string | null = null
 
   return sortedEvents.map((event) => {
