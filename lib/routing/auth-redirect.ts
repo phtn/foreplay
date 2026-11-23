@@ -1,6 +1,6 @@
 const authRedirectBaseUrl = new URL('https://foreplay.local')
 
-export const defaultSignedInPath = '/tournaments/som-2026'
+export const defaultSignedInPath = '/tournaments'
 
 export function getSafeRedirectPath(value: unknown, fallback = defaultSignedInPath) {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//')) {

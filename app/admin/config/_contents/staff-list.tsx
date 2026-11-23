@@ -174,6 +174,7 @@ const StaffListItem = ({ canManagePrivilegedClaims, claims, isCurrentUser, user 
             </Avatar>
             <div className='inline-flex items-center gap-3'>
               <span className='font-okx font-medium text-foreground/80 text-lg'>{displayName}</span>
+              <span className='font-mono font-light text-foreground/80 text-sm'>{user.email}</span>
               <div className='font-okx font-medium flex shrink-0 items-center gap-2 uppercase'>
                 {claims.topg === true ? (
                   <Badge variant='top-g-outline' size='default' radius='md'>

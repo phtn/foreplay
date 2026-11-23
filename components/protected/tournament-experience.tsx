@@ -93,11 +93,11 @@ export const featuredTournament: TournamentSpotlight = {
   ],
   specialGuests: ['Corporate partners', 'Business owners', 'Key executives', 'Industry leaders'],
   overviewFacts: [
-    { label: 'Date & Time', value: 'October 22, 2026 | 7:00 AM Shotgun Start' },
-    { label: 'Official Venue', value: 'Pradera Verde Golf & Country Club, Pampanga (Pinatubo Course)' },
-    { label: 'Format', value: 'System 36 handicapping format' },
-    { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport' },
-    { label: 'Cash Prize Purse', value: '₱500,000 total cash rewards' }
+    { label: 'Date & Time', value: 'December 22, 2026 | 11:30 AM' },
+    { label: 'Official Venue', value: 'Vista Country Club, New Clark City, Tarlac' },
+    { label: 'Format', value: 'System 36 handicapping format' }
+    // { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport' },
+    // { label: 'Cash Prize Purse', value: '₱500,000 total cash rewards' }
   ],
   partnerPitch:
     'Position your brand directly in front of business owners, key executives, and industry leaders through a premium golf tournament environment designed for face-to-face corporate engagement.',
