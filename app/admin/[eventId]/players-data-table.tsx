@@ -13,8 +13,8 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { api } from '@/convex/_generated/api'
-import { Icon, type IconName } from '@/lib/icons'
 import { useFirebaseUser } from '@/lib/firebase/auth'
+import { Icon, type IconName } from '@/lib/icons'
 import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
@@ -144,7 +144,7 @@ function DateTimeCell({ timestamp, fallback = '—' }: { timestamp: number | nul
   const parts = dateTimeFormatter.format(timestamp).split(',')
 
   return (
-    <div className='font-okx text-xs text-muted-foreground tracking-wider'>
+    <div className='font-okx text-sm text-muted-foreground tracking-wider'>
       {parts.map((part, index) => (
         <p className='whitespace-nowrap' key={`${part}-${index}`}>
           {part.trim()}
@@ -160,7 +160,7 @@ function ReferenceCell({ eventId, row }: { eventId: string; row: EventSubscripti
       <Link
         href={`/admin/${encodeURIComponent(eventId)}/players/${encodeURIComponent(row.subscriptionId)}`}
         title={`Edit registration ${row.reference}`}
-        className='inline-flex max-w-full rounded-sm font-ios text-sky-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-sky-400'>
+        className='inline-flex max-w-full rounded-sm font-ios font-[450] text-sky-700 underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-sky-400'>
         <span className='truncate'>{row.reference.substring(0, 4).toUpperCase()}</span>
       </Link>
     </div>
@@ -507,7 +507,7 @@ function TicketMessagingCell({ eventId, row }: { eventId: string; row: EventSubs
                 : 'text-sky-600 hover:text-sky-500 dark:text-sky-400'
         )}
         onClick={handleSend}>
-        <span>{label}</span>
+        <span>{label} Ticket</span>
         <Icon
           name={
             unavailableReason
@@ -521,11 +521,11 @@ function TicketMessagingCell({ eventId, row }: { eventId: string; row: EventSubs
                   : 'email-sending'
           }
           aria-hidden='true'
-          className='size-4'
+          className='size-3.5'
         />
         <span
           id='sent-count'
-          className='font-poly text-foreground/80 bg-slate-200/30 dark:bg-neutral-800 w-5 rounded-xs'>
+          className='hidden font-poly text-foreground/80 bg-slate-200/30 dark:bg-neutral-800 w-5 rounded-xs'>
           {row.ticketEmailSentCount ?? 0}
         </span>
       </Button>
