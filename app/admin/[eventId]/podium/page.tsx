@@ -33,7 +33,14 @@ const Page = async ({ params }: PageProps) => {
     })
   ])
 
-  return <PodiumTable eventId={eventId} eventName={event?.title} podiumAwards={podiumAwards} registrations={registrations} />
+  return (
+    <PodiumTable
+      eventId={eventId}
+      eventName={event?.title}
+      podiumAwards={podiumAwards}
+      registrations={registrations.filter(({ entry_type }) => entry_type !== 'non_playing')}
+    />
+  )
 }
 
 export default Page

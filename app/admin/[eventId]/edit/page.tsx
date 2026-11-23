@@ -26,6 +26,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
     slots_limit: event.slots_limit,
     divisions: event.divisions,
     description: event.description,
+    overview_facts: event.overview_facts,
     published: event.published,
     ticket_logo_url: event.ticket_logo_url,
     cover_photo_url: event.cover_photo_url
@@ -39,7 +40,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
         </Link>
         <div>
           <h1 className='font-poly text-2xl sm:text-3xl'>Edit {event.title}</h1>
-          <p className='mt-1 text-sm text-muted-foreground'>Update event details, registration settings, and images.</p>
+          <p className='mt-1 text-sm text-muted-foreground'>Update event details, overview rows, registration settings, and images.</p>
         </div>
       </header>
       <CreateEventForm event={initialEvent} initialCoverUrl={coverPhotoUrl} initialLogoUrl={ticketLogoUrl} />

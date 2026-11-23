@@ -1,6 +1,7 @@
-import { featuredTournament } from '@/components/protected/tournament-experience'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { formatEventDate } from '@/utils/formatters'
 import Link from 'next/link'
 import { buttonVariants } from '../ui/button'
 import { MapButton } from './map-button'
@@ -48,7 +49,11 @@ export const PracticeCard = () => {
   )
 }
 
-export const EventViewer = () => {
+type EventViewerTournament = Pick<Doc<'tournaments'>, 'event_date' | 'gate_open_at' | 'venue' | 'venue_coordinates'> & {
+  id: string
+}
+
+export const EventViewer = ({ tournament }: { tournament: EventViewerTournament }) => {
   return (
     <div className='min-h-44 rounded-[22px] border border-white/60 dark:border-slate-500/50 bg-white/52 dark:bg-foreground/10 backdrop-blur-3xl p-5 shadow-[0_24px_70px_rgba(24,62,37,0.2)]'>
       <div className='flex h-full flex-col justify-between'>
@@ -60,16 +65,16 @@ export const EventViewer = () => {
           <div className='mt-4 grid divide-y divide-border/60 dark:divide-slate-500/50 divide-dashed border border-dashed border-border/60 bg-white/50 dark:bg-foreground/85 rounded-lg overflow-hidden'>
             <div className='flex items-center gap-2 px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5 rounded-t-lg'>
               <Icon name='watch' className='size-4.5 shrink-0 text-slate-600' />
-              <span>{featuredTournament.dateLabel}</span>
+              <span>{formatEventDate(tournament.gate_open_at, tournament.event_date)}</span>
             </div>
 
             <div className='flex items-center justify-between px-3 py-2 text-sm text-[#1d2824]/78 ring-1 ring-inset ring-[#1d2824]/5 rounded-b-lg'>
               <div className='flex items-center gap-2'>
                 <Icon name='map-pin' className='size-4.5 shrink-0 text-slate-600' />
-                <span className='truncate'>{featuredTournament.venue}</span>
+                <span className='truncate'>{tournament.venue}</span>
               </div>
-              {featuredTournament.venueCoordinates ? (
-                <MapButton coordinates={featuredTournament.venueCoordinates} venue={featuredTournament.venue} />
+              {tournament.venue_coordinates ? (
+                <MapButton coordinates={tournament.venue_coordinates} venue={tournament.venue} />
               ) : null}
             </div>
           </div>
@@ -81,13 +86,9 @@ export const EventViewer = () => {
               buttonVariants({ size: 'xl' }),
               'rounded-lg bg-primary px-5 text-white hover:bg-primary/80 flex-1 md:text-base'
             )}
-            href={`/tournaments/${featuredTournament.id}`}>
+            href={`/tournaments/${encodeURIComponent(tournament.id)}`}>
             Open Tournament
           </Link>
-
-          {/*<div className='rounded-full bg-white/75 px-4 py-3 text-sm font-semibold shadow-sm'>
-            {featuredTournament.feeLabel}
-          </div>*/}
         </div>
       </div>
     </div>

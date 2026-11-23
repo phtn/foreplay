@@ -44,6 +44,7 @@ export const buildRegistrationDocument = ({
   user_id: userId,
   tournament_id: subscription.tournament_id,
   subscription_id: subscription._id,
+  entry_type: subscription.entry_type,
   player_id: playerId,
   player_name: playerName.trim(),
   player_email: trimOrUndefined(playerEmail)?.toLowerCase(),
@@ -101,20 +102,27 @@ export const reconcileSubscriptionTickets = async (
   if (ensurePrimaryTicket && registrations.length === 0) {
     const registrationId = await ctx.db.insert(
       'registrations',
-      buildRegistrationDocument({
-        division: subscription.division,
-        handicapIndex: subscription.handicap_index,
-        paymentStatus,
-        playerEmail: subscription.contact_email,
-        playerId: crypto.randomUUID(),
-        playerName: getAutomaticPlayerName(subscription),
-        playerPhone: subscription.contact_phone,
-        shirtSize: 'N/A',
-        subscription,
-        ticketToken: crypto.randomUUID(),
-        userId: subscription.user_id
-      })
+      {
+        ...buildRegistrationDocument({
+          division: subscription.division,
+          handicapIndex: subscription.handicap_index,
+          paymentStatus,
+          playerEmail: subscription.contact_email,
+          playerId: crypto.randomUUID(),
+          playerName: getAutomaticPlayerName(subscription),
+          playerPhone: subscription.contact_phone,
+          shirtSize: 'N/A',
+          subscription,
+          ticketToken: crypto.randomUUID(),
+          userId: subscription.user_id
+        }),
+        ...subscription.pending_pairing
+      }
     )
+
+    if (subscription.pending_pairing) {
+      await ctx.db.patch(subscription._id, { pending_pairing: undefined })
+    }
 
     return [registrationId]
   }

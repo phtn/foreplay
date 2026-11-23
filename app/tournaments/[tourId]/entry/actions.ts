@@ -7,6 +7,7 @@ import { getVerifiedAdminSession, getVerifiedFirebaseSession } from '@/lib/fireb
 import { buildFirebaseSubscriptionUserIds, buildFirebaseUserId } from '@/lib/firebase/server-session'
 import { fetchMutation } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
+import { revalidatePath } from 'next/cache'
 import {
   prepareCreateTournamentSubscription,
   type CreateTournamentSubscriptionInput
@@ -70,6 +71,7 @@ export async function createTournamentSubscription(input: CreateTournamentSubscr
       division: prepared.value.division
     })
 
+    revalidatePath(`/admin/${encodeURIComponent(input.tourId)}/pairings`)
     return { ok: true, value: result } as const
   } catch (error) {
     return actionError(error, 'Unable to save this entry request.', 'save entry')

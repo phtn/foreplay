@@ -1,5 +1,6 @@
 import { Badge } from '@/components/reui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import BackButton from '@/components/ui/back'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
@@ -228,13 +229,7 @@ export default async function UserPage({ params }: UserPageProps) {
 
   return (
     <main className='mx-auto w-full max-w-7xl space-y-5 px-3 pb-10 pt-2 sm:px-4 md:space-y-6 md:px-0 md:pt-0'>
-      <Link
-        href='/admin/config'
-        className='group inline-flex items-center gap-1 rounded-full py-2 pl-2 font-okx text-sm text-muted-foreground transition-colors hover:text-foreground'>
-        <Icon name='chevron-right' className='-rotate-90 text-sky-500 size-4' />
-        User Directory
-      </Link>
-
+      <BackButton label='Go Back' />
       <section className='relative overflow-hidden rounded-3xl border border-foreground/10 bg-card px-5 py-6 sm:px-7 sm:py-8'>
         <div className='pointer-events-none absolute inset-0 bg-linear-to-br from-emerald-500/5 via-transparent to-orange-500/5' />
         <div className='pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border border-foreground/5 bg-background/30' />

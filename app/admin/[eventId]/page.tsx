@@ -7,6 +7,7 @@ import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { PlayersDataTable, type EventSubscriptionTableRow } from './players-data-table'
+import { SpecialEntryDrawer } from './special-entry-drawer'
 
 interface EventPageProps {
   params: Promise<{ eventId: string }>
@@ -44,7 +45,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
     const tickets = ticketsBySubscription.get(registration.subscription_id) ?? []
     tickets.push(
-      toRegistrationTicketData(registration, `Player ${tickets.length + 1}`, {
+      toRegistrationTicketData(registration, registration.entry_type === 'non_playing' ? 'Guest' : `Player ${tickets.length + 1}`, {
         eventDate: eventDateLabel,
         eventName: event.title,
         eventSupportPhone: event.support?.phone,
@@ -56,6 +57,7 @@ export default async function EventPage({ params }: EventPageProps) {
 
   const playerRows: EventSubscriptionTableRow[] = subscriptions.map((subscription) => ({
     subscriptionId: subscription._id,
+    entryType: subscription.entry_type,
     createdAt: subscription._creationTime,
     userId: subscription.user_id,
     reference: subscription.txn_ref_no ?? subscription.form_id ?? subscription._id,
@@ -92,6 +94,9 @@ export default async function EventPage({ params }: EventPageProps) {
         </div>
 
         <LinkTitle title={undefined} eyebrow='Pairings' icon='document' href={`/admin/${eventId}/pairings`} />
+      </div>
+      <div className='flex justify-end px-2 py-3'>
+        <SpecialEntryDrawer tournamentId={event._id} />
       </div>
       <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />
     </main>

@@ -4,7 +4,9 @@ import { api } from '@/convex/_generated/api'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 import { getFirebaseAdminAuth } from '@/lib/firebase/admin'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
-import { fetchMutation } from 'convex/nextjs'
+import { toRegistrationTicketData, type SpecialEntryType } from '@/lib/tickets/registration-ticket'
+import { formatEventDate } from '@/utils/formatters'
+import { fetchMutation, fetchQuery } from 'convex/nextjs'
 import { ConvexError } from 'convex/values'
 import { revalidatePath } from 'next/cache'
 import {
@@ -113,9 +115,52 @@ const getAdminActor = async () => {
 const revalidateAdminEvent = (eventId: string, subscriptionId?: string) => {
   revalidatePath('/admin')
   revalidatePath(`/admin/${encodeURIComponent(eventId)}`)
+  revalidatePath(`/admin/${encodeURIComponent(eventId)}/pairings`)
 
   if (subscriptionId) {
     revalidatePath(`/admin/${encodeURIComponent(eventId)}/players/${encodeURIComponent(subscriptionId)}`)
+  }
+}
+
+export async function createSpecialEntry(input: {
+  tournamentId: Id<'tournaments'>
+  requestId: string
+  entryType: SpecialEntryType
+  guestName: string
+  contactEmail?: string
+  contactPhone?: string
+}, firebaseIdToken: string) {
+  await requireAdminSession()
+
+  try {
+    const { eventId, subscriptionId } = await fetchMutation(api.subscriptions.m.createSpecialForAdmin, input, {
+      token: firebaseIdToken
+    })
+    revalidateAdminEvent(eventId, subscriptionId)
+    revalidatePath('/tournaments')
+
+    const [event, details] = await Promise.all([
+      fetchQuery(api.tournaments.q.getByTournamentId, { id: eventId }),
+      fetchQuery(api.subscriptions.q.getRegistrationDetailsForAdmin, { subscriptionId, tournamentId: eventId })
+    ])
+    const registration = details?.registrations[0]
+    if (!event || !registration) {
+      return { ok: false, error: 'The entry was saved. Retry to load its ticket.' } as const
+    }
+
+    const ticket = toRegistrationTicketData(
+      registration,
+      registration.entry_type === 'non_playing' ? 'Guest' : 'Player 1',
+      {
+        eventName: event.title,
+        eventDate: formatEventDate(event.gate_open_at, event.event_date),
+        eventSupportPhone: event.support?.phone,
+        venue: event.venue
+      }
+    )
+    return { ok: true, ticket } as const
+  } catch (error) {
+    return tournamentSettingsError(error, 'Unable to create the entry. Try again.', 'create special entry')
   }
 }
 
@@ -151,7 +196,8 @@ export async function confirmSubscription(
 export async function updateSubscriptionStatus(
   input: SubscriptionStatusActionInput & {
     status: EditableSubscriptionStatus
-  }
+  },
+  firebaseIdToken?: string
 ) {
   const { eventId, subscriptionId } =
     validateStatusActionInput(input)
@@ -168,13 +214,14 @@ export async function updateSubscriptionStatus(
     adminId: actor.id,
     adminEmail: actor.email,
     adminName: actor.name
-  })
+  }, { token: firebaseIdToken })
 
   revalidateAdminEvent(eventId)
 }
 
 export async function undoSubscriptionStatus(
-  input: SubscriptionStatusActionInput
+  input: SubscriptionStatusActionInput,
+  firebaseIdToken?: string
 ) {
   const { eventId, subscriptionId } =
     validateStatusActionInput(input)
@@ -186,7 +233,7 @@ export async function undoSubscriptionStatus(
     adminId: actor.id,
     adminEmail: actor.email,
     adminName: actor.name
-  })
+  }, { token: firebaseIdToken })
 
   revalidateAdminEvent(eventId)
 }

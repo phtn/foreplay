@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label'
 import { onInfo, onSuccess } from '@/ctx/toast'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
+import type { SpecialEntryType } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { type SubmitEvent, useRef, useState, useTransition } from 'react'
@@ -37,6 +38,7 @@ export type RegistrationEditorEntry = {
   confirmedBy: string | null
   division?: string
   handicapIndex: string
+  entryType?: SpecialEntryType
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
   receiptUrl: string | null
   subscriptionId: string
@@ -406,7 +408,7 @@ export function RegistrationEditor({
               defaultValue={entry.contactEmail}
               maxLength={320}
               autoComplete='email'
-              required
+              required={!entry.entryType}
             />
             <EditorField
               id='registration-contact-phone'

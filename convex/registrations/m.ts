@@ -44,7 +44,7 @@ export const createForSubscription = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+    if (!subscription || subscription.entry_type || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -121,7 +121,7 @@ export const removeForSubscription = mutation({
       ctx.db.get(args.subscriptionId)
     ])
 
-    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+    if (!subscription || subscription.entry_type || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -231,30 +231,61 @@ export const removeForTopG = mutation({
 
 export const updatePairingForAdmin = mutation({
   args: {
-    registrationId: v.id('registrations'),
+    tournamentId: v.string(),
+    playerId: v.union(v.id('registrations'), v.id('subscriptions')),
     startHole: v.optional(v.number()),
     pairingGroup: v.optional(pairingGroup)
   },
-  returns: v.object({
-    registrationId: v.id('registrations')
-  }),
+  returns: v.null(),
   handler: async (ctx, args) => {
-    const registration = await ctx.db.get(args.registrationId)
-
-    if (!registration) {
-      throw new ConvexError('Player registration not found.')
+    const identity = await ctx.auth.getUserIdentity()
+    if (identity?.admin !== true) {
+      throw new ConvexError('Unauthorized')
     }
 
     if (args.startHole !== undefined && (!Number.isInteger(args.startHole) || args.startHole < 1 || args.startHole > 18)) {
       throw new ConvexError('Start hole must be between 1 and 18.')
     }
 
-    await ctx.db.patch(args.registrationId, {
+    const pairing = {
       start_hole: args.startHole,
       pairing_group: args.pairingGroup
-    })
+    }
+    const registrationId = ctx.db.normalizeId('registrations', args.playerId)
+    if (registrationId) {
+      const registration = await ctx.db.get(registrationId)
+      if (registration?.tournament_id !== args.tournamentId || registration.entry_type === 'non_playing') {
+        throw new ConvexError('Player registration not found.')
+      }
 
-    return { registrationId: args.registrationId }
+      await ctx.db.patch(registrationId, pairing)
+      return null
+    }
+
+    const subscriptionId = ctx.db.normalizeId('subscriptions', args.playerId)
+    const subscription = subscriptionId && await ctx.db.get(subscriptionId)
+    if (!subscription ||
+      subscription.tournament_id !== args.tournamentId ||
+      subscription.status === 'cancelled' ||
+      subscription.entry_type === 'non_playing') {
+      throw new ConvexError('Player subscription not found.')
+    }
+
+    // Confirmation may have created the player since this row was rendered.
+    const registration = await ctx.db.query('registrations')
+      .withIndex('by_subscriptionId', (q) => q.eq('subscription_id', subscription._id))
+      .first()
+    if (registration) {
+      await ctx.db.patch(registration._id, pairing)
+    } else {
+      if (subscription.payment_status !== 'pending') {
+        throw new ConvexError('Player registration not found.')
+      }
+
+      await ctx.db.patch(subscription._id, { pending_pairing: pairing })
+    }
+
+    return null
   }
 })
 

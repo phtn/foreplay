@@ -1,9 +1,12 @@
 import { v } from 'convex/values'
 
+export const specialEntryType = v.union(v.literal('vip'), v.literal('complimentary'), v.literal('non_playing'))
+
 export const registrationSchema = v.object({
   user_id: v.string(),
   tournament_id: v.string(),
   subscription_id: v.optional(v.id('subscriptions')),
+  entry_type: v.optional(specialEntryType),
   player_id: v.string(),
   player_name: v.string(),
   player_email: v.optional(v.string()),

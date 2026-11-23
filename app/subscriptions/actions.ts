@@ -21,12 +21,13 @@ export async function cancelSubscription(formData: FormData) {
     throw new Error('You must be signed in to cancel a subscription.')
   }
 
-  await fetchMutation(api.subscriptions.m.cancel, {
+  const { tournamentId } = await fetchMutation(api.subscriptions.m.cancel, {
     subscriptionId: subscriptionId as Id<'subscriptions'>,
     userIds: buildFirebaseSubscriptionUserIds(session.decodedToken)
   })
 
   revalidatePath('/subscriptions')
   revalidatePath(`/subscriptions/${subscriptionId}`)
+  revalidatePath(`/admin/${encodeURIComponent(tournamentId)}/pairings`)
   redirect('/subscriptions')
 }

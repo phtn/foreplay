@@ -5,6 +5,7 @@ import { createElement, type ComponentProps } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { RegistrationTicketCard } from '../components/tickets/registration-ticket-card'
 import type { Id } from '../convex/_generated/dataModel'
+import type { SpecialEntryType } from '../lib/tickets/registration-ticket'
 
 const getClassesForText = (html: string, text: string) => {
   const escapedText = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -15,6 +16,40 @@ const getClassesForText = (html: string, text: string) => {
   assert.ok(match, `Unable to find rendered text: ${text}`)
   return new Set(match[1]?.split(/\s+/))
 }
+
+test('special ticket types appear on the exportable ticket', () => {
+  const expectedLabels: [SpecialEntryType, string][] = [
+    ['vip', 'VIP'],
+    ['complimentary', 'Complimentary'],
+    ['non_playing', 'Non-playing']
+  ]
+
+  for (const [entryType, label] of expectedLabels) {
+    const html = renderToStaticMarkup(
+      createElement(ConvexProvider, { client: {} as ComponentProps<typeof ConvexProvider>['client'] },
+        createElement(RegistrationTicketCard, {
+          registration: {
+            checkedIn: false,
+            division: 'N/A',
+            email: 'N/A',
+            entryType,
+            gatePassPayload: '{"ticketToken":"guest-token"}',
+            handicap: 'N/A',
+            id: 'guest-registration-123' as Id<'registrations'>,
+            name: 'Guest',
+            paymentStatus: 'paid',
+            phone: 'N/A',
+            shirtSize: 'N/A',
+            slotLabel: 'Guest'
+          },
+          subscribeToCheckIn: false
+        })
+      )
+    )
+    assert.match(html, new RegExp(`>${label}<`))
+    assert.doesNotMatch(html, />Premium</)
+  }
+})
 
 test('ticket typography cannot be clipped by its metadata column', () => {
   const registrationId =

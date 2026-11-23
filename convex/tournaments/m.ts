@@ -138,6 +138,7 @@ export const updateDetails = mutation({
     slotsLimit: v.optional(v.number()),
     divisions: v.array(v.string()),
     description: v.optional(v.string()),
+    overviewFacts: tournamentSchema.fields.overview_facts,
     ticketLogoStorageId: v.optional(v.id('_storage')),
     coverPhotoStorageId: v.optional(v.id('_storage')),
     published: v.boolean()
@@ -167,6 +168,15 @@ export const updateDetails = mutation({
       throw new ConvexError(`Slots limit cannot be below ${tournament.registered_slots} registered slots.`)
     }
 
+    const overviewFacts = args.overviewFacts?.map(({ label, value }) => ({
+      label: trimRequired(label, 'Overview row label'),
+      value: trimRequired(value, 'Overview row value')
+    }))
+
+    if (overviewFacts && new Set(overviewFacts.map(({ label }) => label.toLowerCase())).size !== overviewFacts.length) {
+      throw new ConvexError('Use a different label for each overview row.')
+    }
+
     await ctx.db.patch(args.tournamentId, {
       title: trimRequired(args.title, 'Title'),
       venue: trimRequired(args.venue, 'Venue'),
@@ -178,6 +188,7 @@ export const updateDetails = mutation({
       divisions: args.divisions.length ? args.divisions : ['Open'],
       description: trimOptional(args.description),
       published: args.published,
+      ...(overviewFacts === undefined ? {} : { overview_facts: overviewFacts }),
       ...(args.ticketLogoStorageId ? { ticket_logo_url: args.ticketLogoStorageId } : {}),
       ...(args.coverPhotoStorageId ? { cover_photo_url: args.coverPhotoStorageId } : {})
     })

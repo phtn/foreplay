@@ -1,10 +1,13 @@
+import { fetchQuery } from 'convex/nextjs'
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
+import { cache } from 'react'
 
-import { findTournament } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { api } from '@/convex/_generated/api'
 import ProtectedLayout from '@/ctx/protected'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
@@ -13,21 +16,29 @@ interface SponsorshipPageProps {
   params: Promise<{ tourId: string }>
 }
 
+const loadTournament = cache((id: string) => fetchQuery(api.tournaments.q.getByTournamentId, { id }))
+
 export async function generateMetadata({ params }: SponsorshipPageProps): Promise<Metadata> {
   const { tourId } = await params
-  const tournament = findTournament(tourId)
+  const tournament = await loadTournament(tourId)
+
+  if (!tournament) return { title: 'Sponsorship' }
 
   return {
     title: `${tournament.title} | Sponsorship`,
-    description: tournament.partnerPitch ?? `${tournament.title} sponsor packages and corporate partnership details.`
+    description: tournament.partner_pitch ?? `${tournament.title} sponsor packages and corporate partnership details.`
   }
 }
 
 export default async function SponsorshipPage({ params }: SponsorshipPageProps) {
   const { tourId } = await params
-  const tournament = findTournament(tourId)
-  const tiers = tournament.sponsorshipTiers ?? []
+  const tournament = await loadTournament(tourId)
+  if (!tournament) notFound()
+
+  const tournamentHref = `/tournaments/${encodeURIComponent(tourId)}`
+  const tiers = tournament.sponsorship_tiers ?? []
   const primaryTier = tiers[0]
+  const sponsorContactEmail = tournament.sponsor_contact_email
 
   return (
     <ProtectedLayout>
@@ -44,7 +55,7 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
                   {tournament.title}
                 </h1>
                 <p className='max-w-3xl text-sm leading-7 text-muted-foreground sm:text-base'>
-                  {tournament.partnerPitch ??
+                  {tournament.partner_pitch ??
                     'Sponsor packages, playing access, and brand placement inventory for this tournament.'}
                 </p>
               </div>
@@ -57,7 +68,7 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
                 </Link>
                 <Link
                   className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'w-full sm:w-auto')}
-                  href={`/tournaments/${tournament.id}`}>
+                  href={tournamentHref}>
                   Back to tournament
                 </Link>
               </div>
@@ -66,9 +77,10 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
             <div className='grid gap-3 rounded-3xl border border-border/70 bg-background/75 p-4'>
               {[
                 { label: 'Venue', value: tournament.venue, icon: 'golf-flag' as const },
-                { label: 'Date', value: tournament.dateLabel, icon: 'clock' as const },
-                { label: 'Format', value: tournament.formatLabel, icon: 'trophy' as const },
-                { label: 'Top package', value: primaryTier?.investmentLabel ?? 'Available', icon: 'coins' as const }
+                { label: 'Date', value: tournament.event_date, icon: 'clock' as const },
+                ...(primaryTier ? [
+                  { label: 'Top package', value: primaryTier.investment_label, icon: 'coins' as const }
+                ] : [])
               ].map((metric) => (
                 <div key={metric.label} className='flex items-start gap-3 rounded-2xl bg-muted/30 p-3'>
                   <div className='flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary'>
@@ -84,13 +96,13 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
           </CardContent>
         </Card>
 
-        {tournament.overviewFacts?.length ? (
+        {tournament.overview_facts?.length ? (
           <Card className='border-border/70'>
             <CardHeader>
               <CardTitle className='text-xl'>Tournament facts sponsors care about</CardTitle>
             </CardHeader>
             <CardContent className='grid gap-3'>
-              {tournament.overviewFacts.map((fact) => (
+              {tournament.overview_facts.map((fact) => (
                 <div
                   key={fact.label}
                   className='grid gap-2 rounded-2xl border border-border/60 bg-muted/20 p-4 sm:grid-cols-[220px_1fr] sm:items-center'>
@@ -102,9 +114,9 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
           </Card>
         ) : null}
 
-        {tournament.partnerReasons?.length ? (
+        {tournament.partner_reasons?.length ? (
           <section className='grid gap-4 md:grid-cols-3'>
-            {tournament.partnerReasons.map((reason) => (
+            {tournament.partner_reasons.map((reason) => (
               <Card key={reason.title} className='border-border/70'>
                 <CardContent className='space-y-3 p-5'>
                   <div className='flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary'>
@@ -133,12 +145,12 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
                   </div>
                   <div>
                     <p className='text-xs uppercase tracking-[0.22em] text-muted-foreground'>Investment</p>
-                    <p className='mt-2 font-semibold'>{tier.investmentLabel}</p>
+                    <p className='mt-2 font-semibold'>{tier.investment_label}</p>
                   </div>
                   <div>
                     <p className='text-xs uppercase tracking-[0.22em] text-muted-foreground'>Playing access</p>
-                    <p className='mt-2 font-semibold'>{tier.playingAccess}</p>
-                    {tier.accessNote ? <p className='text-sm text-muted-foreground'>{tier.accessNote}</p> : null}
+                    <p className='mt-2 font-semibold'>{tier.playing_access}</p>
+                    {tier.access_note ? <p className='text-sm text-muted-foreground'>{tier.access_note}</p> : null}
                   </div>
                   <div>
                     <p className='text-xs uppercase tracking-[0.22em] text-muted-foreground'>Branding benefits</p>
@@ -183,17 +195,19 @@ export default async function SponsorshipPage({ params }: SponsorshipPageProps) 
               ))}
             </div>
             <div className='flex flex-col gap-3 sm:flex-row'>
-              <Link
-                className={cn(buttonVariants({ size: 'lg' }), 'w-full gap-2 sm:w-auto')}
-                href={`mailto:${tournament.sponsorContact?.emailLabel ?? 'sponsors@example.com'}?subject=${encodeURIComponent(
-                  `${tournament.title} sponsorship inquiry`
-                )}`}>
-                Email secretariat
-                <Icon name='mail' className='size-4' />
-              </Link>
+              {sponsorContactEmail ? (
+                <Link
+                  className={cn(buttonVariants({ size: 'lg' }), 'w-full gap-2 sm:w-auto')}
+                  href={`mailto:${sponsorContactEmail}?subject=${encodeURIComponent(
+                    `${tournament.title} sponsorship inquiry`
+                  )}`}>
+                  Email secretariat
+                  <Icon name='mail' className='size-4' />
+                </Link>
+              ) : null}
               <Link
                 className={cn(buttonVariants({ variant: 'outline', size: 'lg' }), 'w-full sm:w-auto')}
-                href={`/tournaments/${tournament.id}`}>
+                href={tournamentHref}>
                 Review tournament details
               </Link>
             </div>

@@ -1,7 +1,7 @@
 'use server'
 
 import { api } from '@/convex/_generated/api'
-import type { Id } from '@/convex/_generated/dataModel'
+import type { Doc, Id } from '@/convex/_generated/dataModel'
 import {
   getFirebaseUserByUid,
   mergeFirebaseCustomUserClaims,
@@ -163,6 +163,7 @@ type CreateTournamentEventInput = {
 
 type UpdateTournamentEventInput = Omit<CreateTournamentEventInput, 'id'> & {
   tournamentId: Id<'tournaments'>
+  overviewFacts?: Doc<'tournaments'>['overview_facts']
 }
 
 export type SaveMessagingTemplateInput = {
@@ -397,6 +398,7 @@ export async function updateTournamentEvent(input: UpdateTournamentEventInput, f
     slotsLimit: input.slotsLimit,
     divisions: input.divisions ?? [],
     description: input.description?.trim() || undefined,
+    overviewFacts: input.overviewFacts,
     ticketLogoStorageId: input.ticketLogoStorageId,
     coverPhotoStorageId: input.coverPhotoStorageId,
     published: input.published

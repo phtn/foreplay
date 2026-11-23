@@ -15,7 +15,7 @@ import {
 import { api } from '@/convex/_generated/api'
 import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon, type IconName } from '@/lib/icons'
-import type { RegistrationTicketData } from '@/lib/tickets/registration-ticket'
+import { specialEntryTypeLabels, type RegistrationTicketData, type SpecialEntryType } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { formatStatus, pesoFormatter } from '@/utils/formatters'
 import { useQuery } from 'convex/react'
@@ -36,6 +36,7 @@ import type { TicketEmailDeliveryResult } from './ticket-email-sender'
 
 export interface EventSubscriptionTableRow {
   subscriptionId: string
+  entryType?: SpecialEntryType
   userId: string
   createdAt: number
   updatedAt: number | null
@@ -167,14 +168,21 @@ function ReferenceCell({ eventId, row }: { eventId: string; row: EventSubscripti
   )
 }
 
-function EntriesCell({ row }: { row: EventSubscriptionTableRow }) {
+function EntriesCell({ eventId, row }: { eventId: string; row: EventSubscriptionTableRow }) {
+  const href = row.entryType
+    ? `/admin/${encodeURIComponent(eventId)}/players/${encodeURIComponent(row.subscriptionId)}`
+    : `/admin/config/users/${row.userId}`
+
   return (
-    <Link href={`/admin/config/users/${row.userId}`} className='group/player space-y-1'>
+    <Link href={href} className='group/player space-y-1'>
       <p className='text-foreground/85'>
         <span className='font-okx group-hover/player:text-blue-500 dark:group-hover/player:text-blue-400 group-hover/player:underline underline-offset-4 decoration-dotted'>
           {row.teamName}
         </span>
       </p>
+      {row.entryType ? (
+        <p className='font-ios text-xs font-medium text-primary'>{specialEntryTypeLabels[row.entryType]}</p>
+      ) : null}
       <p className='whitespace-nowrap text-xs text-muted-foreground'>
         <span className='font-okx'>{row.contactEmail}</span>
       </p>
@@ -182,19 +190,21 @@ function EntriesCell({ row }: { row: EventSubscriptionTableRow }) {
   )
 }
 
-function StatusPill({ value, className }: { value: string; className: string }) {
+function StatusPill({ value, className, label }: { value: string; className: string; label?: string }) {
   return (
     <span
       className={cn(
         'inline-flex rounded-sm px-1.5 py-1 font-ios text-xs uppercase tracking-widest whitespace-nowrap',
         className
       )}>
-      {formatStatus(value)}
+      {label ?? formatStatus(value)}
     </span>
   )
 }
 
 function PhoneCell({ row }: { row: EventSubscriptionTableRow }) {
+  if (row.entryType) return <span className='font-okx text-foreground/85'>{row.contactPhone}</span>
+
   return (
     <Link href={`/admin/config/users/${row.userId}`} className='space-y-1'>
       <p className='text-foreground/85'>
@@ -273,13 +283,13 @@ function SubscriptionStatusActions({
 
           const firebaseIdToken = await user.getIdToken(true)
           await confirmSubscription(input, firebaseIdToken)
-        } else if (action === 'undo') {
-          await undoSubscriptionStatus(input)
         } else {
-          await updateSubscriptionStatus({
-            ...input,
-            status: action
-          })
+          const token = row.entryType ? await user?.getIdToken() : undefined
+          if (action === 'undo') {
+            await undoSubscriptionStatus(input, token)
+          } else {
+            await updateSubscriptionStatus({ ...input, status: action }, token)
+          }
         }
 
         setMenuOpen(false)
@@ -713,7 +723,7 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         header: 'Player',
         size: 220,
         enableFiltering: false,
-        cell: ({ row }) => <EntriesCell row={row.original} />
+        cell: ({ row }) => <EntriesCell eventId={eventId} row={row.original} />
       },
       {
         id: 'phone',
@@ -746,7 +756,11 @@ export function PlayersDataTable({ eventId, eventTitle, rows }: PlayersDataTable
         filterFn: multiSelectFilterFn,
         meta: { filterOptions: paymentFilterOptions },
         cell: ({ row }) => (
-          <StatusPill value={row.original.paymentStatus} className={paymentStatusStyles[row.original.paymentStatus]} />
+          <StatusPill
+            value={row.original.paymentStatus}
+            className={paymentStatusStyles[row.original.paymentStatus]}
+            label={row.original.entryType && row.original.paymentStatus === 'paid' ? 'Waived' : undefined}
+          />
         )
       },
       {

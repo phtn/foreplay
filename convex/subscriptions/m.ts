@@ -1,6 +1,7 @@
 import { ConvexError, v } from 'convex/values'
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
 import { mutation, type MutationCtx } from '../_generated/server'
+import { specialEntryType } from '../registrations/d'
 import { MAX_REGISTRATIONS_PER_SUBSCRIPTION, reconcileSubscriptionTickets } from '../registrations/ticket'
 import {
   areSubscriptionStatusSnapshotsEqual,
@@ -11,6 +12,9 @@ import {
 } from './adminStatus'
 import { adminSubscriptionStatusAction, paymentStatus } from './d'
 import { isSubscriptionEntryLocked } from './policy'
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const requestIdPattern = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/
 
 const trimOrUndefined = (value: string | undefined) => {
   const trimmed = value?.trim()
@@ -106,6 +110,10 @@ const applyAdminStatus = async (
     throw new ConvexError('Subscription not found.')
   }
 
+  if (subscription.entry_type) {
+    await requireAdminIdentity(ctx)
+  }
+
   const previous = toSubscriptionStatusSnapshot(subscription)
 
   if (action === 'confirm_payment' && previous.payment_status === 'paid' && previous.status === 'confirmed') {
@@ -190,7 +198,7 @@ export const create = mutation({
       .first()
 
     if (existingSubscription) {
-      if (!args.ownerUserIds.includes(existingSubscription.user_id)) {
+      if (existingSubscription.entry_type || !args.ownerUserIds.includes(existingSubscription.user_id)) {
         throw new ConvexError('Entry reference already exists.')
       }
 
@@ -233,7 +241,89 @@ export const create = mutation({
       updatedAt: Date.now()
     })
 
+    if (tournament) {
+      await ctx.db.patch('tournaments', tournament._id, {
+        registered_slots: tournament.registered_slots + 1
+      })
+    }
+
     return { subscriptionId }
+  }
+})
+
+export const createSpecialForAdmin = mutation({
+  args: {
+    tournamentId: v.id('tournaments'),
+    requestId: v.string(),
+    entryType: specialEntryType,
+    guestName: v.string(),
+    contactEmail: v.optional(v.string()),
+    contactPhone: v.optional(v.string())
+  },
+  returns: v.object({
+    subscriptionId: v.id('subscriptions'),
+    eventId: v.string()
+  }),
+  handler: async (ctx, args) => {
+    const identity = await requireAdminIdentity(ctx)
+    const tournament = await ctx.db.get('tournaments', args.tournamentId)
+    if (!tournament?.id) throw new ConvexError('Tournament not found.')
+
+    if (!requestIdPattern.test(args.requestId)) {
+      throw new ConvexError('Invalid entry reference.')
+    }
+
+    const guestName = trimRequiredAdminDetail(args.guestName, 'Guest name', 120)
+    const contactEmail = trimOptionalAdminDetail(args.contactEmail, 'Email', 320)?.toLowerCase()
+    if (contactEmail && !emailPattern.test(contactEmail)) {
+      throw new ConvexError('Enter a valid email address.')
+    }
+
+    const eventId = tournament.id
+    const formId = `special-${args.requestId}`
+    const existing = await ctx.db
+      .query('subscriptions')
+      .withIndex('by_tournamentId_formId', (q) => q.eq('tournament_id', eventId).eq('form_id', formId))
+      .unique()
+    if (existing) {
+      if (!existing.entry_type || existing.confirmed_by_id !== identity.subject) {
+        throw new ConvexError('Entry reference already exists.')
+      }
+      return { subscriptionId: existing._id, eventId }
+    }
+
+    const now = Date.now()
+    const entry: Omit<Doc<'subscriptions'>, '_id' | '_creationTime'> = {
+      user_id: `guest:${args.requestId}`,
+      tournament_id: eventId,
+      tournament_name: tournament.title,
+      entry_type: args.entryType,
+      form_id: formId,
+      team_name: guestName,
+      contact_email: contactEmail,
+      contact_phone: trimOptionalAdminDetail(args.contactPhone, 'Phone', 64),
+      total_players: '1',
+      total_checked_in: '0',
+      payment_status: 'paid',
+      payment_amount: 0,
+      txn_ref_no: args.requestId.replaceAll('-', '').slice(0, 10),
+      status: 'confirmed',
+      confirmed_by_id: identity.subject,
+      confirmed_by_email: identity.email,
+      confirmed_by_name: identity.name,
+      confirmed_at: now,
+      updatedAt: now
+    }
+    const subscriptionId = await ctx.db.insert('subscriptions', entry)
+    await reconcileSubscriptionTickets(ctx, { ...entry, _id: subscriptionId, _creationTime: now }, 'paid', true)
+
+    if (args.entryType !== 'non_playing') {
+      await ctx.db.patch('tournaments', tournament._id, {
+        registered_slots: tournament.registered_slots + 1
+      })
+    }
+
+    return { subscriptionId, eventId }
   }
 })
 
@@ -313,7 +403,9 @@ export const updateRegistrationDetailsForAdmin = mutation({
       }
     })
 
-    const contactEmail = trimRequiredAdminDetail(args.contactEmail, 'Contact email', 320).toLowerCase()
+    const contactEmail = subscription.entry_type
+      ? trimOptionalAdminDetail(args.contactEmail, 'Contact email', 320)?.toLowerCase()
+      : trimRequiredAdminDetail(args.contactEmail, 'Contact email', 320).toLowerCase()
     const updatedAt = Date.now()
 
     await Promise.all([
@@ -354,7 +446,7 @@ export const generateReceiptUploadUrl = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+    if (!subscription || subscription.entry_type || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -384,7 +476,7 @@ export const updateReceipt = mutation({
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || !args.ownerUserIds.includes(subscription.user_id)) {
+    if (!subscription || subscription.entry_type || !args.ownerUserIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -513,12 +605,13 @@ export const cancel = mutation({
   },
   returns: v.object({
     subscriptionId: v.id('subscriptions'),
-    status: v.string()
+    status: v.string(),
+    tournamentId: v.string()
   }),
   handler: async (ctx, args) => {
     const subscription = await ctx.db.get(args.subscriptionId)
 
-    if (!subscription || !args.userIds.includes(subscription.user_id)) {
+    if (!subscription || subscription.entry_type || !args.userIds.includes(subscription.user_id)) {
       throw new ConvexError('Subscription not found.')
     }
 
@@ -534,7 +627,8 @@ export const cancel = mutation({
 
     return {
       subscriptionId: args.subscriptionId,
-      status: 'cancelled'
+      status: 'cancelled',
+      tournamentId: subscription.tournament_id
     }
   }
 })
@@ -599,6 +693,10 @@ export const undoStatusForAdmin = mutation({
 
     if (!subscription || subscription.tournament_id !== args.tournamentId) {
       throw new ConvexError('Subscription not found.')
+    }
+
+    if (subscription.entry_type) {
+      await requireAdminIdentity(ctx)
     }
 
     const currentChangeId = subscription.admin_status_change_id

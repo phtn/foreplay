@@ -14,26 +14,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import type { Doc, Id } from '@/convex/_generated/dataModel'
+import type { api } from '@/convex/_generated/api'
+import { useFirebaseUser } from '@/lib/firebase/auth'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import type { FunctionReturnType } from 'convex/server'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useState, useTransition } from 'react'
 import { updateRegistrationPairing } from './actions'
 import { createPairingsCsv, createPairingsExportFileName, createPairingsPdf } from './pairings-export'
 import { StartSelector } from './start-selector'
 
-type Registration = Doc<'registrations'>
+type PairingPlayer = FunctionReturnType<typeof api.registrations.q.listForPairings>[number]
+type PairingPlayerId = PairingPlayer['_id']
 type PairingGroup = 'A' | 'B' | 'C'
 type PairingValue = {
   pairingGroup: PairingGroup
   startHole: string
 }
-type PairingState = Map<Id<'registrations'>, PairingValue>
+type PairingState = Map<PairingPlayerId, PairingValue>
 
 export type PairingTableRow = PairingValue & {
   checkedInStatus: 'Yes' | 'No'
-  id: Id<'registrations'>
+  id: PairingPlayerId
   pending: boolean
   playerId: string
   playerName: string
@@ -43,7 +46,7 @@ export type PairingTableRow = PairingValue & {
 
 type PairingsTableProps = {
   eventId: string
-  registrations: Registration[]
+  players: PairingPlayer[]
   eventName?: string
 }
 const cmap = {
@@ -59,13 +62,13 @@ function formatPrincipal(value: string) {
   return value
 }
 
-function buildInitialPairingState(registrations: Registration[]): PairingState {
+function buildInitialPairingState(players: PairingPlayer[]): PairingState {
   return new Map(
-    registrations.map((registration) => [
-      registration._id,
+    players.map((player) => [
+      player._id,
       {
-        pairingGroup: registration.pairing_group ?? 'A',
-        startHole: registration.start_hole === undefined ? '' : String(registration.start_hole)
+        pairingGroup: player.pairing_group ?? 'A',
+        startHole: player.start_hole === undefined ? '' : String(player.start_hole)
       }
     ])
   )
@@ -180,15 +183,16 @@ function PairingsExportMenu({ eventId, eventTitle, getRows, hasRows }: PairingsE
   )
 }
 
-export function PairingsTable({ eventId, registrations, eventName }: PairingsTableProps) {
+export function PairingsTable({ eventId, players, eventName }: PairingsTableProps) {
   const router = useRouter()
+  const { user } = useFirebaseUser()
   const [isPending, startTransition] = useTransition()
-  const [pendingRegistrationId, setPendingRegistrationId] = useState<Id<'registrations'> | null>(null)
+  const [pendingPlayerId, setPendingPlayerId] = useState<PairingPlayerId | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [pairingByRegistrationId, setPairingByRegistrationId] = useState(() => buildInitialPairingState(registrations))
+  const [pairingByPlayerId, setPairingByPlayerId] = useState(() => buildInitialPairingState(players))
 
   const { rows, startingHoleCounts } = useMemo(() => {
-    const sortedRegistrations = registrations.toSorted((left, right) => {
+    const sortedPlayers = players.toSorted((left, right) => {
       const nameSort = left.player_name.localeCompare(right.player_name, undefined, {
         sensitivity: 'base'
       })
@@ -197,10 +201,10 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
     })
     const nextStartingHoleCounts: Record<string, number> = {}
 
-    const nextRows = sortedRegistrations.map((registration, index): PairingTableRow => {
-      const pairing = pairingByRegistrationId.get(registration._id) ?? {
-        pairingGroup: registration.pairing_group ?? 'A',
-        startHole: registration.start_hole === undefined ? '' : String(registration.start_hole)
+    const nextRows = sortedPlayers.map((player, index): PairingTableRow => {
+      const pairing = pairingByPlayerId.get(player._id) ?? {
+        pairingGroup: player.pairing_group ?? 'A',
+        startHole: player.start_hole === undefined ? '' : String(player.start_hole)
       }
 
       if (startHoleOptions.includes(pairing.startHole)) {
@@ -209,13 +213,13 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
 
       return {
         ...pairing,
-        checkedInStatus: registration.checked_in === true ? 'Yes' : 'No',
-        id: registration._id,
-        pending: isPending && pendingRegistrationId === registration._id,
-        playerId: registration.player_id,
-        playerName: registration.player_name,
+        checkedInStatus: player.checked_in === true ? 'Yes' : 'No',
+        id: player._id,
+        pending: isPending && pendingPlayerId === player._id,
+        playerId: player.player_id,
+        playerName: player.player_name,
         position: index + 1,
-        shirtSize: registration.shirt_size ? formatPrincipal(registration.shirt_size) : '-'
+        shirtSize: player.shirt_size ? formatPrincipal(player.shirt_size) : '-'
       }
     })
 
@@ -223,20 +227,20 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
       rows: nextRows,
       startingHoleCounts: nextStartingHoleCounts
     }
-  }, [isPending, pairingByRegistrationId, pendingRegistrationId, registrations])
+  }, [isPending, pairingByPlayerId, pendingPlayerId, players])
 
   const updatePairing = useCallback(
-    (registrationId: Id<'registrations'>, currentPairing: PairingValue, nextPairing: Partial<PairingValue>) => {
+    (playerId: PairingPlayerId, currentPairing: PairingValue, nextPairing: Partial<PairingValue>) => {
       const optimisticPairing = {
         ...currentPairing,
         ...nextPairing
       }
 
       setErrorMessage(null)
-      setPendingRegistrationId(registrationId)
-      setPairingByRegistrationId((current) => {
+      setPendingPlayerId(playerId)
+      setPairingByPlayerId((current) => {
         const nextState = new Map(current)
-        nextState.set(registrationId, optimisticPairing)
+        nextState.set(playerId, optimisticPairing)
         return nextState
       })
 
@@ -244,23 +248,24 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         try {
           const startHole = optimisticPairing.startHole ? Number.parseInt(optimisticPairing.startHole, 10) : undefined
 
-          await updateRegistrationPairing({
-            eventId,
-            registrationId,
-            startHole,
-            pairingGroup: optimisticPairing.pairingGroup
-          })
+          if (!user) throw new Error('Your admin session is still loading. Try again in a moment.')
+          const firebaseIdToken = await user.getIdToken()
+
+          await updateRegistrationPairing(
+            { eventId, playerId, startHole, pairingGroup: optimisticPairing.pairingGroup },
+            firebaseIdToken
+          )
 
           router.refresh()
         } catch (error) {
           setErrorMessage(error instanceof Error ? error.message : 'Unable to update this pairing.')
-          setPairingByRegistrationId(buildInitialPairingState(registrations))
+          setPairingByPlayerId(buildInitialPairingState(players))
         } finally {
-          setPendingRegistrationId(null)
+          setPendingPlayerId(null)
         }
       })
     },
-    [eventId, registrations, router]
+    [eventId, players, router, user]
   )
 
   const columns = useMemo<ColumnConfig<PairingTableRow>[]>(
@@ -415,7 +420,7 @@ export function PairingsTable({ eventId, registrations, eventName }: PairingsTab
         title=''
         emptyState={emptyState}
         loading={false}
-        editingRowId={isPending ? pendingRegistrationId : null}
+        editingRowId={isPending ? pendingPlayerId : null}
         columnConfigs={columns}
         rowIdAccessor='id'
         queryParamPrefix='pairings'

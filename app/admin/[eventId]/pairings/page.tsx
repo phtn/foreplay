@@ -23,16 +23,14 @@ interface PageProps {
 
 const Page = async ({ params }: PageProps) => {
   const [{ eventId }] = await Promise.all([params, requireAdminSession()])
-  const registrations = await fetchQuery(api.registrations.q.listByTournamentId, {
-    tournamentId: eventId
-  })
-  const event = await fetchQuery(api.tournaments.q.getByTournamentId, {
-    id: eventId
-  })
+  const [players, event] = await Promise.all([
+    fetchQuery(api.registrations.q.listForPairings, { tournamentId: eventId }),
+    fetchQuery(api.tournaments.q.getByTournamentId, { id: eventId })
+  ])
 
   return (
     <>
-      <PairingsTable eventId={eventId} registrations={registrations} eventName={event?.title} />
+      <PairingsTable eventId={eventId} players={players} eventName={event?.title} />
     </>
   )
 }

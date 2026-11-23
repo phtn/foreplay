@@ -40,6 +40,7 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
   const reference = details.subscription.txn_ref_no ?? details.subscription.form_id ?? details.subscription._id
   const entry: RegistrationEditorEntry = {
     subscriptionId: details.subscription._id,
+    entryType: details.subscription.entry_type,
     teamName: details.subscription.team_name ?? '',
     contactEmail: details.subscription.contact_email ?? '',
     contactPhone: details.subscription.contact_phone ?? '',
@@ -48,10 +49,7 @@ export default async function RegistrationDetailsPage({ params }: RegistrationDe
     paymentStatus: details.subscription.payment_status,
     subscriptionStatus: details.subscription.status ?? 'pending_payment',
     receiptUrl: details.receiptImageUrl,
-    confirmedBy:
-      details.subscription.confirmed_by_name ??
-      details.subscription.confirmed_by_email ??
-      null,
+    confirmedBy: details.subscription.confirmed_by_name ?? details.subscription.confirmed_by_email ?? null,
     confirmedAt: details.subscription.confirmed_at ?? null
   }
   const players: RegistrationEditorPlayer[] = details.registrations

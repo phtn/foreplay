@@ -56,6 +56,7 @@ export type EditableEvent = Pick<
   | 'slots_limit'
   | 'divisions'
   | 'description'
+  | 'overview_facts'
   | 'published'
   | 'ticket_logo_url'
   | 'cover_photo_url'
@@ -65,6 +66,12 @@ type EventFormProps = {
   event?: EditableEvent
   initialCoverUrl?: string | null
   initialLogoUrl?: string | null
+}
+
+type OverviewRow = NonNullable<EditableEvent['overview_facts']>[number] & { key: number }
+
+function getOverviewRows(event: EditableEvent | undefined): OverviewRow[] {
+  return (event?.overview_facts ?? []).map((fact, key) => ({ ...fact, key }))
 }
 
 const emptyDraft: EventDraft = {
@@ -199,6 +206,8 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
   const logoPreviewUrlRef = useRef<string | null>(null)
   const coverPreviewUrlRef = useRef<string | null>(null)
   const [draft, setDraft] = useState<EventDraft>(() => (event ? getEventDraft(event) : emptyDraft))
+  const nextOverviewRowKey = useRef(event?.overview_facts?.length ?? 0)
+  const [overviewRows, setOverviewRows] = useState(() => getOverviewRows(event))
   const [ticketLogoFile, setTicketLogoFile] = useState<File | null>(null)
   const [coverPhotoFile, setCoverPhotoFile] = useState<File | null>(null)
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
@@ -235,6 +244,10 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
     setDraft((current) => ({ ...current, [key]: value }))
   }
 
+  const updateOverviewRow = (key: number, field: 'label' | 'value', value: string) => {
+    setOverviewRows((rows) => rows.map((row) => (row.key === key ? { ...row, [field]: value } : row)))
+  }
+
   const handleImageChange = (
     event: ChangeEvent<HTMLInputElement>,
     options: {
@@ -264,6 +277,7 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
   const resetForm = () => {
     formRef.current?.reset()
     setDraft(event ? getEventDraft(event) : emptyDraft)
+    setOverviewRows(getOverviewRows(event))
     setTicketLogoFile(null)
     setCoverPhotoFile(null)
     setLogoPreviewUrl(null)
@@ -289,6 +303,14 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
 
     try {
       const formData = new FormData(submitEvent.currentTarget)
+      const overviewFacts = overviewRows.map(({ label, value }) => ({ label: label.trim(), value: value.trim() }))
+      if (overviewFacts.some(({ label, value }) => !label || !value)) {
+        throw new Error('Enter a label and value for each overview row, or remove the row.')
+      }
+      if (new Set(overviewFacts.map(({ label }) => label.toLowerCase())).size !== overviewFacts.length) {
+        throw new Error('Use a different label for each overview row.')
+      }
+
       const [ticketLogoStorageId, coverPhotoStorageId] = await Promise.all([
         uploadConvertedImage({ file: ticketLogoFile, convert }),
         uploadConvertedImage({ file: coverPhotoFile, convert })
@@ -311,7 +333,7 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
       if (event) {
         if (!user) throw new Error('Your admin session is still loading. Try again in a moment.')
         const firebaseIdToken = await user.getIdToken(true)
-        await updateTournamentEvent({ tournamentId: event._id, ...eventInput }, firebaseIdToken)
+        await updateTournamentEvent({ tournamentId: event._id, ...eventInput, overviewFacts }, firebaseIdToken)
         router.push(`/admin/${encodeURIComponent(event.id)}`)
       } else {
         await createTournamentEvent({ id: getRequiredFormValue(formData, 'id'), ...eventInput })
@@ -321,7 +343,7 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
     } catch (error) {
       setErrorMessage(
         error instanceof Error && error.message
-          ? 'Size limit exceeded.' + error.message
+          ? error.message
           : `Unable to ${isEditing ? 'update' : 'create'} event.`
       )
     } finally {
@@ -536,6 +558,54 @@ export function CreateEventForm({ event, initialCoverUrl, initialLogoUrl }: Even
               />
             </div>
           </FieldSet>
+
+          {isEditing ? (
+            <FieldSet title='Tournament Overview'>
+              <p className='text-sm text-muted-foreground'>
+                Date and venue use the event settings unless you add a row labeled Date &amp; Time or Official Venue.
+                Add other rows for details such as format or prizes.
+              </p>
+              {overviewRows.map((row, index) => (
+                <div key={row.key} className='grid items-end gap-3 rounded-lg border border-border/70 p-3 md:grid-cols-[1fr_2fr_auto]'>
+                  <EventInput
+                    id={`event-overview-label-${row.key}`}
+                    label={`Row ${index + 1} label`}
+                    placeholder='Format'
+                    value={row.label}
+                    required
+                    onChange={(value) => updateOverviewRow(row.key, 'label', value)}
+                  />
+                  <EventInput
+                    id={`event-overview-value-${row.key}`}
+                    label={`Row ${index + 1} value`}
+                    placeholder='System 36 handicapping'
+                    value={row.value}
+                    required
+                    onChange={(value) => updateOverviewRow(row.key, 'value', value)}
+                  />
+                  <Button
+                    type='button'
+                    variant='outline'
+                    className='h-11 justify-self-start'
+                    aria-label={`Remove overview row ${index + 1}`}
+                    onClick={() => setOverviewRows((rows) => rows.filter(({ key }) => key !== row.key))}>
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type='button'
+                variant='outline'
+                className='justify-self-start'
+                onClick={() => {
+                  const key = nextOverviewRowKey.current++
+                  setOverviewRows((rows) => [...rows, { key, label: '', value: '' }])
+                }}>
+                <Icon name='add' className='size-4' aria-hidden='true' />
+                Add overview row
+              </Button>
+            </FieldSet>
+          ) : null}
 
           <FieldSet title='Assets'>
             <div className='grid gap-4 sm:grid-cols-2'>

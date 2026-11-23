@@ -19,7 +19,7 @@ export const assign = mutation({
     if (args.registrationId) {
       const registration = await ctx.db.get(args.registrationId)
 
-      if (!registration || registration.tournament_id !== args.tournamentId) {
+      if (!registration || registration.tournament_id !== args.tournamentId || registration.entry_type === 'non_playing') {
         throw new ConvexError('Selected player is not registered for this event.')
       }
     }

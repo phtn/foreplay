@@ -1,6 +1,6 @@
 'use client'
 
-import { featuredTournament, SectionTitle, TournamentHero } from '@/components/protected/tournament-experience'
+import { TournamentHero, TournamentOverview } from '@/components/protected/tournament-experience'
 import { Badge } from '@/components/reui/badge'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,23 +15,24 @@ import type { TournamentRegistrationAction } from './registration-action'
 interface TourDetailProps {
   tournament: Doc<'tournaments'>
   ticketLogoUrl: string | null
+  coverPhotoUrl: string | null
   registrationAction: TournamentRegistrationAction | null
 }
 
-export default function TourDetail({ tournament, ticketLogoUrl, registrationAction }: TourDetailProps) {
+export default function TourDetail({ tournament, ticketLogoUrl, coverPhotoUrl, registrationAction }: TourDetailProps) {
   const eventDate = new Date(tournament.gate_open_at)
   const dateLabel = tournament.event_date
   const feeLabel = formatRegistrationFee(tournament.registration_fee)
   const slotsLabel = formatSlotsLabel(tournament.registered_slots, tournament.slots_limit)
   const teeTimeLabel = `${dateLabel} at ${timeFormatter.format(eventDate)}`
-  const tournamentFacts = tournament.overview_facts ?? []
   const router = useRouter()
 
   return (
     <div className='space-y-4 md:space-y-8'>
       <TournamentHero
         darkButton
-        heroLogoSrc={tournament.id === featuredTournament.id ? undefined : ticketLogoUrl}
+        heroLogoSrc={ticketLogoUrl}
+        coverPhotoSrc={coverPhotoUrl}
         eyebrow={getPublicationLabel(tournament.published) === 'Published' ? 'OPEN ENTRY' : ''}
         title={tournament.title}
         description={tournament.description ?? ''}
@@ -40,7 +41,6 @@ export default function TourDetail({ tournament, ticketLogoUrl, registrationActi
         primaryLabel='Book Entry'
         secondaryLabel={tournament.support?.phone}
         secondaryHref={`tel:${tournament.support?.phone}`}
-        teeTimeAt={eventDate.toISOString()}
         teeTimeLabel={teeTimeLabel}
         updateLabel={registrationAction?.updateLabel}
         updateHref={registrationAction?.updateHref}
@@ -53,53 +53,7 @@ export default function TourDetail({ tournament, ticketLogoUrl, registrationActi
       />
 
       <div className='mt-16 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]'>
-        <div className='space-y-9'>
-          <div className='px-2'>
-            <SectionTitle
-              eyebrow='Good to know'
-              title='Tournament Overview'
-              description='Observe Golf Course rules at all times.'
-            />
-          </div>
-          <Card className='border border-slate-400/20 dark:border-slate-500/80 dark:bg-slate-500/20 shadow-none p-0'>
-            <CardContent className='space-y-4 px-0'>
-              <div className='grid divide-y divide-border/80 dark:divide-slate-400/25 rounded-2xl border border-border/60'>
-                {tournamentFacts.map((item) => (
-                  <div
-                    key={item.label}
-                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 md:py-6 sm:grid-cols-[180px_1fr] sm:items-center'>
-                    <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
-                      {item.label}
-                    </p>
-                    <div className='font-ios flex items-center space-x-1 md:space-x-5'>
-                      <Icon name='chevron-right' className='size-3 text-primary' />
-                      <span>{item.value}</span>
-                    </div>
-                  </div>
-                ))}
-                {tournament.support && (
-                  <div
-                    key={tournament.support.phone}
-                    className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 md:py-6 sm:grid-cols-[180px_1fr] sm:items-center'>
-                    <p className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider'>
-                      {tournament.support.title}
-                    </p>
-                    <div className='font-ios flex items-center space-x-1 md:space-x-5'>
-                      <Icon name='chevron-right' className='size-3 text-primary' />
-                      <p className='font-ios space-x-2 md:space-x-1'>
-                        <span>{tournament.support.phone}</span>
-                        <span>&middot;</span>
-                        <span>{tournament.support.email}</span>
-                        <span className='hidden md:flex'>&middot;</span>
-                        <span className='capitalize hidden md:flex'>{tournament.support.name}</span>
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <TournamentOverview tournament={tournament} />
 
         <div className='space-y-6'>
           <Card className='border border-slate-500/80 bg-primary p-0 gap-0'>

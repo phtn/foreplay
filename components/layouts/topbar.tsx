@@ -29,20 +29,24 @@ interface AuthenticatedTopbarProps {
   hasAdminClaim: boolean
 }
 
+interface GuestTopbarProps {
+  onFallbackSignIn?: () => void
+}
+
 export function getUserAvatarFallback(user: FirebaseSessionUser) {
   const fallbackSource = user.displayName ?? user.email ?? user.uid
 
   return fallbackSource.trim().substring(0, 1).toUpperCase()
 }
 
-export function Topbar() {
+export function Topbar({ onFallbackSignIn }: GuestTopbarProps) {
   const { hasAdminClaim, sessionUser } = useFirebaseUser()
 
   if (sessionUser) {
     return <AuthenticatedTopbar user={sessionUser} hasAdminClaim={hasAdminClaim} />
   }
 
-  return <GuestTopbar />
+  return <GuestTopbar onFallbackSignIn={onFallbackSignIn} />
 }
 
 function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) {
@@ -117,8 +121,12 @@ function AuthenticatedTopbar({ user, hasAdminClaim }: AuthenticatedTopbarProps) 
   )
 }
 
-function GuestTopbar() {
+function GuestTopbar({ onFallbackSignIn }: GuestTopbarProps) {
   const pathname = usePathname()
+  const signInClassName = cn(
+    buttonVariants({ size: 'sm' }),
+    'w-auto rounded-lg bg-[#1d2824] ps-3! font-poly text-white hover:bg-[#2f3d37]'
+  )
 
   return (
     <header
@@ -130,14 +138,15 @@ function GuestTopbar() {
 
       <div className='flex items-center gap-2'>
         <ThemeToggle />
-        <Link
-          className={cn(
-            buttonVariants({ size: 'sm' }),
-            'w-auto rounded-lg bg-[#1d2824] ps-3! font-poly text-white hover:bg-[#2f3d37]'
-          )}
-          href='/auth/login'>
-          Sign in
-        </Link>
+        {onFallbackSignIn ? (
+          <button className={signInClassName} type='button' onClick={onFallbackSignIn}>
+            Sign in
+          </button>
+        ) : (
+          <Link className={signInClassName} href='/auth/login'>
+            Sign in
+          </Link>
+        )}
       </div>
     </header>
   )

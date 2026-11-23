@@ -1,8 +1,10 @@
 import { Badge } from '@/components/reui/badge'
 import { buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon, type IconName } from '@/lib/icons'
 import { cn } from '@/lib/utils'
+import { formatEventDate, formatGateOpenTime } from '@/utils/formatters'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Activity, type ReactNode } from 'react'
@@ -62,115 +64,6 @@ export type LeaderboardRow = {
   note: string
 }
 
-export const featuredTournament: TournamentSpotlight = {
-  id: 'kc2',
-  title: '',
-  venue: 'Vista Golf & Country Club, New Clark City, Tarlac',
-  venueCoordinates: {
-    latitude: 14.888219,
-    longitude: 120.497161
-  },
-  dateLabel: 'December 22, 2026 · Tuesday',
-  feeLabel: 'Sponsor packages from ₱20,000',
-  slotsLabel: '120+ slots',
-  formatLabel: '',
-  statusLabel: 'Sponsors open',
-  description:
-    'A corporate golf event offering executive networking, premium brand placement, and a major hole-in-one prize.',
-  divisions: ['Corporate', 'System 36', 'Sponsor flights', 'VIP banquet'],
-  teeTimeAt: '2026-07-18T07:00:00+08:00',
-  teeTimeLabel: 'December 22, 2026 at 11:30 AM',
-  prizes: [
-    '2026 Ford Everest 4x2 Sport hole-in-one grand prize',
-    '₱500,000 total cash rewards',
-    'Sponsor-led activations and awards'
-  ],
-  events: [
-    { label: 'Player arrival and sponsor check-in', detail: '6:00 AM' },
-    { label: 'Shotgun start', detail: '7:00 AM' },
-    { label: 'High-value networking window', detail: '5+ hours' },
-    { label: 'Awards and VIP banquet', detail: 'After scoring' }
-  ],
-  specialGuests: ['Corporate partners', 'Business owners', 'Key executives', 'Industry leaders'],
-  overviewFacts: [
-    { label: 'Date & Time', value: 'December 22, 2026 | 11:30 AM' },
-    { label: 'Official Venue', value: 'Vista Country Club, New Clark City, Tarlac' },
-    { label: 'Format', value: 'System 36 handicapping format' }
-    // { label: 'Hole-in-One Grand Prize', value: '2026 Ford Everest 4x2 Sport' },
-    // { label: 'Cash Prize Purse', value: '₱500,000 total cash rewards' }
-  ],
-  partnerPitch:
-    'Position your brand directly in front of business owners, key executives, and industry leaders through a premium golf tournament environment designed for face-to-face corporate engagement.',
-  partnerReasons: [
-    {
-      title: 'High-value networking',
-      description:
-        'Secure over five hours of uninterrupted casual interaction with high-net-worth individuals, enterprise owners, and corporate executives.'
-    },
-    {
-      title: 'Premium brand association',
-      description: 'Align with prestige, athletic excellence, and a world-class championship golf facility.'
-    },
-    {
-      title: 'Organic brand visibility',
-      description:
-        'A luxury SUV grand prize and major cash purse create photography, social media, and sponsor placement moments.'
-    }
-  ],
-  sponsorshipTiers: [
-    {
-      name: 'Platinum',
-      investmentLabel: '₱200,000',
-      playingAccess: '4 Tickets',
-      accessNote: '1 Full Flight',
-      benefits: [
-        '"Presented by [Your Brand]" co-branding on the main welcome arch.',
-        'Co-naming rights on the official Ford Everest Hole-in-One field signage.',
-        'Exclusive corporate logo placement across all player golf carts.',
-        'Dedicated physical activation tent at high-traffic Hole 1 or Hole 18.',
-        'Reserved VIP banquet table and 3-minute executive speaking slot.'
-      ]
-    },
-    {
-      name: 'Gold',
-      investmentLabel: '₱100,000',
-      playingAccess: '2 Tickets',
-      benefits: [
-        'Dedicated branding and booth setup space at a high-visibility Par 3 hole.',
-        'Prominent logo on the main sponsor board, backdrops, and giveaway bags.',
-        'Exclusive sponsor spotlight feature post across social media channels.'
-      ]
-    },
-    {
-      name: 'Silver',
-      investmentLabel: '₱50,000',
-      playingAccess: '1 Ticket',
-      benefits: [
-        'Shared banner signage displayed at a designated tee box or putting green.',
-        'Opportunity to insert one corporate promotional item or voucher inside giveaway bags.',
-        'Digital logo inclusion across all pre-event email newsletters.'
-      ]
-    },
-    {
-      name: 'Bronze',
-      investmentLabel: '₱20,000',
-      playingAccess: 'None',
-      benefits: [
-        'Official logo placement on the collective sponsor board at the clubhouse.',
-        'Formal corporate acknowledgment and verbal thank-you during the awards ceremony.'
-      ]
-    }
-  ],
-  sponsorContact: {
-    phoneLabel: 'Secretariat contact to be assigned',
-    emailLabel: 'sponsors@seoulofmanila.example'
-  }
-}
-
-export const seoulOfManilaTournament = featuredTournament
-
-export const tournamentList: TournamentSpotlight[] = [featuredTournament]
-
 export const protectedEntries: ProtectedEntry[] = [
   {
     id: 'entry-001',
@@ -183,10 +76,6 @@ export const protectedEntries: ProtectedEntry[] = [
     division: 'Corporate'
   }
 ]
-
-export function findTournament(id: string): TournamentSpotlight {
-  return tournamentList.find((tournament) => tournament.id === id) ?? featuredTournament
-}
 
 export function SectionTitle({
   eyebrow,
@@ -210,31 +99,83 @@ export function SectionTitle({
   )
 }
 
+type TournamentOverviewData = Pick<Doc<'tournaments'>, 'event_date' | 'gate_open_at' | 'venue' | 'overview_facts' | 'support'>
+
+export function TournamentOverview({ tournament }: { tournament: TournamentOverviewData }) {
+  const dateAndTime = Number.isFinite(tournament.gate_open_at)
+    ? `${formatEventDate(tournament.gate_open_at, '')} | ${formatGateOpenTime(tournament.gate_open_at)}`
+    : tournament.event_date
+  const facts = new Map([
+    ['date & time', { label: 'Date & Time', value: dateAndTime }],
+    ['official venue', { label: 'Official Venue', value: tournament.venue }]
+  ])
+
+  for (const { label, value } of tournament.overview_facts ?? []) {
+    if (label.trim() && value.trim()) {
+      facts.set(label.trim().toLowerCase(), { label, value })
+    }
+  }
+
+  const support = tournament.support
+  const contact = [support?.phone, support?.email, support?.name].map((value) => value?.trim()).filter(Boolean).join(' · ')
+
+  return (
+    <section className='space-y-9'>
+      <div className='px-2'>
+        <SectionTitle
+          eyebrow='Good to know'
+          title='Tournament Overview'
+          description='Observe Golf Course rules at all times.'
+        />
+      </div>
+      <Card className='border border-slate-400/20 dark:border-slate-500/80 dark:bg-slate-500/20 shadow-none p-0'>
+        <CardContent className='px-0'>
+          <dl className='grid overflow-hidden divide-y divide-border/80 dark:divide-slate-400/25 rounded-2xl border border-border/60'>
+            {Array.from(facts, ([key, fact]) => <TournamentOverviewRow key={key} {...fact} />)}
+            {contact ? <TournamentOverviewRow label={support?.title?.trim() || 'Support'} value={contact} /> : null}
+          </dl>
+        </CardContent>
+      </Card>
+    </section>
+  )
+}
+
+function TournamentOverviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className='grid gap-2 hover:bg-slate-200/60 dark:hover:bg-slate-500/50 px-4 py-5 md:py-6 sm:grid-cols-[180px_minmax(0,1fr)] sm:items-center'>
+      <dt className='font-okx font-semibold text-sm md:text-xs uppercase md:tracking-widest tracking-wider wrap-break-word'>
+        {label}
+      </dt>
+      <dd className='font-ios flex items-center gap-1 md:gap-5'>
+        <Icon name='chevron-right' aria-hidden='true' className='size-3 shrink-0 text-primary' />
+        <span className='min-w-0 wrap-break-word'>{value}</span>
+      </dd>
+    </div>
+  )
+}
+
 interface TournamentHeroProps {
   heroLogoSrc?: string | null
+  coverPhotoSrc?: string | null
   eyebrow: string
   title: string
-  description: string
+  description?: string
   venueLabel?: string
   primaryHref: string
   secondaryHref?: string
   primaryLabel: string
   secondaryLabel?: string
-  metrics: Array<{ label: string; value: string; icon?: IconName }>
+  metrics?: Array<{ label: string; value: string; icon?: IconName }>
   primaryAction?: ReactNode
-  galleryHref?: string
-  teeTimeAt?: string
   teeTimeLabel?: string
-  prizes?: Array<string>
-  events?: Array<{ label: string; detail: string }>
-  specialGuests?: Array<string>
   darkButton?: boolean
   updateLabel?: string
   updateHref?: string
 }
 
 export function TournamentHero({
-  heroLogoSrc = '/kapalowers-cup-2-en.webp',
+  heroLogoSrc,
+  coverPhotoSrc,
   eyebrow,
   title,
   description,
@@ -253,52 +194,41 @@ export function TournamentHero({
   return (
     <div>
       <Card className='relative rounded-3xl overflow-hidden border border-slate-400 dark:border-background mask-luminance shadow-[0_24px_80px_-1px_rgba(15,23,42,0.15)] p-0'>
-        <div className='absolute inset-0 bg-linear-to-r from-slate-200 dark:from-slate-600 dark:via-slate-400 via-slate-300/60 to-background dark:to-foreground rounded-3xl bg-[url("/vista-country-club.webp")] md:w-full bg-cover bg-center bg-no-repeat' />
-        {heroLogoSrc ? (
-          <div className='md:absolute w-full md:rounded-full md:rounded-e-none size-40 portrait:px-10 sm:size-100 overflow-hidden top-16 sm:right-2 sm:-top-14'>
-            <Image
-              fill
-              alt=''
-              src={heroLogoSrc}
-              sizes='(max-width: 400px) 100vw, 720px'
-              unoptimized={heroLogoSrc !== '/kapalowers-cup-2.webp'}
-              className={cn('w-auto aspect-auto shadow-xl', {
-                'object-cover': heroLogoSrc === '/kapalowers-cup-2.webp',
-                'object-contain': heroLogoSrc !== '/kapalowers-cup-2.webp'
-              })}
-            />
-          </div>
+        {coverPhotoSrc ? (
+          <Image fill alt='' src={coverPhotoSrc} sizes='100vw' unoptimized className='object-cover' />
         ) : null}
-        {/*dark:bg-[radial-gradient(circle_at_top_right,rgba(180,180,180,0.1),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(150,150,80,0.16),transparent_80%)] bg-[radial-gradient(circle_at_top_right,rgba(132,204,22,0.16),transparent_34%),radial-gradient(circle_at_bottom_left,rgba(234,179,8,0.16),transparent_80%)] */}
+        <div className='absolute inset-0 bg-linear-to-r from-background via-background/75 to-background/30' />
         <div className='absolute inset-0 bg-[url("/noise.svg")] size-auto opacity-10' />
-        <CardContent className='min-h-64 relative grid gap-6 p-0 sm:p-6 lg:grid-cols-[1.8fr_0.9fr] lg:gap-8 lg:p-8'>
-          <div className='space-y-8 sm:space-y-8'>
-            <div className='hidden md:flex flex-wrap items-center gap-4'>
+        <CardContent
+          className={cn('relative grid min-h-64 items-center gap-6 p-5 sm:p-6 lg:p-8', {
+            'md:grid-cols-[1.8fr_1fr]': heroLogoSrc
+          })}>
+          <div className='min-w-0 space-y-5'>
+            {eyebrow ? (
               <Badge variant='secondary' radius='full' className='bg-primary/5 rounded-md uppercase tracking-widest'>
                 {eyebrow}
               </Badge>
-              {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
-            </div>
-            <div className='hidden md:space-y-4 _flex md:flex-col md:items-start items-end h-full md:h-fit'>
-              <div className=' bg-slate-300/30 backdrop-blur-xl md:backdrop-blur-none md:bg-transparent w-full md:max-w-2xl p-4'>
-                <h1 className='w-full md:max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
-                  {title}
-                </h1>
+            ) : null}
+            <h1 className='max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
+              {title}
+            </h1>
+            {description ? <p className='max-w-lg text-sm leading-6 sm:text-base'>{description}</p> : null}
+            {venueLabel || teeTimeLabel ? (
+              <div className='max-w-md divide-y divide-dashed rounded-lg border border-dashed bg-background/80 px-3'>
+                {venueLabel ? (
+                  <div className='flex items-center gap-2 py-2 text-sm'>
+                    <Icon name='location' className='size-4 shrink-0' />
+                    <p className='font-ios'>{venueLabel}</p>
+                  </div>
+                ) : null}
+                {teeTimeLabel ? (
+                  <div className='flex items-center gap-2 py-2 text-sm'>
+                    <Icon name='clock' className='size-4 shrink-0' />
+                    <span className='font-ios'>{teeTimeLabel}</span>
+                  </div>
+                ) : null}
               </div>
-              <p className='hidden max-w-lg text-sm leading-6 text-foreground dark:text-foreground/70 sm:text-base'>
-                {description}
-              </p>
-            </div>
-            <div className='portrait:hidden md:block max-w-md rounded-lg border border-dashed bg-background/80 dark:bg-foreground/15 backdrop-blur-2xl px-3 sm:px-3'>
-              <div className='flex items-center gap-2 border-b border-dashed py-2 text-sm tracking-tight'>
-                <Icon name='location' className='size-4' />
-                <p className='min-w-0 flex-1 font-ios'>{venueLabel ?? 'Mt. Malarayat Golf & Country Club'}</p>
-              </div>
-              <div className='flex items-center gap-2 py-2 tracking-tight'>
-                <Icon name='clock' className='size-4' />
-                <span className='font-ios text-sm'>{teeTimeLabel ?? 'July 18, 2026 at 7:00 AM'}</span>
-              </div>
-            </div>
+            ) : null}
             <div className='hidden md:flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:w-auto'>
               <Activity mode={updateLabel && updateHref !== undefined ? 'visible' : 'hidden'}>
                 <Link
@@ -342,8 +272,13 @@ export function TournamentHero({
             </div>
           </div>
 
+          {heroLogoSrc ? (
+            <div className='relative order-first mx-auto aspect-video w-full max-w-80 md:order-none'>
+              <Image fill alt='' src={heroLogoSrc} sizes='320px' unoptimized className='object-contain' />
+            </div>
+          ) : null}
           <div className='hidden _grid gap-3 grid-cols-3 md:grid-cols-1 place-items-end'>
-            {metrics.map((metric) => (
+            {metrics?.map((metric) => (
               <Card
                 key={metric.label}
                 size='sm'

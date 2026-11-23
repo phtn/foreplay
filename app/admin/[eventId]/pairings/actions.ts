@@ -11,18 +11,19 @@ type PairingGroup = 'A' | 'B' | 'C'
 type UpdateRegistrationPairingInput = {
   eventId: string
   pairingGroup?: PairingGroup
-  registrationId: Id<'registrations'>
+  playerId: Id<'registrations'> | Id<'subscriptions'>
   startHole?: number
 }
 
-export async function updateRegistrationPairing(input: UpdateRegistrationPairingInput) {
+export async function updateRegistrationPairing(input: UpdateRegistrationPairingInput, firebaseIdToken: string) {
   await requireAdminSession()
 
   await fetchMutation(api.registrations.m.updatePairingForAdmin, {
-    registrationId: input.registrationId,
+    tournamentId: input.eventId,
+    playerId: input.playerId,
     startHole: input.startHole,
     pairingGroup: input.pairingGroup
-  })
+  }, { token: firebaseIdToken })
 
-  revalidatePath(`/admin/${input.eventId}/pairings`)
+  revalidatePath(`/admin/${encodeURIComponent(input.eventId)}/pairings`)
 }

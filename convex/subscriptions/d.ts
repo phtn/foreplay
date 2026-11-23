@@ -1,4 +1,5 @@
 import { v } from 'convex/values'
+import { registrationSchema, specialEntryType } from '../registrations/d'
 
 export const paymentStatus = v.union(
   v.literal('pending'),
@@ -42,6 +43,7 @@ export const subscriptionSchema = v.object({
   user_id: v.string(),
   tournament_id: v.string(),
   tournament_name: v.string(),
+  entry_type: v.optional(specialEntryType),
   form_id: v.optional(v.string()),
   team_name: v.optional(v.string()),
   contact_email: v.optional(v.string()),
@@ -62,6 +64,7 @@ export const subscriptionSchema = v.object({
   confirmed_by_name: v.optional(v.string()),
   confirmed_at: v.optional(v.number()),
   status: v.optional(v.string()),
+  pending_pairing: v.optional(registrationSchema.pick('start_hole', 'pairing_group')),
   admin_status_change_id: v.optional(v.id('subscriptionStatusChanges'))
 })
 

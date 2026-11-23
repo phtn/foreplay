@@ -6,7 +6,7 @@ import { api } from '@/convex/_generated/api'
 import type { Id } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { createPngFilename, downloadElementAsPng } from '@/lib/tickets/download-ticket-png'
-import { formatTicketNumber, type RegistrationTicketData } from '@/lib/tickets/registration-ticket'
+import { formatTicketNumber, specialEntryTypeLabels, type RegistrationTicketData } from '@/lib/tickets/registration-ticket'
 import { cn } from '@/lib/utils'
 import { useQuery } from 'convex/react'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -197,7 +197,11 @@ export function RegistrationTicketCard({
                 label='Event date'
                 value={registration.eventDate ?? 'Date TBA'}
               />
-              <TicketMetric className='border-l border-slate-200 pl-4 pt-3 sm:pt-0' label='Type' value='Premium' />
+              <TicketMetric
+                className='border-l border-slate-200 pl-4 pt-3 sm:pt-0'
+                label='Type'
+                value={registration.entryType ? specialEntryTypeLabels[registration.entryType] : 'Premium'}
+              />
             </div>
 
             <div className='mt-5 grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-6'>

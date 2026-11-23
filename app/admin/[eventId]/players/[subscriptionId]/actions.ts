@@ -155,7 +155,7 @@ export async function saveRegistrationDetails(
       subscriptionId: subscriptionId as Id<'subscriptions'>,
       tournamentId: eventId,
       teamName: readTextField(formData, 'teamName', 'Team name', 120),
-      contactEmail: readTextField(formData, 'contactEmail', 'Contact email', 320, true),
+      contactEmail: readTextField(formData, 'contactEmail', 'Contact email', 320),
       contactPhone: readTextField(formData, 'contactPhone', 'Contact phone', 64),
       handicapIndex: readTextField(formData, 'handicapIndex', 'Handicap', 64),
       division: readTextField(formData, 'division', 'Division', 120),

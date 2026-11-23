@@ -31,7 +31,7 @@ declare global {
 
 const ONE_TAP_STORAGE_KEY = 'google_one_tap_enabled'
 
-export const GoogleOneTap = () => {
+export const GoogleOneTap = ({ withTopbar = false }: { withTopbar?: boolean }) => {
   const pathname = usePathname()
   const router = useRouter()
   const { isLoading, sessionUser, user } = useFirebaseUser()
@@ -341,11 +341,13 @@ export const GoogleOneTap = () => {
     }
   }, [navigateHome])
 
-  // Show fallback button on localhost if One Tap doesn't appear
-  if (showFallbackButton && !isAuthenticated) {
-    return (
+  const fallbackSignIn = showFallbackButton && !isAuthenticated ? handleSignInWithPopup : undefined
+  const topbar = withTopbar ? <Topbar onFallbackSignIn={fallbackSignIn} /> : null
+
+  if (fallbackSignIn) {
+    return topbar ?? (
       <button
-        onClick={handleSignInWithPopup}
+        onClick={fallbackSignIn}
         className='flex min-w-21 cursor-pointer items-center justify-center overflow-hidden rounded-full h-10 px-6 transition-all text-white text-sm font-okxs font-medium leading-normal disabled:opacity-50 bg-foreground dark:bg-white dark:text-[#4285F4] hover:bg-foreground/80'
         type='button'>
         <span className='truncate flex items-center gap-2'>
@@ -373,27 +375,25 @@ export const GoogleOneTap = () => {
   // But show a small indicator in development mode
   if (process.env.NODE_ENV === 'development' && !isAuthenticated) {
     return (
-      <div className='flex items-center gap-2 text-xs text-slate-500'>
-        <span>One-Tap: {isOneTapEnabled ? 'ON' : 'OFF'}</span>
-        <button
-          onClick={() => toggleOneTap(!isOneTapEnabled)}
-          className='px-2 py-1 text-xs border rounded hover:bg-slate-100 dark:hover:bg-slate-800'
-          type='button'
-          title='Toggle Google One-Tap (also available via window.toggleGoogleOneTap(true/false))'>
-          {isOneTapEnabled ? 'Disable' : 'Enable'}
-        </button>
-      </div>
+      <>
+        {topbar}
+        <div className='flex items-center gap-2 text-xs text-slate-500'>
+          {/*<span>One-Tap: {isOneTapEnabled ? 'ON' : 'OFF'}</span>*/}
+          <button
+            onClick={() => toggleOneTap(!isOneTapEnabled)}
+            className='px-2 py-1 text-xs border rounded hover:bg-slate-100 dark:hover:bg-slate-800'
+            type='button'
+            title='Toggle Google One-Tap (also available via window.toggleGoogleOneTap(true/false))'>
+            {isOneTapEnabled ? 'Disable' : 'Enable'}
+          </button>
+        </div>
+      </>
     )
   }
 
-  return null
+  return topbar
 }
 
 export function TopbarWithGoogleOneTap() {
-  return (
-    <>
-      <Topbar />
-      <GoogleOneTap />
-    </>
-  )
+  return <GoogleOneTap withTopbar />
 }

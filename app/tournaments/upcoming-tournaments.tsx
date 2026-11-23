@@ -1,13 +1,9 @@
-import { featuredTournament } from '@/components/protected/tournament-experience'
 import { buttonVariants } from '@/components/ui/button'
-import { api } from '@/convex/_generated/api'
 import type { Doc } from '@/convex/_generated/dataModel'
 import { Icon } from '@/lib/icons'
 import { cn } from '@/lib/utils'
 import { formatRegistrationFee, formatSlotsLabel, timeFormatter } from '@/utils/formatters'
-import { fetchQuery } from 'convex/nextjs'
 import Link from 'next/link'
-import { connection } from 'next/server'
 
 type ListedTournament = Doc<'tournaments'> & { id: string }
 
@@ -15,26 +11,7 @@ const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', timeZo
 const dayFormatter = new Intl.DateTimeFormat('en-US', { day: '2-digit', timeZone: 'Asia/Manila' })
 const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: 'Asia/Manila' })
 
-async function loadUpcomingTournaments() {
-  await connection()
-  const tournaments = await fetchQuery(api.tournaments.q.listTournaments)
-  const now = Date.now()
-  return tournaments
-    .filter((tournament): tournament is ListedTournament =>
-      Boolean(
-        tournament.id &&
-        tournament.id !== featuredTournament.id &&
-        tournament.published !== false &&
-        Number.isFinite(tournament.gate_open_at) &&
-        tournament.gate_open_at >= now
-      )
-    )
-    .sort((left, right) => left.gate_open_at - right.gate_open_at)
-}
-
-export async function UpcomingTournaments() {
-  const upcoming = await loadUpcomingTournaments()
-
+export function UpcomingTournaments({ upcoming }: { upcoming: ListedTournament[] }) {
   return (
     <section aria-labelledby='upcoming-tournaments-heading' className='space-y-6 pb-10 pt-6 md:pt-8'>
       <div className='flex flex-wrap items-end justify-between gap-4 px-1'>

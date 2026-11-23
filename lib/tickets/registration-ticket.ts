@@ -1,10 +1,19 @@
 import type { Doc, Id } from '@/convex/_generated/dataModel'
 
+export type SpecialEntryType = NonNullable<Doc<'registrations'>['entry_type']>
+
+export const specialEntryTypeLabels: Record<SpecialEntryType, string> = {
+  vip: 'VIP',
+  complimentary: 'Complimentary',
+  non_playing: 'Non-playing'
+}
+
 export interface RegistrationTicketData {
   checkedIn: boolean
   checkedInAt?: number
   division: string
   email: string
+  entryType?: SpecialEntryType
   eventDate?: string
   eventName?: string
   eventSupportPhone?: string
@@ -50,6 +59,7 @@ export function toRegistrationTicketData(
     eventName: context.eventName,
     eventSupportPhone: context.eventSupportPhone,
     name: registration.player_name,
+    entryType: registration.entry_type,
     email: registration.player_email ?? 'N/A',
     gatePassPayload: buildGatePassPayload(registration),
     checkedIn: registration.checked_in === true,

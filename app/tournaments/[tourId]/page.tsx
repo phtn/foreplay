@@ -1,7 +1,7 @@
 import ProtectedLayout from '@/ctx/protected'
+import { formatRegistrationFee } from '@/utils/formatters'
 import { Metadata } from 'next'
-import { findTournament } from '@/components/protected/tournament-experience'
-import { TourContent } from './content'
+import { loadTournamentDetails, TourContent } from './content'
 
 interface TPageProps {
   params: Promise<{ tourId: string }>
@@ -9,11 +9,14 @@ interface TPageProps {
 
 export async function generateMetadata({ params }: TPageProps): Promise<Metadata> {
   const { tourId } = await params
-  const tournament = findTournament(tourId)
+  const details = await loadTournamentDetails(tourId)
+  const tournament = details?.event
 
   return {
-    title: `${tournament.title} | Tournament`,
-    description: `${tournament.venue} • ${tournament.dateLabel} • ${tournament.feeLabel}`,
+    title: tournament ? `${tournament.title} | Tournament` : 'Tournament',
+    description: tournament
+      ? `${tournament.venue} • ${tournament.event_date} • ${formatRegistrationFee(tournament.registration_fee)}`
+      : undefined,
     icons: [
       {
         rel: 'icon',
