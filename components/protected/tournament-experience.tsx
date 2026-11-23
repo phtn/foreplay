@@ -79,7 +79,7 @@ export const featuredTournament: TournamentSpotlight = {
     'A corporate golf event offering executive networking, premium brand placement, and a major hole-in-one prize.',
   divisions: ['Corporate', 'System 36', 'Sponsor flights', 'VIP banquet'],
   teeTimeAt: '2026-07-18T07:00:00+08:00',
-  teeTimeLabel: 'December 22, 2026 at 7:00 AM',
+  teeTimeLabel: 'December 22, 2026 at 11:30 AM',
   prizes: [
     '2026 Ford Everest 4x2 Sport hole-in-one grand prize',
     '₱500,000 total cash rewards',
@@ -279,7 +279,7 @@ export function TournamentHero({
               </Badge>
               {/*<span className='text-xs uppercase tracking-wider text-foreground/70'>MEMBERS-ONLY</span>*/}
             </div>
-            <div className='md:space-y-4 flex md:flex-col md:items-start items-end h-full md:h-fit'>
+            <div className='hidden md:space-y-4 _flex md:flex-col md:items-start items-end h-full md:h-fit'>
               <div className=' bg-slate-300/30 backdrop-blur-xl md:backdrop-blur-none md:bg-transparent w-full md:max-w-2xl p-4'>
                 <h1 className='w-full md:max-w-2xl text-balance font-poly text-2xl font-semibold tracking-tight sm:text-4xl lg:text-5xl'>
                   {title}
