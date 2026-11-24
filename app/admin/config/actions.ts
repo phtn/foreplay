@@ -81,7 +81,7 @@ export async function setCustomClaim(formData: FormData) {
     throw new Error(
       claimKey === 'admin'
         ? 'Only Top G accounts can remove admin access.'
-        : 'Only Top G accounts can change the topg claim.'
+        : `Only Top G accounts can change the ${claimKey} claim.`
     )
   }
 
@@ -120,7 +120,7 @@ export async function removeCustomClaim(formData: FormData) {
     throw new Error(
       claimKey === 'admin'
         ? 'Only Top G accounts can remove admin access.'
-        : 'Only Top G accounts can remove the topg claim.'
+        : `Only Top G accounts can remove the ${claimKey} claim.`
     )
   }
 

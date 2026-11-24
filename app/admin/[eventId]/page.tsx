@@ -1,3 +1,4 @@
+import { buttonVariants } from '@/components/ui/button'
 import { LinkTitle, SectionTitle } from '@/components/layouts/title'
 import { api } from '@/convex/_generated/api'
 import { requireAdminSession } from '@/lib/firebase/server-auth'
@@ -95,7 +96,8 @@ export default async function EventPage({ params }: EventPageProps) {
 
         <LinkTitle title={undefined} eyebrow='Pairings' icon='document' href={`/admin/${eventId}/pairings`} />
       </div>
-      <div className='flex justify-end px-2 py-3'>
+      <div className='flex flex-wrap items-center justify-between gap-2 px-2 py-3'>
+        <Link href={`/admin/${encodeURIComponent(eventId)}/reports`} className={buttonVariants({ variant: 'outline' })}>Reports</Link>
         <SpecialEntryDrawer tournamentId={event._id} />
       </div>
       <PlayersDataTable eventId={eventId} eventTitle={event.title} rows={playerRows} />

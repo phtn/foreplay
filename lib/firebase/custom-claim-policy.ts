@@ -15,7 +15,7 @@ export function canViewStaffAccount(viewerClaims: Claims, accountClaims: Claims)
 }
 
 export function canRemoveCustomClaim(viewerClaims: Claims, claimKey: string) {
-  return claimKey !== 'admin' && claimKey !== 'topg' ? true : hasTopGClaim(viewerClaims)
+  return !['admin', 'topg', 'finance'].includes(claimKey) || hasTopGClaim(viewerClaims)
 }
 
 export function canSetCustomClaim(
@@ -23,7 +23,7 @@ export function canSetCustomClaim(
   claimKey: string,
   claimValue: FirebaseCustomClaimValue
 ) {
-  if (claimKey === 'topg') {
+  if (claimKey === 'topg' || claimKey === 'finance') {
     return hasTopGClaim(viewerClaims)
   }
 

@@ -5,6 +5,7 @@ import { Badge } from '@/components/reui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Doc, Id } from '@/convex/_generated/dataModel'
+import { buildAwardTables, type AwardTable as AwardTableData } from '@/lib/tournaments/podium'
 import { useRouter } from 'next/navigation'
 import { useMemo, useState, useTransition } from 'react'
 import { assignPodiumAward } from './actions'
@@ -17,18 +18,6 @@ type PodiumTableProps = {
   podiumAwards: PodiumAward[]
   registrations: Registration[]
   eventName?: string
-}
-
-type AwardSlot = {
-  assignedRegistrationId?: Id<'registrations'>
-  position: number
-}
-
-type AwardTable = {
-  awardKey: string
-  eyebrow: string
-  slots: AwardSlot[]
-  title: string
 }
 
 function getInitials(name: string) {
@@ -47,68 +36,6 @@ function formatPrincipal(value: string) {
   }
 
   return value
-}
-
-function groupBy(registrations: Registration[], getKey: (registration: Registration) => string) {
-  return registrations.reduce<Record<string, Registration[]>>((acc, registration) => {
-    const key = getKey(registration)
-    acc[key] = [...(acc[key] ?? []), registration]
-    return acc
-  }, {})
-}
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-}
-
-function buildSlots(awardKey: string, podiumAwards: PodiumAward[]) {
-  return [1, 2, 3].map((position) => ({
-    position,
-    assignedRegistrationId: podiumAwards.find((award) => award.award_key === awardKey && award.position === position)
-      ?.registration_id
-  }))
-}
-
-function buildAwardTables(registrations: Registration[], podiumAwards: PodiumAward[]): AwardTable[] {
-  const confirmedRows = registrations.filter((registration) => registration.payment_status === 'paid')
-  const divisionRows = Object.entries(groupBy(confirmedRows, (registration) => registration.division ?? 'Unassigned'))
-    .toSorted(([left], [right]) => left.localeCompare(right))
-    .map(([division]) => ({
-      awardKey: `division-${slugify(division)}`,
-      title: `${division} Division`,
-      eyebrow: 'Division Award',
-      slots: buildSlots(`division-${slugify(division)}`, podiumAwards)
-    }))
-  const pairingGroupRows = Object.entries(
-    groupBy(confirmedRows, (registration) => `Group ${registration.pairing_group ?? 'Unassigned'}`)
-  )
-    .toSorted(([left], [right]) => left.localeCompare(right))
-    .map(([group]) => ({
-      awardKey: `group-${slugify(group)}`,
-      title: group,
-      eyebrow: 'Group Award',
-      slots: buildSlots(`group-${slugify(group)}`, podiumAwards)
-    }))
-
-  return [
-    {
-      awardKey: 'overall',
-      title: 'Overall Podium',
-      eyebrow: 'Main Award',
-      slots: buildSlots('overall', podiumAwards)
-    },
-    ...divisionRows,
-    ...pairingGroupRows,
-    {
-      awardKey: 'checked-in',
-      title: 'Checked-In Players',
-      eyebrow: 'Attendance Award',
-      slots: buildSlots('checked-in', podiumAwards)
-    }
-  ]
 }
 
 function buildRegistrationMap(registrations: Registration[]) {
@@ -169,7 +96,7 @@ function AwardTable({
   registrationById,
   registrations
 }: {
-  award: AwardTable
+  award: AwardTableData
   eventId: string
   registrationById: Map<Id<'registrations'>, Registration>
   registrations: Registration[]

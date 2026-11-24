@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/reui/badge'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { api } from '@/convex/_generated/api'
@@ -16,6 +16,7 @@ import {
 } from '@/lib/tones'
 import { cn } from '@/lib/utils'
 import { useQuery } from 'convex/react'
+import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { checkInGatePass } from './actions'
 
@@ -320,7 +321,15 @@ export function GateScanner({ operator }: GateScannerProps) {
         </Badge>
       </div>
 
-      <Card className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80 dark:ring-background portrait:border-t portrait:border-slate-400/80'>
+      {result ? (
+        <div className='flex justify-end px-2'>
+          <Link className={buttonVariants({ variant: 'outline' })} href={`/admin/${encodeURIComponent(result.tournamentId)}/reports`}>
+            View tournament reports
+          </Link>
+        </div>
+      ) : null}
+
+      <Card aria-busy={isChecking} className='rounded-none md:rounded-xs gap-0 p-0 pb-0 pt-0 ring-slate-400/80 dark:ring-background portrait:border-t portrait:border-slate-400/80'>
         <CardHeader className='relative rounded-none md:rounded-t-xs border-b border-slate-400/50 bg-slate-200 dark:bg-slate-400/80 h-11 pt-2 pb-0 px-2'>
           <div className='flex items-center justify-between'>
             <CardTitle className='flex items-center font-okx'>

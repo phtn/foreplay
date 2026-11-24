@@ -14,6 +14,7 @@ import { sponsorLeadSchema } from './sponsorLeads/d'
 import { subscriptionSchema, subscriptionStatusChangeSchema } from './subscriptions/d'
 import { toneSchema } from './tones/d'
 import { tournamentSchema } from './tournaments/d'
+import { closeoutSchema, itemSchema, snapshotChunkSchema, transactionChangeSchema, transactionSchema } from './tournamentReports/d'
 import { txnSchema } from './txns/d'
 import { userSchema } from './users/d'
 
@@ -56,6 +57,20 @@ export default defineSchema({
   subscriptionStatusChanges: defineTable(subscriptionStatusChangeSchema).index('by_subscription_id', [
     'subscription_id'
   ]),
+  tournamentReportItems: defineTable(itemSchema)
+    .index('by_tournamentId', ['tournamentId'])
+    .index('by_tournamentId_and_requestId', ['tournamentId', 'requestId']),
+  tournamentReportTransactions: defineTable(transactionSchema)
+    .index('by_tournamentId', ['tournamentId'])
+    .index('by_tournamentId_and_requestId', ['tournamentId', 'requestId'])
+    .index('by_statementKey', ['statementKey']),
+  tournamentReportTransactionChanges: defineTable(transactionChangeSchema)
+    .index('by_transactionId', ['transactionId']),
+  tournamentReportCloseouts: defineTable(closeoutSchema)
+    .index('by_tournamentId_and_version', ['tournamentId', 'version'])
+    .index('by_tournamentId_and_requestId', ['tournamentId', 'requestId']),
+  tournamentReportSnapshotChunks: defineTable(snapshotChunkSchema)
+    .index('by_closeoutId_and_kind', ['closeoutId', 'kind']),
   tournaments: defineTable(tournamentSchema).index('by_tournament_id', ['id']),
   events: defineTable(eventSchema).index('by_organizer_id', ['organizer_id']),
   messagingConfigs: defineTable(messagingConfigsSchema)

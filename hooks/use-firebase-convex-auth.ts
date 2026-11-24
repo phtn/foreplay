@@ -4,8 +4,9 @@ import { useMemo } from 'react'
 
 import { useFirebaseUser } from '@/lib/firebase/auth'
 
-export function useFirebaseConvexAuth() {
-  const { isLoading, user } = useFirebaseUser()
+export function useFirebaseConvexAuth(expectedUid?: string) {
+  const { isLoading, user: firebaseUser } = useFirebaseUser()
+  const user = expectedUid && firebaseUser?.uid !== expectedUid ? null : firebaseUser
 
   return useMemo(
     () => ({
